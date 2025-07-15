@@ -27,193 +27,192 @@ export interface FilteredMachineItem {
 }
 
 export type DetailTypes =
-  | "Lifting"
-  | "Extinguisher"
-  | "Hydrant"
-  | "Foam"
-  | "Pump"
-  | "Valve"
-  | "Forklift"
-  | "Mobile"
-  | "Vehicle"
-  | "Harness"
-  | "Portable"
-  | "Lifeline"
-  | "Lifering"
-  | "Lifevest"
-  | "Welding"
-  | "Cable"
-  | "Fan"
-  | "Light"
-  | "Cctv"
-  | "Equipment"
-  | "Rescue"
-  | "Truck"
-  | "Mixer"
-  | "Car"
-  | "Motorbike"
-  | "Bulk"
-  | "Bag"
-  | "Plant"
-  | "Aed"
-  | "Emergency"
-  | "Fireexit"
-  | "Waste"
-  | "Crane"
-  | "Welding"
-  | "Shower"
-  | "Waterjet"
-  | "Compressor"
-  | "Fallarrest"
-  | "Firealarm"
-  | "Firepump"
-  | "Fullbodyharness"
-  | "Hoist"
-  | "Overheadcrane";
+  | "lifting"
+  | "extinguisher"
+  | "hydrant"
+  | "foam"
+  | "pump"
+  | "valve"
+  | "forklift"
+  | "mobile"
+  | "vehicle"
+  | "harness"
+  | "portable"
+  | "lifeline"
+  | "lifering"
+  | "lifevest"
+  | "welding"
+  | "cable"
+  | "fan"
+  | "light"
+  | "cctv"
+  | "equipment"
+  | "rescue"
+  | "truck"
+  | "mixer"
+  | "car"
+  | "motorbike"
+  | "bulk"
+  | "bag"
+  | "plant"
+  | "aed"
+  | "emergency"
+  | "fireexit"
+  | "waste"
+  | "crane"
+  | "shower"
+  | "waterjet"
+  | "compressor"
+  | "fallarrest"
+  | "firealarm"
+  | "firepump"
+  | "fullbodyharness"
+  | "hoist"
+  | "overheadcrane";
 
 export const isValidDetailType = (id: string): id is DetailTypes => {
   return [
-    "Lifting",
-    "Extinguisher",
-    "Hydrant",
-    "Foam",
-    "Pump",
-    "Valve",
-    "Forklift",
-    "Mobile",
-    "Vehicle",
-    "Harness",
-    "Portable",
-    "Lifeline",
-    "Lifering",
-    "Lifevest",
-    "Welding",
-    "Cable",
-    "Fan",
-    "Light",
-    "Cctv",
-    "Equipment",
-    "Rescue",
-    "Truck",
-    "Mixer",
-    "Car",
-    "Motorbike",
-    "Bulk",
-    "Bag",
-    "Plant",
-    "Aed",
-    "Emergency",
-    "Fireexit",
-    "Waste",
-    "Crane",
-    "Shower",
-    "Waterjet",
-    "Compressor",
-    "Fallarrest",
-    "Firealarm",
-    "Firepump",
-    "Fullbodyharness",
-    "Hoist",
-    "Overheadcrane",
+    "lifting",
+    "extinguisher",
+    "hydrant",
+    "foam",
+    "pump",
+    "valve",
+    "forklift",
+    "mobile",
+    "vehicle",
+    "harness",
+    "portable",
+    "lifeline",
+    "lifering",
+    "lifevest",
+    "welding",
+    "cable",
+    "fan",
+    "light",
+    "cctv",
+    "equipment",
+    "rescue",
+    "truck",
+    "mixer",
+    "car",
+    "motorbike",
+    "bulk",
+    "bag",
+    "plant",
+    "aed",
+    "emergency",
+    "fireexit",
+    "waste",
+    "crane",
+    "shower",
+    "waterjet",
+    "compressor",
+    "fallarrest",
+    "firealarm",
+    "firepump",
+    "fullbodyharness",
+    "hoist",
+    "overheadcrane",
   ].includes(id);
 };
 
 export const machineTitles: { [key: string]: string } = {
-  jkcementForklift: "Forklift Inspection",
-  vnLifting: "Kiểm định thiết bị nâng / Lifting Equipment",
-  vnLiftinggear: "Kiểm định dụng cụ nâng hạ / Lifting Gear",
-  vnForklift: "Kiểm định thiết bị nâng / Forklift",
-  vnMobile: "Kiểm tra thiết bị di động / Mobile Equipment",
-  vnVehicle: "Kiểm tra xe cơ giới / Vehicle",
-  vnExtinguisher: "Kiểm tra bình chữa cháy / Fire Extinguisher",
-  vnHydrant: "Kiểm tra trụ nước cứu hỏa / Fire Hydrant",
-  vnFoam: "Kiểm tra Foam chữa cháy / Foam Tank",
-  vnPump: "HƯỚNG DẪN KIỂM TRA BƠM NƯỚC CHỮA CHÁY / Water Pump",
-  vnValve: "HƯỚNG DẪN KIỂM TRA VAN NGUỒN NƯỚC / Water Valve",
-  vnHarness: "HƯỚNG DẪN KIỂM TRA DÂY AN TOÀN / Safety Harness",
-  vnPortable: "HƯỚNG DẪN KIỂM TRA SÀN DI ĐỘNG / Portable Platform",
-  vnLifeline: "HƯỚNG DẪN KIỂM TRA DÂY AN TOÀN / Safety Lifeline",
-  vnLifering: "Hướng dẫn kiểm tra phao cứu sinh / Safety Life Ring",
-  vnLifevest: "Hướng dẫn kiểm tra áo phao cứu sinh / Safety Life Vest",
-  vnWelding: "Hướng dẫn kiểm tra máy hàn / Welding Machine",
-  vnCable: "Hướng dẫn kiểm tra dây nguồn / Power Cable",
-  vnFan: "Hướng dẫn kiểm tra quạt thông gió / Ventilation Fan",
-  vnLight: "Hướng dẫn kiểm tra đèn chiếu sáng di động / Mobile Light",
-  vnCctv: "Hướng dẫn kiểm tra hệ thống camera giám sát / Plant CCTV",
-  vnEquipment: "Hướng dẫn kiểm tra thiết bị di động / Portable Equipment",
-  vnRescue: "Gangway, Rescue Boat",
+  jkcementforklift: "Forklift Inspection",
+  vnlifting: "Kiểm định thiết bị nâng / Lifting Equipment",
+  vnliftinggear: "Kiểm định dụng cụ nâng hạ / Lifting Gear",
+  vnforklift: "Kiểm định thiết bị nâng / Forklift",
+  vnmobile: "Kiểm tra thiết bị di động / Mobile Equipment",
+  vnvehicle: "Kiểm tra xe cơ giới / Vehicle",
+  vnextinguisher: "Kiểm tra bình chữa cháy / Fire Extinguisher",
+  vnhydrant: "Kiểm tra trụ nước cứu hỏa / Fire Hydrant",
+  vnfoam: "Kiểm tra Foam chữa cháy / Foam Tank",
+  vnpump: "HƯỚNG DẪN KIỂM TRA BƠM NƯỚC CHỮA CHÁY / Water Pump",
+  vnvalve: "HƯỚNG DẪN KIỂM TRA VAN NGUỒN NƯỚC / Water Valve",
+  vnharness: "HƯỚNG DẪN KIỂM TRA DÂY AN TOÀN / Safety Harness",
+  vnportable: "HƯỚNG DẪN KIỂM TRA SÀN DI ĐỘNG / Portable Platform",
+  vnlifeline: "HƯỚNG DẪN KIỂM TRA DÂY AN TOÀN / Safety Lifeline",
+  vnlifering: "Hướng dẫn kiểm tra phao cứu sinh / Safety Life Ring",
+  vnlifevest: "Hướng dẫn kiểm tra áo phao cứu sinh / Safety Life Vest",
+  vnwelding: "Hướng dẫn kiểm tra máy hàn / Welding Machine",
+  vncable: "Hướng dẫn kiểm tra dây nguồn / Power Cable",
+  vnfan: "Hướng dẫn kiểm tra quạt thông gió / Ventilation Fan",
+  vnlight: "Hướng dẫn kiểm tra đèn chiếu sáng di động / Mobile Light",
+  vncctv: "Hướng dẫn kiểm tra hệ thống camera giám sát / Plant CCTV",
+  vnequipment: "Hướng dẫn kiểm tra thiết bị di động / Portable Equipment",
+  vnrescue: "Gangway, Rescue Boat",
 
   // CMIC
-  cmicBulk: "ការត្រួតពិនិត្យរថយន្តមុនពេលប្រើប្រាស់ប្រចាំថ្ងៃ",
-  cmicLoader: "ការត្រួតពិនិត្យរថយន្តមុនពេលប្រើប្រាស់ប្រចាំថ្ងៃ",
-  cmicForklift: "ការត្រួតពិនិត្យរថយន្តមុនពេលប្រើប្រាស់ប្រចាំថ្ងៃ",
-  cmicDump: "ការត្រួតពិនិត្យរថយន្តមុនពេលប្រើប្រាស់ប្រចាំថ្ងៃ",
-  cmicExcavator: "ការត្រួតពិនិត្យរថយន្តមុនពេលប្រើប្រាស់ប្រចាំថ្ងៃ",
-  cmicCrane: "ការត្រួតពិនិត្យឧបករណ៍ជើងយកឬក្រេនមុនពេលប្រើប្រាស់ប្រចាំថ្ងៃ",
-  cmicExtinguisher: "ការត្រួតពិនិត្យបំពង់ពន្លត់អគ្គីភ័យមុនពេលប្រើប្រាស់ប្រចាំថ្ងៃ",
-  cmicHydrant: "ការត្រួតពិនិត្យប្រព័ន្ធទឹកបាញ់អគ្គីភ័យមុនពេលប្រើប្រាស់ប្រចាំថ្ងៃ",
-  cmicVehicle: "ការត្រួតពិនិត្យយានជំនិះស្រាលមុនពេលប្រើប្រាស់ប្រចាំថ្ងៃ",
+  cmicbulk: "ការត្រួតពិនិត្យរថយន្តមុនពេលប្រើប្រាស់ប្រចាំថ្ងៃ",
+  cmicloader: "ការត្រួតពិនិត្យរថយន្តមុនពេលប្រើប្រាស់ប្រចាំថ្ងៃ",
+  cmicforklift: "ការត្រួតពិនិត្យរថយន្តមុនពេលប្រើប្រាស់ប្រចាំថ្ងៃ",
+  cmicdump: "ការត្រួតពិនិត្យរថយន្តមុនពេលប្រើប្រាស់ប្រចាំថ្ងៃ",
+  cmicexcavator: "ការត្រួតពិនិត្យរថយន្តមុនពេលប្រើប្រាស់ប្រចាំថ្ងៃ",
+  cmiccrane: "ការត្រួតពិនិត្យឧបករណ៍ជើងយកឬក្រេនមុនពេលប្រើប្រាស់ប្រចាំថ្ងៃ",
+  cmicextinguisher: "ការត្រួតពិនិត្យបំពង់ពន្លត់អគ្គីភ័យមុនពេលប្រើប្រាស់ប្រចាំថ្ងៃ",
+  cmichydrant: "ការត្រួតពិនិត្យប្រព័ន្ធទឹកបាញ់អគ្គីភ័យមុនពេលប្រើប្រាស់ប្រចាំថ្ងៃ",
+  cmicvehicle: "ការត្រួតពិនិត្យយានជំនិះស្រាលមុនពេលប្រើប្រាស់ប្រចាំថ្ងៃ",
 
   // BD
-  bdBulk: "Bulk Truck inspection form",
-  bdForklift: "Forklift inspection form",
-  bdLoader: "Loader inspection form",
-  bdHarness: "Safety Harness inspection form",
-  bdLadder: "Mobile Ladder inspection form",
-  bdExtinguisher: "Fire Extinguisher inspection form",
+  bdbulk: "Bulk Truck inspection form",
+  bdforklift: "Forklift inspection form",
+  bdloader: "Loader inspection form",
+  bdharness: "Safety Harness inspection form",
+  bdladder: "Mobile Ladder inspection form",
+  bdextinguisher: "Fire Extinguisher inspection form",
 
   // LK
-  lkForklift: "Forklift Inspection Form",
-  lkExtinguisher: "Fire Extinguisher Inspection Form",
-  lkCar: "Light Vehicle Inspection Form",
+  lkforklift: "Forklift Inspection Form",
+  lkextinguisher: "Fire Extinguisher Inspection Form",
+  lkcar: "Light Vehicle Inspection Form",
 
   // TH
-  thTruck: "แบบฟอร์มตรวจรถบรรทุกประจำวัน ของฝ่ายเหมือง (เท่านั้น)",
-  thTruckall: "แบบฟอร์ม F-TES-053 ตรวจสอบสภาพรถบรรทุกประจำวัน",
-  thCrane: "แบบตรวจสภาพความพร้อมรอก/เครนก่อนการใช้งานประจำวัน",
-  thEquipment: "แบบตรวจสภาพความของเครืองมือ/อุปกรณ์ที่สามารถเคลื่อนย้ายได้",
-  thCar: "แบบตรวจเช็ครถเล็กก่อนใช้งานประจำวัน",
-  thMixer: "แบบตรวจเช็ครถโม่ก่อนใช้งานประจำวัน",
-  thMixerweek: "แบบตรวจเช็ครถโม่ก่อนใช้งานประจำสัปดาห์",
-  thMixertrainer: "แบบตรวจเช็ครถโม่สำหรับครูฝึกอบรม",
-  thMixertsm: "แบบตรวจเช็ครถโม่สำหรับ TSM ของ ผจส",
-  thMotorbike: "แบบตรวจเช็คมอเตอร์ไซด์ก่อนใช้งานประจำวัน",
-  thBulk: "แบบตรวจเช็ครถซีเมนต์ผงก่อนใช้งานประจำวัน",
-  thBag: "แบบตรวจเช็ครถซีเมนต์ถุงก่อนใช้งานประจำวัน",
-  thPlant: "Daily (FM-SCCO-PROD-003 Production)",
-  thAed: "แบบตรวจเช็คเครื่อง AED ประจำเดือน",
-  thEmergency: "แบบตรวจสอบป้ายทางหนีไฟ แผนผังเส้นทางหนีไฟ และจุดรวมพล",
-  thExtinguisher: "แบบตรวจเช็คถัง Fire Extinguisher ประจำเดือน",
-  thHydrant: "แบบตรวจหัวฉีดน้ำดับเพลิง Fire Hydrant ประจำเดือน",
-  thWaste: "แบบตรวจเช็ครถขนส่ง Waste ก่อนใช้งานประจำวัน",
-  thHarness: "แบบตรวจสายรัดตัวก่อนใช้งานประจำเดือน",
-  thForklift: "Forklift",
-  thFrontend: "Frontend Loader",
-  thWelding: "แบบตรวจเช็ค Welding Machine",
-  thShower: "แบบตรวจเช็คEmergency Shower and Eye Wash Station",
-  thWaterjet: "แบบตรวจเช็ค High Pressure Water Jet",
-  thCompressor: "แบบตรวจเช็ค Air Compressor",
-  thFallarrest: "แบบตรวจสายดึงตัวก่อนใช้งานประจำเดือน",
-  thFirealarm: "แบบตรวจเช็ค Fire Alarm",
-  thFirepump: "แบบตรวจเช็ค Fire Pump",
-  thFullbodyharness: "แบบตรวจเช็ค Full Body Harness",
-  thHoist: "แบบตรวจเช็ค Hoist",
-  thOverheadcrane: "แบบตรวจเช็ค Overhead Crane",
+  thtruck: "แบบฟอร์มตรวจรถบรรทุกประจำวัน ของฝ่ายเหมือง (เท่านั้น)",
+  thtruckall: "แบบฟอร์ม F-TES-053 ตรวจสอบสภาพรถบรรทุกประจำวัน",
+  thcrane: "แบบตรวจสภาพความพร้อมรอก/เครนก่อนการใช้งานประจำวัน",
+  thequipment: "แบบตรวจสภาพความของเครืองมือ/อุปกรณ์ที่สามารถเคลื่อนย้ายได้",
+  thcar: "แบบตรวจเช็ครถเล็กก่อนใช้งานประจำวัน",
+  thmixer: "แบบตรวจเช็ครถโม่ก่อนใช้งานประจำวัน",
+  thmixerweek: "แบบตรวจเช็ครถโม่ก่อนใช้งานประจำสัปดาห์",
+  thmixertrainer: "แบบตรวจเช็ครถโม่สำหรับครูฝึกอบรม",
+  thmixertsm: "แบบตรวจเช็ครถโม่สำหรับ TSM ของ ผจส",
+  thmotorbike: "แบบตรวจเช็คมอเตอร์ไซด์ก่อนใช้งานประจำวัน",
+  thbulk: "แบบตรวจเช็ครถซีเมนต์ผงก่อนใช้งานประจำวัน",
+  thbag: "แบบตรวจเช็ครถซีเมนต์ถุงก่อนใช้งานประจำวัน",
+  thplant: "Daily (FM-SCCO-PROD-003 Production)",
+  thaed: "แบบตรวจเช็คเครื่อง AED ประจำเดือน",
+  themergency: "แบบตรวจสอบป้ายทางหนีไฟ แผนผังเส้นทางหนีไฟ และจุดรวมพล",
+  thextinguisher: "แบบตรวจเช็คถัง Fire Extinguisher ประจำเดือน",
+  thhydrant: "แบบตรวจหัวฉีดน้ำดับเพลิง Fire Hydrant ประจำเดือน",
+  thwaste: "แบบตรวจเช็ครถขนส่ง Waste ก่อนใช้งานประจำวัน",
+  thharness: "แบบตรวจสายรัดตัวก่อนใช้งานประจำเดือน",
+  thforklift: "Forklift",
+  thfrontend: "Frontend Loader",
+  thwelding: "แบบตรวจเช็ค Welding Machine",
+  thshower: "แบบตรวจเช็คEmergency Shower and Eye Wash Station",
+  thwaterjet: "แบบตรวจเช็ค High Pressure Water Jet",
+  thcompressor: "แบบตรวจเช็ค Air Compressor",
+  thfallarrest: "แบบตรวจสายดึงตัวก่อนใช้งานประจำเดือน",
+  thfirealarm: "แบบตรวจเช็ค Fire Alarm",
+  thfirepump: "แบบตรวจเช็ค Fire Pump",
+  thfullbodyharness: "แบบตรวจเช็ค Full Body Harness",
+  thhoist: "แบบตรวจเช็ค Hoist",
+  thoverheadcrane: "แบบตรวจเช็ค Overhead Crane",
 };
 
 export const quarterlyEquipment = [
-  { id: "Harness" },
-  { id: "Portable" },
-  { id: "Lifeline" },
-  { id: "Lifering" },
-  { id: "Lifevest" },
-  { id: "Welding" },
-  { id: "Cable" },
-  { id: "Fan" },
-  { id: "Light" },
-  { id: "Cctv" },
-  { id: "Equipment" },
-  { id: "Rescue" },
-  { id: "Socket" },
-  { id: "Electric" },
+  { id: "harness" },
+  { id: "portable" },
+  { id: "lifeline" },
+  { id: "lifering" },
+  { id: "lifevest" },
+  { id: "welding" },
+  { id: "cable" },
+  { id: "fan" },
+  { id: "light" },
+  { id: "cctv" },
+  { id: "equipment" },
+  { id: "rescue" },
+  { id: "socket" },
+  { id: "electric" },
 ];

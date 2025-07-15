@@ -32,7 +32,7 @@ import { ref, uploadBytesResumable, UploadTask } from "firebase/storage";
 import { collection, addDoc } from "firebase/firestore";
 
 interface MachineFormProps {
-  country: string;
+  bu: string;
   type: string;
   id: string;
 }
@@ -46,7 +46,7 @@ interface FormData extends FieldValues {
   [key: string]: any;
 }
 
-export default function MachineForm({ country, type, id }: MachineFormProps) {
+export default function MachineForm({ bu, type, id }: MachineFormProps) {
   const {
     register,
     handleSubmit,
@@ -64,18 +64,18 @@ export default function MachineForm({ country, type, id }: MachineFormProps) {
   const [images, setImages] = useState<ImageUpload[]>([]);
 
   // Determine BU (business unit) and machine type
-  const bu = country === "thailand" ? "th" : country === "vietnam" ? "vn" : 
-             country === "bangladesh" ? "bd" : country === "srilanka" ? "lk" : 
-             country === "cambodia" ? "cmic" : country;
+  const businessUnit = bu === "thailand" ? "th" : bu === "vietnam" ? "vn" : 
+                      bu === "bangladesh" ? "bd" : bu === "srilanka" ? "lk" : 
+                      bu === "cambodia" ? "cmic" : bu;
   const machine = type.charAt(0).toUpperCase() + type.slice(1);
 
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
-        const adjustedBu = ["srb", "mkt", "office", "lbm", "rmx", "iagg", "ieco"].includes(bu)
+        const adjustedBu = ["srb", "mkt", "office", "lbm", "rmx", "iagg", "ieco"].includes(businessUnit)
           ? "th"
-          : bu;
-        const adjustedMachine = bu !== "srb" && machine === "Truck" ? "Truckall" : machine;
+          : businessUnit;
+        const adjustedMachine = businessUnit !== "srb" && machine === "Truck" ? "Truckall" : machine;
         
         const { questions } = await loadQuestions(adjustedBu, adjustedMachine);
         setQuestions(questions);
@@ -86,7 +86,7 @@ export default function MachineForm({ country, type, id }: MachineFormProps) {
     };
 
     fetchQuestions();
-  }, [bu, machine]);
+  }, [businessUnit, machine]);
 
   const handleRadioChange = (questionName: string, value: string) => {
     setSelectedValues((prev) => ({ ...prev, [questionName]: value }));
@@ -147,10 +147,9 @@ export default function MachineForm({ country, type, id }: MachineFormProps) {
       const updatedData: FormData = {
         ...formData,
         ...selectedValues,
-        bu,
+        bu: businessUnit,
         type: machine.toLowerCase(),
         id,
-        country,
         timestamp: new Date(),
       };
 
@@ -167,7 +166,7 @@ export default function MachineForm({ country, type, id }: MachineFormProps) {
       
       images.forEach((image, index) => {
         if (image.file) {
-          const path = `machines/${country}/${type}/${id}/${Date.now()}-${index}-${image.file.name}`;
+          const path = `machines/${bu}/${type}/${id}/${Date.now()}-${index}-${image.file.name}`;
           imagePaths.push(path);
           const storageRef = ref(storage, path);
           uploadTasks.push(uploadBytesResumable(storageRef, image.file));
@@ -197,14 +196,14 @@ export default function MachineForm({ country, type, id }: MachineFormProps) {
 
   // Get the title for the current machine type
   const getTitle = () => {
-    const adjustedBu = ["srb", "mkt", "office", "lbm", "rmx", "iagg", "ieco"].includes(bu) ? "th" : bu;
-    const adjustedMachine = machine === "Truck" && bu !== "srb" ? "Truckall" : machine;
+    const adjustedBu = ["srb", "mkt", "office", "lbm", "rmx", "iagg", "ieco"].includes(businessUnit) ? "th" : businessUnit;
+    const adjustedMachine = machine === "Truck" && businessUnit !== "srb" ? "Truckall" : machine;
     return machineTitles[adjustedBu + adjustedMachine] || `${machine} Inspection`;
   };
 
-  // Get choices for radio buttons based on country
+  // Get choices for radio buttons based on business unit
   const getChoices = () => {
-    switch (bu) {
+    switch (businessUnit) {
       case "vn": return vn;
       case "bd": return bd;
       case "lk": return lk;
@@ -229,9 +228,9 @@ export default function MachineForm({ country, type, id }: MachineFormProps) {
           <CardContent className="pt-6">
             <div className="space-y-2">
               <Label htmlFor="inspector" className="text-lg font-semibold">
-                {inspector[bu] || "Inspector"}
+                {inspector[businessUnit] || "Inspector"}
               </Label>
-              {bu === "rmx" && machine === "Mixertsm" ? (
+              {businessUnit === "rmx" && machine === "Mixertsm" ? (
                 <select
                   {...register("inspector", { required: "Inspector is required" })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-rose-500"
@@ -269,7 +268,7 @@ export default function MachineForm({ country, type, id }: MachineFormProps) {
         </Card>
 
         {/* Mileage Field for Thai cars */}
-        {["srb", "mkt", "office", "lbm", "rmx", "iagg", "ieco"].includes(bu) && machine === "Car" && (
+        {["srb", "mkt", "office", "lbm", "rmx", "iagg", "ieco"].includes(businessUnit) && machine === "Car" && (
           <Card>
             <CardContent className="pt-6">
               <div className="space-y-2">
@@ -291,7 +290,7 @@ export default function MachineForm({ country, type, id }: MachineFormProps) {
         )}
 
         {/* Tag Number for Vietnam quarterly equipment */}
-        {quarterlyEquipment.some((item) => item.id === machine) && bu === "vn" && (
+        {quarterlyEquipment.some((item) => item.id === machine) && businessUnit === "vn" && (
           <Card>
             <CardContent className="pt-6">
               <div className="space-y-2">
@@ -313,7 +312,7 @@ export default function MachineForm({ country, type, id }: MachineFormProps) {
         )}
 
         {/* Certificate Field for Vietnam */}
-        {["Lifting", "Vehicle", "Mobile"].includes(machine) && bu === "vn" && (
+        {["Lifting", "Vehicle", "Mobile"].includes(machine) && businessUnit === "vn" && (
           <Card>
             <CardContent className="pt-6">
               <div className="space-y-2">
@@ -344,9 +343,9 @@ export default function MachineForm({ country, type, id }: MachineFormProps) {
                 </div>
                 
                 <div className="text-sm text-gray-600">
-                  <p><strong>{howto[bu] || "How to check"}:</strong> {question.howto}</p>
+                  <p><strong>{howto[businessUnit] || "How to check"}:</strong> {question.howto}</p>
                   {question.accept && (
-                    <p><strong>{accept[bu] || "Acceptance criteria"}:</strong> {question.accept}</p>
+                    <p><strong>{accept[businessUnit] || "Acceptance criteria"}:</strong> {question.accept}</p>
                   )}
                 </div>
 
@@ -366,7 +365,7 @@ export default function MachineForm({ country, type, id }: MachineFormProps) {
                     <Input
                       {...register(question.name + "R", { required: true })}
                       type="text"
-                      placeholder={remarkr[bu] || "Please provide a remark"}
+                      placeholder={remarkr[businessUnit] || "Please provide a remark"}
                       className="w-full"
                     />
                     
@@ -418,7 +417,7 @@ export default function MachineForm({ country, type, id }: MachineFormProps) {
           <CardContent className="pt-6">
             <div className="space-y-4">
               <Label className="text-lg font-semibold">
-                {picture[bu] || "Attach Images"} (Optional)
+                {picture[businessUnit] || "Attach Images"} (Optional)
               </Label>
               
               <MultiImageUploader
@@ -442,7 +441,7 @@ export default function MachineForm({ country, type, id }: MachineFormProps) {
           <CardContent className="pt-6">
             <div className="space-y-2">
               <Label htmlFor="remark" className="text-lg font-semibold">
-                {remark[bu] || "Remark"} (Optional)
+                {remark[businessUnit] || "Remark"} (Optional)
               </Label>
               <Input
                 {...register("remark")}
@@ -460,7 +459,7 @@ export default function MachineForm({ country, type, id }: MachineFormProps) {
           disabled={isSubmitting || Object.values(isUploading).some((uploading) => uploading)}
           className="w-full bg-rose-600 hover:bg-rose-700 text-white font-semibold py-3 px-6 rounded-full shadow-lg"
         >
-          {isSubmitting ? "Submitting..." : (submit[bu] || "Submit")}
+          {isSubmitting ? "Submitting..." : (submit[businessUnit] || "Submit")}
         </Button>
       </form>
     </div>

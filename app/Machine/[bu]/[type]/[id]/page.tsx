@@ -2,14 +2,16 @@ import { Breadcrumbs } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { ArrowLeftIcon } from "lucide-react";
 import Link from "next/link";
+import MachineHeader from "@/components/machine-header";
+import MachineDetail from "@/components/machine-detail";
 import MachineForm from "@/components/machine-form";
 
 export default async function MachinePage({ 
   params 
 }: { 
-  params: Promise<{ country: string; type: string; id: string }> 
+  params: Promise<{ bu: string; type: string; id: string }> 
 }) {
-  const { country, type, id } = await params;
+  const { bu, type, id } = await params;
   
   return (
     <div className="container mx-auto py-6">
@@ -20,11 +22,11 @@ export default async function MachinePage({
             label: "Machine Inspection",
           },
           {
-            href: `/Machine/${country}`,
-            label: country.toUpperCase(),
+            href: `/Machine/${bu}`,
+            label: bu.toUpperCase(),
           },
           {
-            href: `/Machine/${country}/${type}`,
+            href: `/Machine/${bu}/${type}`,
             label: type.toUpperCase(),
           },
           {
@@ -43,7 +45,9 @@ export default async function MachinePage({
         </Button>
       </div>
       
-      <MachineForm country={country} type={type} id={id} />
+      <MachineHeader bu={bu} type={type} id={id} />
+      <MachineDetail bu={bu} type={type} id={id} />
+      <MachineForm bu={bu} type={type} id={id} />
     </div>
   );
 }
