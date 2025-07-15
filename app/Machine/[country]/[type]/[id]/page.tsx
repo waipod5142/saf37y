@@ -1,32 +1,49 @@
 import { Breadcrumbs } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
-import { PlusCircleIcon } from "lucide-react";
+import { ArrowLeftIcon } from "lucide-react";
 import Link from "next/link";
-import PropertyForm from "@/components/property-form";
+import MachineForm from "@/components/machine-form";
 
-export default async function Property({ params }: { params: Promise<any> }) {
-  const paramsValue = await params;
-  console.log(paramsValue)
+export default async function MachinePage({ 
+  params 
+}: { 
+  params: Promise<{ country: string; type: string; id: string }> 
+}) {
+  const { country, type, id } = await params;
+  
   return (
-    <div>
+    <div className="container mx-auto py-6">
       <Breadcrumbs
         items={[
           {
-            href: "/Man",
-            label: "Man page",
+            href: "/Machine",
+            label: "Machine Inspection",
           },
           {
-            label: "New Propertytest",
+            href: `/Machine/${country}`,
+            label: country.toUpperCase(),
+          },
+          {
+            href: `/Machine/${country}/${type}`,
+            label: type.toUpperCase(),
+          },
+          {
+            label: `ID: ${id}`,
           },
         ]}
       />
-      <h1 className="text-4xl font-bold mt-6">Go to Man</h1>
-      <Button asChild className="inline-flex pl-2 gap-2 mt-4">
-        <Link href="/Man">
-          <PlusCircleIcon /> New Property
-        </Link>
-      </Button>
-      <PropertyForm />
+      
+      <div className="flex items-center justify-between my-6">
+        <h1 className="text-3xl font-bold">Machine Inspection Form</h1>
+        <Button asChild variant="outline" className="inline-flex gap-2">
+          <Link href="/Machine">
+            <ArrowLeftIcon className="h-4 w-4" />
+            Back to Machine List
+          </Link>
+        </Button>
+      </div>
+      
+      <MachineForm country={country} type={type} id={id} />
     </div>
   );
 }
