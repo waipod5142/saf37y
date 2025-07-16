@@ -14,7 +14,7 @@ export default async function MachinePage({
   const { bu, type, id } = await params;
   
   return (
-    <div className="container mx-auto py-6">
+    <div className="max-w-4xl mx-auto p-2">
       <Breadcrumbs
         items={[
           {

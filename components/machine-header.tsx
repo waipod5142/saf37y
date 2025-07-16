@@ -29,7 +29,7 @@ export default async function MachineHeader({ bu, type, id }: MachineHeaderProps
   const machineTitle = machineTitles[`${bu}${type.toLowerCase()}`] || `${type.charAt(0).toUpperCase() + type.slice(1)} Inspection`;
 
   return (
-    <div className="mb-6">
+    <div className="max-w-4xl mx-auto p-2">
       <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
         
         <div className="p-6">

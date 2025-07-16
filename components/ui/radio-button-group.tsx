@@ -51,8 +51,8 @@ export default function RadioButtonGroup({
               choice.colorClass,
               index === 0 && "rounded-l-full",
               index === choices.length - 1 && "rounded-r-full",
-              selectedValue === choice.value && "ring-4 ring-blue-500 ring-offset-2 ring-offset-gray-100 z-10 relative scale-105",
-              selectedValue && selectedValue !== choice.value && "opacity-60 scale-95"
+              selectedValue === choice.value && "ring-4 ring-blue-500 ring-offset-1 ring-offset-gray-100 z-10 relative scale-105",
+              selectedValue && selectedValue !== choice.value && "opacity-60 scale-[99%]"
             )}
           >
             {choice.text}
