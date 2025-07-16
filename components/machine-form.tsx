@@ -26,10 +26,10 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import MultiImageUploader, { ImageUpload } from "@/components/multi-image-uploader";
-import { auth, storage, db } from "@/firebase/client";
+import { auth, storage } from "@/firebase/client";
 import { signInAnonymously } from "firebase/auth";
 import { ref, uploadBytesResumable, UploadTask } from "firebase/storage";
-import { collection, addDoc } from "firebase/firestore";
+import { submitMachineForm } from "@/app/actions/machine-form";
 
 interface MachineFormProps {
   bu: string;
@@ -139,9 +139,15 @@ export default function MachineForm({ bu, type, id }: MachineFormProps) {
 
   const onSubmit: SubmitHandler<FormData> = async (formData) => {
     try {
-      // Authenticate anonymously if not already authenticated
+      // Authenticate anonymously if not already authenticated (for Storage upload)
       if (!auth.currentUser) {
-        await signInAnonymously(auth);
+        try {
+          await signInAnonymously(auth);
+        } catch (authError) {
+          console.error("Authentication error:", authError);
+          toast.error("Authentication failed. Please try again.");
+          return;
+        }
       }
 
       const updatedData: FormData = {
@@ -150,7 +156,6 @@ export default function MachineForm({ bu, type, id }: MachineFormProps) {
         bu: businessUnit,
         type: machine.toLowerCase(),
         id,
-        timestamp: new Date(),
       };
 
       // Add file URLs to the data (for questions with images)
@@ -174,23 +179,40 @@ export default function MachineForm({ bu, type, id }: MachineFormProps) {
       });
 
       // Wait for all uploads to complete
-      await Promise.all(uploadTasks);
+      try {
+        await Promise.all(uploadTasks);
+      } catch (uploadError) {
+        console.error("Image upload error:", uploadError);
+        toast.error("Failed to upload images. Please try again.");
+        return;
+      }
 
-      // Save to Firestore
-      await addDoc(collection(db, "machinetr"), {
-        ...updatedData,
-        images: imagePaths,
-        createdAt: new Date(),
-      });
+      // Save to Firestore using server action
+      try {
+        const result = await submitMachineForm({
+          ...updatedData,
+          images: imagePaths,
+        });
 
-      toast.success("Form submitted successfully!");
-      reset();
-      setSelectedValues({});
-      setFileUrls({});
-      setImages([]);
+        if (result.success) {
+          toast.success("Form submitted successfully!");
+          reset();
+          setSelectedValues({});
+          setFileUrls({});
+          setImages([]);
+          
+          // Reload the page to show updated data in machine-detail
+          window.location.reload();
+        } else {
+          toast.error(result.error || "Failed to submit form");
+        }
+      } catch (serverError) {
+        console.error("Server action error:", serverError);
+        toast.error("Failed to save form data. Please try again.");
+      }
     } catch (error) {
-      console.error("Error:", error);
-      toast.error("Failed to submit form");
+      console.error("General error:", error);
+      toast.error("An unexpected error occurred. Please try again.");
     }
   };
 
