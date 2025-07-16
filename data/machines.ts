@@ -13,7 +13,7 @@ export const getMachineById = async (
     const machineQuery = firestore
       .collection("machine")
       .where("bu", "==", bu)
-      .where("type", "==", type)
+      .where("type", "==", type.toLowerCase())
       .where("id", "==", id);
 
     const machineSnapshot = await machineQuery.get();

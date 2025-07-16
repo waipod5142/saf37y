@@ -1,4 +1,3 @@
-import { Breadcrumbs } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { ArrowLeftIcon } from "lucide-react";
 import Link from "next/link";
@@ -14,35 +13,9 @@ export default async function MachinePage({
   const { bu, type, id } = await params;
   
   return (
-    <div className="max-w-4xl mx-auto p-2">
-      <Breadcrumbs
-        items={[
-          {
-            href: "/Machine",
-            label: "Machine Inspection",
-          },
-          {
-            href: `/Machine/${bu}`,
-            label: bu.toUpperCase(),
-          },
-          {
-            href: `/Machine/${bu}/${type}`,
-            label: type.toUpperCase(),
-          },
-          {
-            label: `ID: ${id}`,
-          },
-        ]}
-      />
-      
-      <div className="flex items-center justify-between my-6">
-        <h1 className="text-3xl font-bold">Machine Inspection Form</h1>
-        <Button asChild variant="outline" className="inline-flex gap-2">
-          <Link href="/Machine">
-            <ArrowLeftIcon className="h-4 w-4" />
-            Back to Machine List
-          </Link>
-        </Button>
+    <div className="max-w-4xl mx-auto p-2">     
+      <div className="flex items-center justify-between my-2 pl-2">
+        <h1 className="text-3xl font-bold">{`${type} Inspection Form`}</h1>
       </div>
       
       <MachineHeader bu={bu} type={type} id={id} />

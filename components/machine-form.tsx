@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useForm, FieldValues, SubmitHandler } from "react-hook-form";
 import { Camera } from "lucide-react";
-import { loadQuestions } from "@/lib/load-questions";
+import { getMachineQuestions } from "@/app/actions/machine-data";
 import { MachineItem, machineTitles, quarterlyEquipment } from "@/lib/machine-types";
 import {
   vn,
@@ -72,13 +72,16 @@ export default function MachineForm({ bu, type, id }: MachineFormProps) {
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
-        const adjustedBu = ["srb", "mkt", "office", "lbm", "rmx", "iagg", "ieco"].includes(businessUnit)
-          ? "th"
-          : businessUnit;
-        const adjustedMachine = businessUnit !== "srb" && machine === "Truck" ? "Truckall" : machine;
-        
-        const { questions } = await loadQuestions(adjustedBu, adjustedMachine);
-        setQuestions(questions);
+        const result = await getMachineQuestions(bu, type, id);
+        if (result.success && result.questions) {
+          setQuestions(result.questions);
+        } else {
+          console.warn("No questions found for machine:", { bu, type, id });
+          setQuestions([]);
+          if (result.error) {
+            toast.error(result.error);
+          }
+        }
       } catch (error) {
         console.error("Error loading questions:", error);
         toast.error("Failed to load questions");
@@ -86,7 +89,7 @@ export default function MachineForm({ bu, type, id }: MachineFormProps) {
     };
 
     fetchQuestions();
-  }, [businessUnit, machine]);
+  }, [bu, type, id]);
 
   const handleRadioChange = (questionName: string, value: string) => {
     setSelectedValues((prev) => ({ ...prev, [questionName]: value }));
@@ -361,11 +364,13 @@ export default function MachineForm({ bu, type, id }: MachineFormProps) {
             <CardContent className="pt-6">
               <div className="space-y-4">
                 <div className="text-xl font-semibold">
-                  {question.id}. {question.question}
+                  {index + 1}. {question.question}
                 </div>
                 
                 <div className="text-sm text-gray-600">
+                  {question.howto && (
                   <p><strong>{howto[businessUnit] || "How to check"}:</strong> {question.howto}</p>
+                  )}
                   {question.accept && (
                     <p><strong>{accept[businessUnit] || "Acceptance criteria"}:</strong> {question.accept}</p>
                   )}

@@ -11,6 +11,12 @@ export interface Machine {
   howto?: string;
   accept?: string;
   images?: string[];
+  questions?: Array<{
+    question: string;
+    name: string;
+    howto: string;
+    accept: string;
+  }>;
   specifications?: Record<string, any>;
   lastInspection?: string;
   nextInspection?: string;

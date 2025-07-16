@@ -57,7 +57,7 @@ export default function MachineDetailClient({ records }: MachineDetailClientProp
     
     return (
     <div className="max-w-4xl mx-auto p-2">
-      <Card key={record.docId} className={`mb-4 ${isLatest ? 'border-blue-500 shadow-md' : ''}`}>
+      <Card className={`mb-4 ${isLatest ? 'border-blue-500 bg-yellow-100 shadow-md' : 'bg-yellow-50'}`}>
         <CardHeader className="pb-3">
           <div className="flex justify-between items-start">
             <div>
@@ -114,8 +114,18 @@ export default function MachineDetailClient({ records }: MachineDetailClientProp
               <h4 className="font-semibold text-sm text-gray-700 mb-2">Images</h4>
               <div className="flex gap-2 flex-wrap">
                 {record.images.map((image, index) => (
-                  <div key={index} className="w-20 h-20 bg-gray-100 rounded border flex items-center justify-center">
-                    <span className="text-xs text-gray-500">Image {index + 1}</span>
+                  <div key={index} className="w-20 h-20 rounded border overflow-hidden hover:shadow-lg transition-shadow cursor-pointer">
+                    <img 
+                      src={`https://firebasestorage.googleapis.com/v0/b/sccc-inseesafety-prod.firebasestorage.app/o/${encodeURIComponent(
+                        image
+                      )}?alt=media`}
+                      alt={`Inspection image ${index + 1}`}
+                      className="w-full h-full object-cover hover:scale-105 transition-transform"
+                      onError={(e) => {
+                        e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0yNS4zMzMzIDI4SDE2LjY2NjdWMjEuMzMzM0gyNS4zMzMzVjI4Wk0yNS4zMzMzIDQ2LjY2NjdIMTYuNjY2N1Y0MEgyNS4zMzMzVjQ2LjY2NjdaTTI1LjMzMzMgNTguNjY2N0gxNi42NjY3VjUySDI1LjMzMzNWNTguNjY2N1oiIGZpbGw9IiM5Q0E0QUYiLz4KPHBhdGggZD0iTTYzLjMzMzMgMjhINTQuNjY2N1YyMS4zMzMzSDYzLjMzMzNWMjhaTTYzLjMzMzMgNDYuNjY2N0g1NC42NjY3VjQwSDYzLjMzMzNWNDYuNjY2N1pNNjMuMzMzMyA1OC42NjY3SDU0LjY2NjdWNTJINjMuMzMzM1Y1OC42NjY3WiIgZmlsbD0iIzlDQTRBRiIvPgo8cGF0aCBkPSJNNDQuMzMzMyAyOEgzNS42NjY3VjIxLjMzMzNINDQuMzMzM1YyOFpNNDQuMzMzMyA0Ni42NjY3SDM1LjY2NjdWNDBINDQuMzMzM1Y0Ni42NjY3Wk00NC4zMzMzIDU4LjY2NjdIMzUuNjY2N1Y1Mkg0NC4zMzMzVjU4LjY2NjdaIiBmaWxsPSIjOUNBNEFGIi8+Cjx0ZXh0IHg9IjQwIiB5PSIzNyIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzlDQTRBRiIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjEwIj5FcnJvcjwvdGV4dD4KPC9zdmc+';
+                      }}
+                      onClick={() => window.open(image, '_blank')}
+                    />
                   </div>
                 ))}
               </div>
@@ -178,7 +188,7 @@ export default function MachineDetailClient({ records }: MachineDetailClientProp
               variant="outline"
               size="sm"
               onClick={() => setShowAllRecords(!showAllRecords)}
-              className="flex items-center gap-2"
+              className={`flex items-center gap-2 ${showAllRecords ? 'bg-rose-100' : 'bg-green-100'}`}
             >
               {showAllRecords ? (
                 <>
@@ -195,7 +205,11 @@ export default function MachineDetailClient({ records }: MachineDetailClientProp
           )}
         </div>
         <div className="space-y-4">
-          {displayedRecords.map((record, index) => renderInspectionRecord(record, index === 0))}
+          {displayedRecords.map((record, index) => (
+            <div key={record.docId || record.id || index}>
+              {renderInspectionRecord(record, index === 0)}
+            </div>
+          ))}
         </div>
       </div>
     </div>

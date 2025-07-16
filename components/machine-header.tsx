@@ -1,7 +1,8 @@
 import { getMachineById } from "@/data/machines";
 import { machineTitles } from "@/lib/machine-types";
-import { SettingsIcon, AlertTriangleIcon } from "lucide-react";
+import { SettingsIcon, AlertTriangleIcon, QrCodeIcon } from "lucide-react";
 import ReactMarkdown from "react-markdown";
+import QRCodeComponent from "./qr-code";
 
 interface MachineHeaderProps {
   bu: string;
@@ -31,7 +32,14 @@ export default async function MachineHeader({ bu, type, id }: MachineHeaderProps
   return (
     <div className="max-w-4xl mx-auto p-2">
       <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
-        
+        {/* QR Code Section */}
+        <div className="bg-gray-50 p-4 rounded-lg mb-4 w-full flex justify-center items-center">
+            <QRCodeComponent 
+              value={`https://www.saf37y.com/Machine/${bu}/${type}/${id}`}
+              size={96}
+              className="flex-shrink-0"
+            />
+        </div>
         <div className="p-6">
           <div className="flex items-start gap-4">
             <div className="flex-shrink-0">
@@ -41,12 +49,9 @@ export default async function MachineHeader({ bu, type, id }: MachineHeaderProps
             </div>
             
             <div className="flex-1">
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                {machine.name}
-              </h1>
-              
+             
               <h2 className="text-lg font-semibold text-gray-700 mb-4">
-                {machineTitle}
+                {machine.header}
               </h2>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
@@ -63,6 +68,8 @@ export default async function MachineHeader({ bu, type, id }: MachineHeaderProps
                   <p className="text-gray-900 font-semibold">{machine.id}</p>
                 </div>
               </div>
+              
+
               
               {machine.question && (
                 <div className="mb-4">
