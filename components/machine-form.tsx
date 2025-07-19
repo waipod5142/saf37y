@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useForm, FieldValues, SubmitHandler } from "react-hook-form";
 import { Camera } from "lucide-react";
-import { getMachineQuestions } from "@/app/actions/machine-data";
+import { getMachineQuestions } from "@/app/actions/form-data";
 import { MachineItem, machineTitles, quarterlyEquipment } from "@/lib/machine-types";
 import {
   vn,
@@ -55,6 +55,7 @@ export default function MachineForm({ bu, type, id }: MachineFormProps) {
   } = useForm<FormData>();
 
   const [questions, setQuestions] = useState<MachineItem[]>([]);
+  const [isLoadingQuestions, setIsLoadingQuestions] = useState<boolean>(true);
   const [selectedValues, setSelectedValues] = useState<{
     [key: string]: string | null;
   }>({});
@@ -72,6 +73,7 @@ export default function MachineForm({ bu, type, id }: MachineFormProps) {
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
+        setIsLoadingQuestions(true);
         const result = await getMachineQuestions(bu, type, id);
         if (result.success && result.questions) {
           setQuestions(result.questions);
@@ -85,6 +87,9 @@ export default function MachineForm({ bu, type, id }: MachineFormProps) {
       } catch (error) {
         console.error("Error loading questions:", error);
         toast.error("Failed to load questions");
+        setQuestions([]);
+      } finally {
+        setIsLoadingQuestions(false);
       }
     };
 
@@ -237,6 +242,50 @@ export default function MachineForm({ bu, type, id }: MachineFormProps) {
     }
   };
 
+  // Add loading state while questions are being fetched
+  if (isLoadingQuestions) {
+    return (
+      <div className="max-w-4xl mx-auto p-2">
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="text-center text-2xl font-bold">
+              {getTitle()}
+            </CardTitle>
+          </CardHeader>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-center">
+              <p>Loading questions...</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Show message if no questions are available
+  if (questions.length === 0) {
+    return (
+      <div className="max-w-4xl mx-auto p-2">
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="text-center text-2xl font-bold">
+              {getTitle()}
+            </CardTitle>
+          </CardHeader>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-center">
+              <p>No questions available for this machine type.</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-4xl mx-auto p-2">
       <Card className="mb-6">
@@ -375,7 +424,7 @@ export default function MachineForm({ bu, type, id }: MachineFormProps) {
                     <p><strong>{accept[businessUnit] || "Acceptance criteria"}:</strong> {question.accept}</p>
                   )}
                 </div>
-
+                
                 <RadioButtonGroup
                   register={register}
                   questionName={question.name}
@@ -484,7 +533,7 @@ export default function MachineForm({ bu, type, id }: MachineFormProps) {
         <Button
           type="submit"
           disabled={isSubmitting || Object.values(isUploading).some((uploading) => uploading)}
-          className="w-full bg-rose-600 hover:bg-rose-700 text-white font-semibold py-3 px-6 rounded-full shadow-lg"
+          className="w-full h-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-full shadow-lg"
         >
           {isSubmitting ? "Submitting..." : (submit[businessUnit] || "Submit")}
         </Button>

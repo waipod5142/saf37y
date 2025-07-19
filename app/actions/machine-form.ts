@@ -1,38 +1,41 @@
 "use server";
 
 import { firestore } from "@/firebase/server";
-import { revalidatePath } from "next/cache";
+import { MachineInspectionRecord } from "@/types/machineInspectionRecord";
+import { FieldValue } from "firebase-admin/firestore";
 
-export interface MachineFormData {
-  inspector: string;
-  bu: string;
-  type: string;
-  id: string;
-  mileage?: string;
-  tag?: string;
-  certificate?: string;
-  remark?: string;
-  images?: string[];
-  [key: string]: any;
-}
-
-export async function submitMachineForm(formData: MachineFormData) {
+export async function submitMachineForm(
+  formData: Record<string, any>
+): Promise<{ success: boolean; error?: string }> {
   try {
-    // Add the document to Firestore using server-side admin SDK
-    const docRef = await firestore.collection("machinetr").add({
-      ...formData,
-      timestamp: new Date(),
-      createdAt: new Date(),
-    });
+    // Create the machine inspection record
+    const inspectionRecord: Partial<MachineInspectionRecord> = {
+      id: formData.id,
+      bu: formData.bu,
+      type: formData.type,
+      inspector: formData.inspector,
+      timestamp: FieldValue.serverTimestamp(),
+      createdAt: FieldValue.serverTimestamp(),
+      remark: formData.remark,
+      images: formData.images || [],
+      ...formData, // Include all form fields
+    };
 
-    console.log("Machine form submitted successfully:", docRef.id);
-    
-    // Revalidate the specific machine page to refresh the data
-    revalidatePath(`/Machine/${formData.bu}/${formData.type}/${formData.id}`);
-    
-    return { success: true, id: docRef.id };
+    // Save to the machinetr collection
+    const docRef = await firestore
+      .collection("machinetr")
+      .add(inspectionRecord);
+
+    console.log("Machine inspection record saved with ID:", docRef.id);
+
+    return {
+      success: true,
+    };
   } catch (error) {
-    console.error("Error submitting machine form:", error);
-    return { success: false, error: "Failed to submit form" };
+    console.error("Error saving machine inspection record:", error);
+    return {
+      success: false,
+      error: "Failed to save machine inspection record",
+    };
   }
 }
