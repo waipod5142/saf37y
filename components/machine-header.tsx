@@ -1,5 +1,4 @@
 import { getMachineById } from "@/data/machines";
-import { machineTitles } from "@/lib/machine-types";
 import { SettingsIcon, AlertTriangleIcon, QrCodeIcon } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import QRCodeComponent from "./qr-code";
@@ -27,8 +26,6 @@ export default async function MachineHeader({ bu, type, id }: MachineHeaderProps
     );
   }
 
-  const machineTitle = machineTitles[`${bu}${type.toLowerCase()}`] || `${type.charAt(0).toUpperCase() + type.slice(1)} Inspection`;
-
   return (
     <div className="max-w-4xl mx-auto p-2">
       <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
@@ -42,19 +39,18 @@ export default async function MachineHeader({ bu, type, id }: MachineHeaderProps
         </div>
         <div className="p-6">
           <div className="flex items-start gap-4">
-            <div className="flex-shrink-0">
-              <div className="bg-blue-100 p-3 rounded-lg">
-                <SettingsIcon className="h-6 w-6 text-blue-600" />
-              </div>
-            </div>
             
             <div className="flex-1">
              
               <h2 className="text-lg font-semibold text-gray-700 mb-4">
                 {machine.header}
               </h2>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
+                <div className="bg-gray-50 p-3 rounded">
+                  <span className="text-sm font-medium text-gray-500">Machine ID</span>
+                  <p className="text-gray-900 font-semibold">{machine.id}</p>
+                </div>
                 <div className="bg-gray-50 p-3 rounded">
                   <span className="text-sm font-medium text-gray-500">Business Unit</span>
                   <p className="text-gray-900 font-semibold">{bu.toUpperCase()}</p>
@@ -63,13 +59,20 @@ export default async function MachineHeader({ bu, type, id }: MachineHeaderProps
                   <span className="text-sm font-medium text-gray-500">Type</span>
                   <p className="text-gray-900 font-semibold">{type.charAt(0).toUpperCase() + type.slice(1)}</p>
                 </div>
-                <div className="bg-gray-50 p-3 rounded">
-                  <span className="text-sm font-medium text-gray-500">Machine ID</span>
-                  <p className="text-gray-900 font-semibold">{machine.id}</p>
-                </div>
-              </div>
-              
 
+                {machine.country && (
+                  <div className="bg-gray-50 p-3 rounded">
+                    <span className="text-sm font-medium text-gray-500">Country</span>
+                    <p className="text-gray-900 font-semibold">{machine.country}</p>
+                  </div>
+                )}
+                {machine.site && (
+                  <div className="bg-gray-50 p-3 rounded">
+                    <span className="text-sm font-medium text-gray-500">Site</span>
+                    <p className="text-gray-900 font-semibold">{machine.site}</p>
+                  </div>
+                )}
+              </div>
               
               {machine.question && (
                 <div className="mb-4">

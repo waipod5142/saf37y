@@ -5,7 +5,9 @@ import { MachineInspectionRecord } from "@/types/machineInspectionRecord";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CalendarIcon, UserIcon, FileTextIcon, ToggleLeftIcon, ToggleRightIcon } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { CalendarIcon, UserIcon, FileTextIcon, ToggleLeftIcon, ToggleRightIcon, Trash2Icon } from "lucide-react";
+import { deleteMachineInspectionRecord } from "@/lib/actions/machines";
 
 interface MachineDetailClientProps {
   records: MachineInspectionRecord[];
@@ -13,6 +15,37 @@ interface MachineDetailClientProps {
 
 export default function MachineDetailClient({ records }: MachineDetailClientProps) {
   const [showAllRecords, setShowAllRecords] = useState(false);
+  const [deletingRecordId, setDeletingRecordId] = useState<string | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+
+  const handleImageClick = (image: string) => {
+    const imageUrl = `https://firebasestorage.googleapis.com/v0/b/sccc-inseesafety-prod.firebasestorage.app/o/${encodeURIComponent(image)}?alt=media`;
+    setSelectedImage(imageUrl);
+    setIsImageModalOpen(true);
+  };
+
+  const handleDeleteRecord = async (docId: string) => {
+    if (!docId) return;
+    
+    setDeletingRecordId(docId);
+    try {
+      const result = await deleteMachineInspectionRecord(docId);
+      if (result.success) {
+        // Reload the page to refresh the records
+        window.location.reload();
+      } else {
+        alert("Failed to delete record: " + (result.error || "Unknown error"));
+      }
+    } catch (error) {
+      alert("Failed to delete record");
+      console.error("Delete error:", error);
+    } finally {
+      setDeletingRecordId(null);
+      setShowDeleteConfirm(null);
+    }
+  };
 
   const formatDate = (timestamp: any) => {
     if (!timestamp) return "N/A";
@@ -56,8 +89,7 @@ export default function MachineDetailClient({ records }: MachineDetailClientProp
     const result = getInspectionResult(record);
     
     return (
-    <div className="max-w-4xl mx-auto p-2">
-      <Card className={`mb-4 ${isLatest ? 'border-blue-500 bg-yellow-100 shadow-md' : 'bg-yellow-50'}`}>
+      <Card className={`${isLatest ? 'border-blue-500 bg-yellow-100 shadow-md' : 'bg-yellow-50'}`}>
         <CardHeader className="pb-3">
           <div className="flex justify-between items-start">
             <div>
@@ -76,12 +108,29 @@ export default function MachineDetailClient({ records }: MachineDetailClientProp
                 </div>
               </div>
             </div>
-            <Badge 
-              variant={result.status === 'Passed' ? 'default' : 'destructive'}
-              className="ml-2"
-            >
-              {result.status}
-            </Badge>
+            <div className="flex items-center gap-2">
+              <Badge 
+                variant={result.status === 'Passed' ? 'default' : 'destructive'}
+                className="ml-2"
+              >
+                {result.status}
+              </Badge>
+              {record.docId && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowDeleteConfirm(record.docId!)}
+                  disabled={deletingRecordId === record.docId}
+                  className="ml-2 hover:bg-red-50 hover:border-red-300"
+                >
+                  {deletingRecordId === record.docId ? (
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-red-500 border-b-transparent" />
+                  ) : (
+                    <Trash2Icon className="h-4 w-4 text-red-500" />
+                  )}
+                </Button>
+              )}
+            </div>
           </div>
         </CardHeader>
         
@@ -124,7 +173,7 @@ export default function MachineDetailClient({ records }: MachineDetailClientProp
                       onError={(e) => {
                         e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0yNS4zMzMzIDI4SDE2LjY2NjdWMjEuMzMzM0gyNS4zMzMzVjI4Wk0yNS4zMzMzIDQ2LjY2NjdIMTYuNjY2N1Y0MEgyNS4zMzMzVjQ2LjY2NjdaTTI1LjMzMzMgNTguNjY2N0gxNi42NjY3VjUySDI1LjMzMzNWNTguNjY2N1oiIGZpbGw9IiM5Q0E0QUYiLz4KPHBhdGggZD0iTTYzLjMzMzMgMjhINTQuNjY2N1YyMS4zMzMzSDYzLjMzMzNWMjhaTTYzLjMzMzMgNDYuNjY2N0g1NC42NjY3VjQwSDYzLjMzMzNWNDYuNjY2N1pNNjMuMzMzMyA1OC42NjY3SDU0LjY2NjdWNTJINjMuMzMzM1Y1OC42NjY3WiIgZmlsbD0iIzlDQTRBRiIvPgo8cGF0aCBkPSJNNDQuMzMzMyAyOEgzNS42NjY3VjIxLjMzMzNINDQuMzMzM1YyOFpNNDQuMzMzMyA0Ni42NjY3SDM1LjY2NjdWNDBINDQuMzMzM1Y0Ni42NjY3Wk00NC4zMzMzIDU4LjY2NjdIMzUuNjY2N1Y1Mkg0NC4zMzMzVjU4LjY2NjdaIiBmaWxsPSIjOUNBNEFGIi8+Cjx0ZXh0IHg9IjQwIiB5PSIzNyIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzlDQTRBRiIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjEwIj5FcnJvcjwvdGV4dD4KPC9zdmc+';
                       }}
-                      onClick={() => window.open(image, '_blank')}
+                      onClick={() => handleImageClick(image)}
                     />
                   </div>
                 ))}
@@ -154,21 +203,13 @@ export default function MachineDetailClient({ records }: MachineDetailClientProp
           )}
         </CardContent>
       </Card>
-    </div>
     );
   };
 
   if (records.length === 0) {
     return (
       <div className="mb-6">
-        <Card>
-          <CardContent className="p-6">
-            <div className="text-gray-500 text-center">
-              <FileTextIcon className="h-8 w-8 mx-auto mb-2" />
-              <p>No inspection records found for this machine.</p>
-            </div>
-          </CardContent>
-        </Card>
+        <p className="text-sm text-gray-500 mt-2">No inspection records found for this machine.</p>
       </div>
     );
   }
@@ -176,13 +217,14 @@ export default function MachineDetailClient({ records }: MachineDetailClientProp
   const displayedRecords = showAllRecords ? records : records.slice(0, 1);
 
   return (
-    <div className="max-w-4xl mx-auto p-2">
-      {/* Header with Toggle Button */}
-      <div className="mb-4">
-        <div className="flex justify-between items-center mb-3">
-          <h3 className="text-lg font-semibold text-gray-800">
+    <div className="mb-6">
+      <div className="space-y-4">
+        <div className="flex justify-between items-center">
+          <h3 className="text-lg font-semibold">
             Machine Inspection Records ({showAllRecords ? records.length : 1} of {records.length} record{records.length > 1 ? 's' : ''})
           </h3>
+          
+          {/* Toggle Button */}
           {records.length > 1 && (
             <Button
               variant="outline"
@@ -204,6 +246,8 @@ export default function MachineDetailClient({ records }: MachineDetailClientProp
             </Button>
           )}
         </div>
+        
+        {/* Records */}
         <div className="space-y-4">
           {displayedRecords.map((record, index) => (
             <div key={record.docId || record.id || index}>
@@ -212,6 +256,57 @@ export default function MachineDetailClient({ records }: MachineDetailClientProp
           ))}
         </div>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold mb-4">Delete Inspection Record</h3>
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to delete this inspection record? This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-3">
+              <Button
+                variant="outline"
+                onClick={() => setShowDeleteConfirm(null)}
+                disabled={deletingRecordId !== null}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => handleDeleteRecord(showDeleteConfirm)}
+                disabled={deletingRecordId !== null}
+              >
+                {deletingRecordId === showDeleteConfirm ? "Deleting..." : "Delete"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Image Modal */}
+      <Dialog open={isImageModalOpen} onOpenChange={setIsImageModalOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] p-0">
+          <DialogHeader className="p-6 pb-0">
+            <DialogTitle>Inspection Image</DialogTitle>
+          </DialogHeader>
+          <div className="p-6 pt-2">
+            {selectedImage && (
+              <div className="flex justify-center">
+                <img
+                  src={selectedImage}
+                  alt="Inspection image"
+                  className="max-w-full max-h-[70vh] object-contain rounded"
+                  onError={(e) => {
+                    e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCA0MDAgMzAwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgogIDxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjRjNGNEY2Ii8+CiAgPHRleHQgeD0iMjAwIiB5PSIxNTAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM5Q0E0QUYiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNiI+SW1hZ2UgY291bGQgbm90IGJlIGxvYWRlZDwvdGV4dD4KPC9zdmc+';
+                  }}
+                />
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

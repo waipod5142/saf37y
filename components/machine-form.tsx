@@ -3,22 +3,10 @@
 import { useState, useEffect } from "react";
 import { useForm, FieldValues, SubmitHandler } from "react-hook-form";
 import { Camera } from "lucide-react";
-import { getMachineQuestions } from "@/app/actions/form-data";
+import { getMachineQuestions } from "@/lib/actions/forms";
+import { getVocabulary } from "@/lib/actions/vocabulary";
 import { MachineItem, machineTitles, quarterlyEquipment } from "@/lib/machine-types";
-import {
-  vn,
-  lk,
-  bd,
-  cmic,
-  th,
-  inspector,
-  howto,
-  accept,
-  remarkr,
-  remark,
-  picture,
-  submit,
-} from "@/lib/translations";
+import { Vocabulary, Choice } from "@/types/vocabulary";
 import RadioButtonGroup from "@/components/ui/radio-button-group";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,7 +17,7 @@ import MultiImageUploader, { ImageUpload } from "@/components/multi-image-upload
 import { auth, storage } from "@/firebase/client";
 import { signInAnonymously } from "firebase/auth";
 import { ref, uploadBytesResumable, UploadTask } from "firebase/storage";
-import { submitMachineForm } from "@/app/actions/machine-form";
+import { submitMachineForm } from "@/lib/actions/machines";
 
 interface MachineFormProps {
   bu: string;
@@ -55,6 +43,9 @@ export default function MachineForm({ bu, type, id }: MachineFormProps) {
   } = useForm<FormData>();
 
   const [questions, setQuestions] = useState<MachineItem[]>([]);
+  const [formTitle, setFormTitle] = useState<string | null>(null);
+  const [vocabulary, setVocabulary] = useState<Vocabulary | null>(null);
+  const [isLoadingVocabulary, setIsLoadingVocabulary] = useState<boolean>(true);
   const [isLoadingQuestions, setIsLoadingQuestions] = useState<boolean>(true);
   const [selectedValues, setSelectedValues] = useState<{
     [key: string]: string | null;
@@ -71,30 +62,50 @@ export default function MachineForm({ bu, type, id }: MachineFormProps) {
   const machine = type.charAt(0).toUpperCase() + type.slice(1);
 
   useEffect(() => {
-    const fetchQuestions = async () => {
+    const fetchData = async () => {
       try {
         setIsLoadingQuestions(true);
-        const result = await getMachineQuestions(bu, type, id);
-        if (result.success && result.questions) {
-          setQuestions(result.questions);
+        setIsLoadingVocabulary(true);
+        
+        // Fetch questions and vocabulary in parallel
+        const [questionsResult, vocabularyResult] = await Promise.all([
+          getMachineQuestions(bu, type),
+          getVocabulary(businessUnit)
+        ]);
+        
+        // Handle questions
+        if (questionsResult.success && questionsResult.questions) {
+          setQuestions(questionsResult.questions);
+          setFormTitle(questionsResult.title || null);
         } else {
           console.warn("No questions found for machine:", { bu, type, id });
           setQuestions([]);
-          if (result.error) {
-            toast.error(result.error);
+          setFormTitle(null);
+          if (questionsResult.error) {
+            toast.error(questionsResult.error);
           }
         }
+        
+        // Handle vocabulary
+        if (vocabularyResult.success && vocabularyResult.vocabulary) {
+          setVocabulary(vocabularyResult.vocabulary);
+        } else {
+          console.warn("No vocabulary found for business unit:", businessUnit);
+          setVocabulary(null);
+        }
       } catch (error) {
-        console.error("Error loading questions:", error);
-        toast.error("Failed to load questions");
+        console.error("Error loading data:", error);
+        toast.error("Failed to load form data");
         setQuestions([]);
+        setVocabulary(null);
       } finally {
         setIsLoadingQuestions(false);
+        setIsLoadingVocabulary(false);
       }
     };
 
-    fetchQuestions();
-  }, [bu, type, id]);
+    fetchData();
+  }, [bu, type, id, businessUnit]);
 
   const handleRadioChange = (questionName: string, value: string) => {
     setSelectedValues((prev) => ({ ...prev, [questionName]: value }));
@@ -226,24 +237,38 @@ export default function MachineForm({ bu, type, id }: MachineFormProps) {
 
   // Get the title for the current machine type
   const getTitle = () => {
+    if (formTitle) {
+      return formTitle;
+    }
+    // Fallback to hardcoded titles if no dynamic title is available
     const adjustedBu = ["srb", "mkt", "office", "lbm", "rmx", "iagg", "ieco"].includes(businessUnit) ? "th" : businessUnit;
     const adjustedMachine = machine === "Truck" && businessUnit !== "srb" ? "Truckall" : machine;
     return machineTitles[adjustedBu + adjustedMachine] || `${machine} Inspection`;
   };
 
-  // Get choices for radio buttons based on business unit
-  const getChoices = () => {
-    switch (businessUnit) {
-      case "vn": return vn;
-      case "bd": return bd;
-      case "lk": return lk;
-      case "cmic": return cmic;
-      default: return th;
+  // Get choices for radio buttons from vocabulary or fallback
+  const getChoices = (): Choice[] => {
+    if (vocabulary?.choices) {
+      return vocabulary.choices;
     }
+    // Fallback to default choices if vocabulary not loaded
+    return [
+      { value: 'Pass', text: 'Pass', colorClass: 'bg-green-500' },
+      { value: 'NotPass', text: 'Not Pass', colorClass: 'bg-rose-500' },
+      { value: 'N/A', text: 'N/A', colorClass: 'bg-yellow-500' },
+    ];
+  };
+  
+  // Get translation text with fallback
+  const getTranslation = (key: string, fallback: string): string => {
+    if (vocabulary && vocabulary[key as keyof Vocabulary]) {
+      return vocabulary[key as keyof Vocabulary] as string;
+    }
+    return fallback;
   };
 
-  // Add loading state while questions are being fetched
-  if (isLoadingQuestions) {
+  // Add loading state while data is being fetched
+  if (isLoadingQuestions || isLoadingVocabulary) {
     return (
       <div className="max-w-4xl mx-auto p-2">
         <Card className="mb-6">
@@ -302,7 +327,7 @@ export default function MachineForm({ bu, type, id }: MachineFormProps) {
           <CardContent className="pt-6">
             <div className="space-y-2">
               <Label htmlFor="inspector" className="text-lg font-semibold">
-                {inspector[businessUnit] || "Inspector"}
+                {getTranslation('inspector', 'Inspector')}
               </Label>
               {businessUnit === "rmx" && machine === "Mixertsm" ? (
                 <select
@@ -418,10 +443,10 @@ export default function MachineForm({ bu, type, id }: MachineFormProps) {
                 
                 <div className="text-sm text-gray-600">
                   {question.howto && (
-                  <p><strong>{howto[businessUnit] || "How to check"}:</strong> {question.howto}</p>
+                  <p><strong>{getTranslation('howto', 'How to check')}:</strong> {question.howto}</p>
                   )}
                   {question.accept && (
-                    <p><strong>{accept[businessUnit] || "Acceptance criteria"}:</strong> {question.accept}</p>
+                    <p><strong>{getTranslation('accept', 'Acceptance criteria')}:</strong> {question.accept}</p>
                   )}
                 </div>
                 
@@ -441,7 +466,7 @@ export default function MachineForm({ bu, type, id }: MachineFormProps) {
                     <Input
                       {...register(question.name + "R", { required: true })}
                       type="text"
-                      placeholder={remarkr[businessUnit] || "Please provide a remark"}
+                      placeholder={getTranslation('remarkr', 'Please provide a remark')}
                       className="w-full"
                     />
                     
@@ -493,7 +518,7 @@ export default function MachineForm({ bu, type, id }: MachineFormProps) {
           <CardContent className="pt-6">
             <div className="space-y-4">
               <Label className="text-lg font-semibold">
-                {picture[businessUnit] || "Attach Images"} (Optional)
+                {getTranslation('picture', 'Attach Images')} (Optional)
               </Label>
               
               <MultiImageUploader
@@ -517,7 +542,7 @@ export default function MachineForm({ bu, type, id }: MachineFormProps) {
           <CardContent className="pt-6">
             <div className="space-y-2">
               <Label htmlFor="remark" className="text-lg font-semibold">
-                {remark[businessUnit] || "Remark"} (Optional)
+                {getTranslation('remark', 'Remark')} (Optional)
               </Label>
               <Input
                 {...register("remark")}
@@ -535,7 +560,7 @@ export default function MachineForm({ bu, type, id }: MachineFormProps) {
           disabled={isSubmitting || Object.values(isUploading).some((uploading) => uploading)}
           className="w-full h-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-full shadow-lg"
         >
-          {isSubmitting ? "Submitting..." : (submit[businessUnit] || "Submit")}
+          {isSubmitting ? "Submitting..." : getTranslation('submit', 'Submit')}
         </Button>
       </form>
     </div>

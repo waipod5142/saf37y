@@ -3,7 +3,8 @@ export interface Machine {
   bu: string;
   type: string;
   description: string;
-  site: string;
+  site?: string;
+  country?: string;
   
   // Additional fields that might be present in machine data
   name?: string;

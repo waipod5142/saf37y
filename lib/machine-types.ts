@@ -1,5 +1,4 @@
 export type MachineItem = {
-  id: string;
   name: string;
   question: string;
   howto: string;

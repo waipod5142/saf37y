@@ -27,7 +27,7 @@ export default function RemoveFavouriteButton({
         router.refresh();
       }}
     >
-      <Trash2Icon />
+      <Trash2Icon className="h-4 w-4 text-red-500" />
     </Button>
   );
 }
