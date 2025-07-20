@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { MachineInspectionRecord } from "@/types/machineInspectionRecord";
+import { MachineItem } from "@/lib/machine-types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,17 +12,35 @@ import { deleteMachineInspectionRecord } from "@/lib/actions/machines";
 
 interface MachineDetailClientProps {
   records: MachineInspectionRecord[];
+  questions: MachineItem[];
 }
 
-export default function MachineDetailClient({ records }: MachineDetailClientProps) {
+export default function MachineDetailClient({ records, questions }: MachineDetailClientProps) {
   const [showAllRecords, setShowAllRecords] = useState(false);
   const [deletingRecordId, setDeletingRecordId] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
 
+  // Create a mapping from question name to question text for descriptive display
+  const questionMapping = React.useMemo(() => {
+    const mapping: { [key: string]: string } = {};
+    questions.forEach((question) => {
+      mapping[question.name] = question.question;
+    });
+    return mapping;
+  }, [questions]);
+
+  const formatImageUrl = (image: string) => {
+    return `https://firebasestorage.googleapis.com/v0/b/sccc-inseesafety-prod.firebasestorage.app/o/${encodeURIComponent(image)}?alt=media`;
+  };
+
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0yMCAyMkgxNFYxNkgyMFYyMlpNMjAgMzhIMTRWMzJIMjBWMzhaTTIwIDQ2SDE0VjQwSDIwVjQ2WiIgZmlsbD0iIzlDQTRBRiIvPgo8cGF0aCBkPSJNNTAgMjJINDRWMTZINTBWMjJaTTUwIDM4SDQ0VjMySDUwVjM4Wk01MCA0Nkg0NFY0MEg1MFY0NloiIGZpbGw9IiM5Q0E0QUYiLz4KPHBhdGggZD0iTTM1IDIySDI5VjE2SDM1VjIyWk0zNSAzOEgyOVYzMkgzNVYzOFpNMzUgNDZIMjlWNDBIMzVWNDZaIiBmaWxsPSIjOUNBNEFGIi8+Cjx0ZXh0IHg9IjMyIiB5PSIzNSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzlDQTRBRiIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjhweCI+RXJyb3I8L3RleHQ+Cjwvc3ZnPg==';
+  };
+
   const handleImageClick = (image: string) => {
-    const imageUrl = `https://firebasestorage.googleapis.com/v0/b/sccc-inseesafety-prod.firebasestorage.app/o/${encodeURIComponent(image)}?alt=media`;
+    const imageUrl = formatImageUrl(image);
     setSelectedImage(imageUrl);
     setIsImageModalOpen(true);
   };
@@ -50,19 +69,72 @@ export default function MachineDetailClient({ records }: MachineDetailClientProp
   const formatDate = (timestamp: any) => {
     if (!timestamp) return "N/A";
     try {
+      let date: Date;
+      
       // Handle Firebase Timestamp
       if (timestamp.toDate) {
-        return timestamp.toDate().toLocaleDateString();
+        date = timestamp.toDate();
       }
       // Handle regular Date object
-      if (timestamp instanceof Date) {
-        return timestamp.toLocaleDateString();
+      else if (timestamp instanceof Date) {
+        date = timestamp;
       }
       // Handle string dates
-      return new Date(timestamp).toLocaleDateString();
+      else {
+        date = new Date(timestamp);
+      }
+      
+      // Calculate days difference
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const inspectionDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      
+      const diffTime = today.getTime() - inspectionDate.getTime();
+      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+      
+      const formattedDateTime = date.toLocaleString("en-GB", { hour12: false });
+      
+      if (diffDays === 0) {
+        // Today - show normal format
+        return formattedDateTime;
+      } else if (diffDays === 1) {
+        // Yesterday
+        return `1 day ago - ${formattedDateTime}`;
+      } else if (diffDays > 1) {
+        // Multiple days ago
+        return `${diffDays} days ago - ${formattedDateTime}`;
+      } else {
+        // Future date (shouldn't happen for inspection records, but handle gracefully)
+        return formattedDateTime;
+      }
+      
     } catch (error) {
       return "Invalid Date";
     }
+  };
+
+  const getQuestionGroups = (record: MachineInspectionRecord) => {
+    const groups: { [questionName: string]: { status: any, remark?: string, images?: string[] } } = {};
+    
+    Object.keys(record).forEach(key => {
+      if (key.endsWith('R')) {
+        // Remark field
+        const questionName = key.slice(0, -1);
+        if (!groups[questionName]) groups[questionName] = { status: null };
+        groups[questionName].remark = record[key];
+      } else if (key.endsWith('P')) {
+        // Images field  
+        const questionName = key.slice(0, -1);
+        if (!groups[questionName]) groups[questionName] = { status: null };
+        groups[questionName].images = Array.isArray(record[key]) ? record[key] : [record[key]];
+      } else if (!['id', 'bu', 'type', 'inspector', 'timestamp', 'createdAt', 'remark', 'images', 'docId'].includes(key)) {
+        // Status field
+        if (!groups[key]) groups[key] = { status: null };
+        groups[key].status = record[key];
+      }
+    });
+    
+    return groups;
   };
 
   const getInspectionResult = (record: MachineInspectionRecord) => {
@@ -71,11 +143,11 @@ export default function MachineDetailClient({ records }: MachineDetailClientProp
     const resultKeys = keys.filter(key => 
       key !== 'id' && key !== 'bu' && key !== 'type' && key !== 'inspector' && 
       key !== 'timestamp' && key !== 'createdAt' && key !== 'remark' && 
-      key !== 'images' && key !== 'docId'
+      key !== 'images' && key !== 'docId' && !key.endsWith('R') && !key.endsWith('P')
     );
     
     const failedItems = resultKeys.filter(key => 
-      record[key] === 'NotPass' || record[key] === 'Fail' || record[key] === false
+      record[key] === 'fail' || record[key] === false
     );
     
     if (failedItems.length > 0) {
@@ -110,7 +182,7 @@ export default function MachineDetailClient({ records }: MachineDetailClientProp
             </div>
             <div className="flex items-center gap-2">
               <Badge 
-                variant={result.status === 'Passed' ? 'default' : 'destructive'}
+                variant={result.status === 'Passed' ? 'success' : result.status === 'Failed' ? 'destructive' : 'default'}
                 className="ml-2"
               >
                 {result.status}
@@ -138,11 +210,51 @@ export default function MachineDetailClient({ records }: MachineDetailClientProp
           {/* Inspection Results Summary */}
           <div className="mb-4">
             <h4 className="font-semibold text-sm text-gray-700 mb-2">Inspection Results</h4>
-            <div className="text-sm text-gray-600">
+            <div className="text-sm text-gray-600 mb-3">
               {result.status === 'Passed' 
                 ? `All ${result.total} items passed inspection`
                 : `${result.count} of ${result.total} items failed inspection`
               }
+            </div>
+            
+            {/* Individual Inspection Items */}
+            <div className="space-y-2">
+              <h5 className="font-medium text-xs text-gray-600 mb-2">Detailed Results:</h5>
+              <div className="grid gap-2">
+                {Object.keys(record)
+                  .filter(key => 
+                    key !== 'id' && key !== 'bu' && key !== 'type' && key !== 'inspector' && 
+                    key !== 'timestamp' && key !== 'createdAt' && key !== 'remark' && 
+                    key !== 'images' && key !== 'docId' &&
+                    !key.endsWith('R') && !key.endsWith('P') // Exclude remark and image fields
+                  )
+                  .map(key => {
+                    const value = record[key];
+                    const isPassed = value === 'pass' || value === true || value === 'Passed';
+                    const isFailed = value === 'fail' || value === false || value === 'Failed';
+                    
+                    return (
+                      <div 
+                        key={key} 
+                        className={`flex justify-between items-center text-xs px-3 py-2 rounded border ${
+                          isFailed 
+                            ? 'bg-red-50 text-red-700 border-red-200'
+                            : 'bg-gray-50 text-gray-700 border-gray-200'
+                        }`}
+                      >
+                        <span className="font-medium">
+                          {questionMapping[key] || key.replace(/([A-Z])/g, ' $1').trim()}
+                        </span>
+                        <Badge 
+                          variant={isPassed ? "success" : isFailed ? "destructive" : "secondary"}
+                          className="text-xs"
+                        >
+                          {String(value)}
+                        </Badge>
+                      </div>
+                    );
+                  })}
+              </div>
             </div>
           </div>
 
@@ -165,14 +277,10 @@ export default function MachineDetailClient({ records }: MachineDetailClientProp
                 {record.images.map((image, index) => (
                   <div key={index} className="w-20 h-20 rounded border overflow-hidden hover:shadow-lg transition-shadow cursor-pointer">
                     <img 
-                      src={`https://firebasestorage.googleapis.com/v0/b/sccc-inseesafety-prod.firebasestorage.app/o/${encodeURIComponent(
-                        image
-                      )}?alt=media`}
+                      src={formatImageUrl(image)}
                       alt={`Inspection image ${index + 1}`}
                       className="w-full h-full object-cover hover:scale-105 transition-transform"
-                      onError={(e) => {
-                        e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0yNS4zMzMzIDI4SDE2LjY2NjdWMjEuMzMzM0gyNS4zMzMzVjI4Wk0yNS4zMzMzIDQ2LjY2NjdIMTYuNjY2N1Y0MEgyNS4zMzMzVjQ2LjY2NjdaTTI1LjMzMzMgNTguNjY2N0gxNi42NjY3VjUySDI1LjMzMzNWNTguNjY2N1oiIGZpbGw9IiM5Q0E0QUYiLz4KPHBhdGggZD0iTTYzLjMzMzMgMjhINTQuNjY2N1YyMS4zMzMzSDYzLjMzMzNWMjhaTTYzLjMzMzMgNDYuNjY2N0g1NC42NjY3VjQwSDYzLjMzMzNWNDYuNjY2N1pNNjMuMzMzMyA1OC42NjY3SDU0LjY2NjdWNTJINjMuMzMzM1Y1OC42NjY3WiIgZmlsbD0iIzlDQTRBRiIvPgo8cGF0aCBkPSJNNDQuMzMzMyAyOEgzNS42NjY3VjIxLjMzMzNINDQuMzMzM1YyOFpNNDQuMzMzMyA0Ni42NjY3SDM1LjY2NjdWNDBINDQuMzMzM1Y0Ni42NjY3Wk00NC4zMzMzIDU4LjY2NjdIMzUuNjY2N1Y1Mkg0NC4zMzMzVjU4LjY2NjdaIiBmaWxsPSIjOUNBNEFGIi8+Cjx0ZXh0IHg9IjQwIiB5PSIzNyIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzlDQTRBRiIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjEwIj5FcnJvcjwvdGV4dD4KPC9zdmc+';
-                      }}
+                      onError={handleImageError}
                       onClick={() => handleImageClick(image)}
                     />
                   </div>
@@ -181,21 +289,52 @@ export default function MachineDetailClient({ records }: MachineDetailClientProp
             </div>
           )}
 
-          {/* Failed Items Details */}
+          {/* Defect Details Section */}
           {result.status === 'Failed' && (
-            <div>
-              <h4 className="font-semibold text-sm text-gray-700 mb-2">Failed Items</h4>
-              <div className="space-y-1">
-                {Object.keys(record)
-                  .filter(key => 
-                    key !== 'id' && key !== 'bu' && key !== 'type' && key !== 'inspector' && 
-                    key !== 'timestamp' && key !== 'createdAt' && key !== 'remark' && 
-                    key !== 'images' && key !== 'docId' &&
-                    (record[key] === 'NotPass' || record[key] === 'Fail' || record[key] === false)
-                  )
-                  .map(key => (
-                    <div key={key} className="text-sm bg-red-50 text-red-700 px-2 py-1 rounded">
-                      {key.replace(/([A-Z])/g, ' $1').trim()}: {String(record[key])}
+            <div className="mb-4">
+              <h4 className="font-semibold text-sm text-gray-700 mb-3">Defect Details</h4>
+              <div className="space-y-4">
+                {Object.entries(getQuestionGroups(record))
+                  .filter(([questionName, data]) => data.status === 'fail' || data.status === false)
+                  .map(([questionName, data]) => (
+                    <div key={questionName} className="bg-red-50 border border-red-200 rounded-lg p-4">
+                      {/* Question Status */}
+                      <div className="flex items-center gap-2 mb-2">
+                        <Badge variant="destructive" className="text-xs">Failed</Badge>
+                        <span className="font-medium text-sm text-red-800">
+                          {questionMapping[questionName] || questionName.replace(/([A-Z])/g, ' $1').trim()}
+                        </span>
+                      </div>
+                      
+                      {/* Remark */}
+                      {data.remark && (
+                        <div className="mb-3">
+                          <span className="text-xs font-medium text-red-700">Remark: </span>
+                          <span className="text-xs text-red-600">{data.remark}</span>
+                        </div>
+                      )}
+                      
+                      {/* Images */}
+                      {data.images && data.images.length > 0 && (
+                        <div>
+                          <span className="text-xs font-medium text-red-700 block mb-2">
+                            Defect Images ({data.images.length}):
+                          </span>
+                          <div className="flex gap-2 flex-wrap">
+                            {data.images.map((image, index) => (
+                              <div key={index} className="w-16 h-16 rounded border overflow-hidden hover:shadow-lg transition-shadow cursor-pointer">
+                                <img 
+                                  src={formatImageUrl(image)}
+                                  alt={`${questionName} defect image ${index + 1}`}
+                                  className="w-full h-full object-cover hover:scale-105 transition-transform"
+                                  onError={handleImageError}
+                                  onClick={() => handleImageClick(image)}
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ))}
               </div>
@@ -209,7 +348,7 @@ export default function MachineDetailClient({ records }: MachineDetailClientProp
   if (records.length === 0) {
     return (
       <div className="mb-6">
-        <p className="text-sm text-gray-500 mt-2">No inspection records found for this machine.</p>
+        <p className="text-sm text-red-500 mt-2">No inspection records found for this machine.</p>
       </div>
     );
   }
@@ -230,7 +369,7 @@ export default function MachineDetailClient({ records }: MachineDetailClientProp
               variant="outline"
               size="sm"
               onClick={() => setShowAllRecords(!showAllRecords)}
-              className={`flex items-center gap-2 ${showAllRecords ? 'bg-rose-100' : 'bg-green-100'}`}
+              className={`flex items-center gap-2 ${showAllRecords ? 'bg-red-100' : 'bg-green-100'}`}
             >
               {showAllRecords ? (
                 <>

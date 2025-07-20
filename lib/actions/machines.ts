@@ -58,13 +58,35 @@ export async function deleteMachineInspectionRecord(
 
     const recordData = docSnapshot.data() as MachineInspectionRecord;
     
-    // Delete images from Firebase Storage if they exist
+    // Collect all image paths from the record
+    const allImagePaths: string[] = [];
+    
+    // Add general images
     if (recordData.images && recordData.images.length > 0) {
+      allImagePaths.push(...recordData.images);
+    }
+    
+    // Find and add question-specific images (fields ending with 'P' or 'F')
+    Object.keys(recordData).forEach(key => {
+      if ((key.endsWith('P') || key.endsWith('F')) && recordData[key]) {
+        const value = recordData[key];
+        if (Array.isArray(value)) {
+          // Handle array of images (new format)
+          allImagePaths.push(...value);
+        } else if (typeof value === 'string') {
+          // Handle single image (backward compatibility)
+          allImagePaths.push(value);
+        }
+      }
+    });
+    
+    // Delete all collected images from Firebase Storage
+    if (allImagePaths.length > 0) {
       try {
         const bucket = admin.storage().bucket("sccc-inseesafety-prod.firebasestorage.app");
         
         // Delete all images in parallel
-        const deletePromises = recordData.images.map(async (imagePath: string) => {
+        const deletePromises = allImagePaths.map(async (imagePath: string) => {
           try {
             const file = bucket.file(imagePath);
             await file.delete();
@@ -76,7 +98,7 @@ export async function deleteMachineInspectionRecord(
         });
 
         await Promise.allSettled(deletePromises);
-        console.log(`Attempted to delete ${recordData.images.length} images from Storage`);
+        console.log(`Attempted to delete ${allImagePaths.length} total images from Storage (including question-specific images)`);
         
       } catch (storageError) {
         console.error("Error during image deletion:", storageError);

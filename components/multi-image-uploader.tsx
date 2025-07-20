@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef } from "react";
+import { useCallback, useRef, useState } from "react";
 import { Button } from "./ui/button";
 import {
   DragDropContext,
@@ -11,6 +11,8 @@ import {
 import Image from "next/image";
 import { Badge } from "./ui/badge";
 import { MoveIcon, XIcon } from "lucide-react";
+import { compressImage, CompressionPresets } from "@/lib/imageCompression";
+import { toast } from "sonner";
 
 export type ImageUpload = {
   id: string;
@@ -22,28 +24,83 @@ type Props = {
   images?: ImageUpload[];
   onImagesChange: (images: ImageUpload[]) => void;
   urlFormatter?: (image: ImageUpload) => string;
+  compressionType?: 'defect' | 'general' | 'thumbnail';
 };
 
 export default function MultiImageUploader({
   images = [],
   onImagesChange,
   urlFormatter,
+  compressionType = 'general',
 }: Props) {
   const uploadInputRef = useRef<HTMLInputElement | null>(null);
+  const [isCompressing, setIsCompressing] = useState(false);
 
   console.log({ images });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    const newImages = files.map((file, index) => {
-      return {
-        id: `${Date.now()}-${index}-${file.name}`,
-        url: URL.createObjectURL(file),
-        file,
-      };
-    });
+    
+    // Add loading state
+    setIsCompressing(true);
+    
+    try {
+      // Get compression settings based on type
+      const compressionOptions = compressionType === 'defect' 
+        ? CompressionPresets.defectImages
+        : compressionType === 'thumbnail'
+        ? CompressionPresets.thumbnails
+        : CompressionPresets.generalImages;
 
-    onImagesChange([...images, ...newImages]);
+      const compressedImages = await Promise.all(
+        files.map(async (file, index) => {
+          // Only compress image files
+          if (file.type.startsWith('image/')) {
+            try {
+              const compressedFile = await compressImage(file, compressionOptions);
+              
+              return {
+                id: `${Date.now()}-${index}-${compressedFile.name}`,
+                url: URL.createObjectURL(compressedFile),
+                file: compressedFile,
+              };
+            } catch (error) {
+              console.error(`Failed to compress ${file.name}:`, error);
+              // Fall back to original file if compression fails
+              return {
+                id: `${Date.now()}-${index}-${file.name}`,
+                url: URL.createObjectURL(file),
+                file,
+              };
+            }
+          } else {
+            // Return non-image files unchanged
+            return {
+              id: `${Date.now()}-${index}-${file.name}`,
+              url: URL.createObjectURL(file),
+              file,
+            };
+          }
+        })
+      );
+      
+      onImagesChange([...images, ...compressedImages]);
+      
+      // Show success message with compression info
+      const totalOriginalSize = files.reduce((sum, file) => sum + file.size, 0);
+      const totalCompressedSize = compressedImages.reduce((sum, img) => sum + (img.file?.size || 0), 0);
+      const compressionRatio = ((totalOriginalSize - totalCompressedSize) / totalOriginalSize * 100).toFixed(1);
+      
+      if (totalOriginalSize > totalCompressedSize) {
+        toast.success(`Images compressed by ${compressionRatio}% (${(totalOriginalSize / 1024 / 1024).toFixed(1)}MB → ${(totalCompressedSize / 1024 / 1024).toFixed(1)}MB)`);
+      }
+      
+    } catch (error) {
+      console.error('Image compression error:', error);
+      toast.error('Failed to process images');
+    } finally {
+      setIsCompressing(false);
+    }
   };
 
   const handleDragEnd = useCallback(
@@ -82,9 +139,17 @@ export default function MultiImageUploader({
         className="w-full"
         variant="outline"
         type="button"
+        disabled={isCompressing}
         onClick={() => uploadInputRef?.current?.click()}
       >
-        Upload images
+        {isCompressing ? (
+          <>
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900 mr-2"></div>
+            Compressing images...
+          </>
+        ) : (
+          'Upload images'
+        )}
       </Button>
       <DragDropContext onDragEnd={handleDragEnd}>
         <Droppable droppableId="property-images" direction="vertical">

@@ -1,4 +1,5 @@
 import { getMachineInspectionRecords } from "@/data/machines";
+import { getMachineQuestions } from "@/lib/actions/forms";
 import { MachineInspectionRecord } from "@/types/machineInspectionRecord";
 import MachineDetailClient from "./machine-detail-client";
 
@@ -30,10 +31,21 @@ const serializeRecord = (record: MachineInspectionRecord): MachineInspectionReco
 };
 
 export default async function MachineDetail({ bu, type, id }: MachineDetailProps) {
-  const records = await getMachineInspectionRecords(bu, type, id);
+  // Fetch both records and questions in parallel
+  const [records, questionsResult] = await Promise.all([
+    getMachineInspectionRecords(bu, type, id),
+    getMachineQuestions(bu, type)
+  ]);
   
   // Serialize the records to ensure they can be passed to client component
   const serializedRecords = records.map(serializeRecord);
   
-  return <MachineDetailClient records={serializedRecords} />;
+  // Extract questions from the result, fallback to empty array if failed
+  const questions = questionsResult.success && questionsResult.questions ? questionsResult.questions : [];
+  
+  return (
+    <div className="max-w-4xl mx-auto p-2">
+      <MachineDetailClient records={serializedRecords} questions={questions} />
+    </div>
+  );
 }

@@ -54,6 +54,7 @@ export default function MachineForm({ bu, type, id }: MachineFormProps) {
   const [isUploading, setIsUploading] = useState<{ [key: string]: boolean }>({});
   const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [images, setImages] = useState<ImageUpload[]>([]);
+  const [questionImages, setQuestionImages] = useState<{ [questionName: string]: ImageUpload[] }>({});
 
   // Determine BU (business unit) and machine type
   const businessUnit = bu === "thailand" ? "th" : bu === "vietnam" ? "vn" : 
@@ -111,6 +112,10 @@ export default function MachineForm({ bu, type, id }: MachineFormProps) {
     setSelectedValues((prev) => ({ ...prev, [questionName]: value }));
   };
 
+  const handleQuestionImagesChange = (questionName: string, images: ImageUpload[]) => {
+    setQuestionImages((prev) => ({ ...prev, [questionName]: images }));
+  };
+
   const handleFileChange = async (
     e: React.ChangeEvent<HTMLInputElement>,
     questionName: string
@@ -158,6 +163,18 @@ export default function MachineForm({ bu, type, id }: MachineFormProps) {
 
   const onSubmit: SubmitHandler<FormData> = async (formData) => {
     try {
+      // Validate that all failed questions have at least one image
+      const failedQuestions = Object.keys(selectedValues).filter(
+        questionName => selectedValues[questionName] === "fail"
+      );
+      
+      for (const questionName of failedQuestions) {
+        if (!questionImages[questionName] || questionImages[questionName].length === 0) {
+          toast.error(`Please attach at least one image for the failed question: ${questionName}`);
+          return;
+        }
+      }
+
       // Authenticate anonymously if not already authenticated (for Storage upload)
       if (!auth.currentUser) {
         try {
@@ -187,7 +204,9 @@ export default function MachineForm({ bu, type, id }: MachineFormProps) {
       // Upload images to Firebase Storage
       const uploadTasks: UploadTask[] = [];
       const imagePaths: string[] = [];
+      const questionImagePaths: { [questionName: string]: string[] } = {};
       
+      // Upload general images
       images.forEach((image, index) => {
         if (image.file) {
           const path = `machines/${bu}/${type}/${id}/${Date.now()}-${index}-${image.file.name}`;
@@ -195,6 +214,21 @@ export default function MachineForm({ bu, type, id }: MachineFormProps) {
           const storageRef = ref(storage, path);
           uploadTasks.push(uploadBytesResumable(storageRef, image.file));
         }
+      });
+
+      // Upload question-specific images
+      Object.keys(questionImages).forEach(questionName => {
+        const images = questionImages[questionName];
+        questionImagePaths[questionName] = [];
+        
+        images.forEach((image, index) => {
+          if (image.file) {
+            const path = `machines/${bu}/${type}/${id}/${questionName}/${Date.now()}-${index}-${image.file.name}`;
+            questionImagePaths[questionName].push(path);
+            const storageRef = ref(storage, path);
+            uploadTasks.push(uploadBytesResumable(storageRef, image.file));
+          }
+        });
       });
 
       // Wait for all uploads to complete
@@ -205,6 +239,13 @@ export default function MachineForm({ bu, type, id }: MachineFormProps) {
         toast.error("Failed to upload images. Please try again.");
         return;
       }
+
+      // Add question-specific image paths to form data
+      Object.keys(questionImagePaths).forEach(questionName => {
+        if (questionImagePaths[questionName].length > 0) {
+          updatedData[questionName + "P"] = questionImagePaths[questionName];
+        }
+      });
 
       // Save to Firestore using server action
       try {
@@ -219,8 +260,10 @@ export default function MachineForm({ bu, type, id }: MachineFormProps) {
           setSelectedValues({});
           setFileUrls({});
           setImages([]);
+          setQuestionImages({});
           
-          // Reload the page to show updated data in machine-detail
+          // Scroll to top and reload the page to show updated data in machine-detail
+          window.scrollTo(0, 0);
           window.location.reload();
         } else {
           toast.error(result.error || "Failed to submit form");
@@ -253,9 +296,9 @@ export default function MachineForm({ bu, type, id }: MachineFormProps) {
     }
     // Fallback to default choices if vocabulary not loaded
     return [
-      { value: 'Pass', text: 'Pass', colorClass: 'bg-green-500' },
-      { value: 'NotPass', text: 'Not Pass', colorClass: 'bg-rose-500' },
-      { value: 'N/A', text: 'N/A', colorClass: 'bg-yellow-500' },
+      { value: 'pass', text: 'Pass', colorClass: 'bg-green-500' },
+      { value: 'fail', text: 'Fail', colorClass: 'bg-red-500' },
+      { value: 'na', text: 'N/A', colorClass: 'bg-yellow-500' },
     ];
   };
   
@@ -332,7 +375,7 @@ export default function MachineForm({ bu, type, id }: MachineFormProps) {
               {businessUnit === "rmx" && machine === "Mixertsm" ? (
                 <select
                   {...register("inspector", { required: "Inspector is required" })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-rose-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
                 >
                   <option value="">Select Inspector</option>
                   <option value="CAEC">CAEC MACHINERY CO.,LTD</option>
@@ -457,10 +500,10 @@ export default function MachineForm({ bu, type, id }: MachineFormProps) {
                   choices={getChoices()}
                 />
 
-                {/* Remark and Picture upload for NotPass */}
-                {(selectedValues[question.name] === "NotPass" ||
+                {/* Remark and Picture upload for fail */}
+                {(selectedValues[question.name] === "fail" ||
                   (question.name &&
-                    selectedValues[question.name] !== "N/A" &&
+                    selectedValues[question.name] !== "na" &&
                     question.name.includes("LogoAndColor"))) && (
                   <div className="space-y-4 mt-4">
                     <Input
@@ -470,41 +513,23 @@ export default function MachineForm({ bu, type, id }: MachineFormProps) {
                       className="w-full"
                     />
                     
-                    <div className="flex items-center space-x-2">
-                      <Label
-                        className={`flex items-center ${
-                          fileUrls[question.name + "P"] ? "bg-rose-500" : "bg-gray-500"
-                        } text-white px-3 py-2 rounded-md cursor-pointer hover:opacity-90`}
-                      >
-                        <Camera className="mr-2" size={20} />
-                        Upload Image
-                        <input
-                          {...register(question.name + "P", { required: true })}
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => handleFileChange(e, question.name)}
-                          className="hidden"
-                        />
+                    <div>
+                      <Label className="text-sm font-medium mb-2 block">
+                        Upload Images for {question.question}
                       </Label>
-                      
-                      {isUploading[question.name] && (
-                        <div className="flex-1 max-w-xs">
-                          <div className="bg-gray-200 rounded-full h-2">
-                            <div
-                              className="bg-rose-500 h-2 rounded-full transition-all duration-300"
-                              style={{ width: `${uploadProgress}%` }}
-                            />
-                          </div>
-                          <span className="text-xs text-gray-600">{uploadProgress}%</span>
-                        </div>
-                      )}
+                      <MultiImageUploader
+                        images={questionImages[question.name] || []}
+                        onImagesChange={(images) => handleQuestionImagesChange(question.name, images)}
+                        urlFormatter={(image) => image.url}
+                        compressionType="defect"
+                      />
                     </div>
 
                     {errors[question.name + "R"] && (
                       <p className="text-red-500 text-sm">Please write a comment</p>
                     )}
-                    {errors[question.name + "P"] && (
-                      <p className="text-red-500 text-sm">Please attach a picture</p>
+                    {(questionImages[question.name] || []).length === 0 && (
+                      <p className="text-red-500 text-sm">Please attach at least one picture</p>
                     )}
                   </div>
                 )}
@@ -532,6 +557,7 @@ export default function MachineForm({ bu, type, id }: MachineFormProps) {
                   }
                   return image.url;
                 }}
+                compressionType="general"
               />
             </div>
           </CardContent>
