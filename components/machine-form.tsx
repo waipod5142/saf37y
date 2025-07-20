@@ -321,9 +321,9 @@ export default function MachineForm({ bu, type, id }: MachineFormProps) {
     }
     // Fallback to default choices if vocabulary not loaded
     return [
-      { value: 'pass', text: 'Pass', colorClass: 'bg-green-500' },
-      { value: 'fail', text: 'Fail', colorClass: 'bg-red-500' },
-      { value: 'na', text: 'N/A', colorClass: 'bg-yellow-500' },
+      { value: 'pass', text: 'Pass', colorClass: 'bg-green-400' },
+      { value: 'fail', text: 'Fail', colorClass: 'bg-red-400' },
+      { value: 'na', text: 'N/A', colorClass: 'bg-yellow-400' },
     ];
   };
   
@@ -380,7 +380,7 @@ export default function MachineForm({ bu, type, id }: MachineFormProps) {
   }
 
   const formContent = (
-    <div className="max-w-4xl mx-auto p-2">
+    <div>
       <Card className="mb-6">
         <CardHeader>
           <CardTitle className="text-center text-2xl font-bold">

@@ -27,17 +27,16 @@ export default async function MachineHeader({ bu, type, id }: MachineHeaderProps
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-2">
-      <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
-        {/* QR Code Section */}
-        <div className="bg-gray-50 p-4 rounded-lg mb-4 w-full flex justify-center items-center">
-            <QRCodeComponent 
-              value={`https://www.saf37y.com/Machine/${bu}/${type}/${id}`}
-              size={96}
-              className="flex-shrink-0"
-            />
-        </div>
-        <div className="p-6">
+    <div className="bg-white border border-gray-200 rounded-lg shadow-sm mb-6">
+      {/* QR Code Section */}
+      <div className="bg-gray-50 p-4 rounded-lg mb-4 w-full flex justify-center items-center">
+          <QRCodeComponent 
+            value={`https://www.saf37y.com/Machine/${bu}/${type}/${id}`}
+            size={96}
+            className="flex-shrink-0"
+          />
+      </div>
+      <div className="p-6">
           <div className="flex items-start gap-4">
             
             <div className="flex-1">
@@ -112,7 +111,6 @@ export default async function MachineHeader({ bu, type, id }: MachineHeaderProps
             </div>
           </div>
         </div>
-      </div>
     </div>
   );
 }

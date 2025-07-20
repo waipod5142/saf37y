@@ -1,0 +1,107 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { getMachineQuestions } from "@/lib/actions/forms";
+import { machineTitles } from "@/lib/machine-types";
+import { toast } from "sonner";
+import Image from "next/image";
+
+interface MachineTitleProps {
+  bu: string;
+  type: string;
+  id: string;
+}
+
+export default function MachineTitle({ bu, type, id }: MachineTitleProps) {
+  const [formTitle, setFormTitle] = useState<string | null>(null);
+  const [formImage, setFormImage] = useState<string | null>(null);
+  const [isLoadingTitle, setIsLoadingTitle] = useState<boolean>(true);
+  
+  // Determine BU (business unit) and machine type
+  const businessUnit = bu === "thailand" ? "th" : bu === "vietnam" ? "vn" : 
+                    bu === "bangladesh" ? "bd" : bu === "srilanka" ? "lk" : 
+                      bu === "cambodia" ? "cmic" : bu;
+  const machine = type.charAt(0).toUpperCase() + type.slice(1);
+
+  useEffect(() => {
+    const fetchTitle = async () => {
+      try {
+        setIsLoadingTitle(true);
+        
+        // Fetch title and image from forms collection
+        const questionsResult = await getMachineQuestions(bu, type);
+        
+        if (questionsResult.success) {
+          if (questionsResult.title) {
+            setFormTitle(questionsResult.title);
+          }
+          if (questionsResult.image) {
+            setFormImage(questionsResult.image);
+          }
+        } else {
+          console.warn("No form data found for machine:", { bu, type });
+          setFormTitle(null);
+          setFormImage(null);
+          if (questionsResult.error) {
+            toast.error(questionsResult.error);
+          }
+        }
+      } catch (error) {
+        console.error("Error loading form data:", error);
+        toast.error("Failed to load form data");
+        setFormTitle(null);
+        setFormImage(null);
+      } finally {
+        setIsLoadingTitle(false);
+      }
+    };
+
+    fetchTitle();
+  }, [bu, type, id]);
+
+  // Get the title for the current machine type
+  const getTitle = () => {
+    if (formTitle) {
+      return formTitle;
+    }
+    // Fallback to hardcoded titles if no dynamic title is available
+    const adjustedBu = ["srb", "mkt", "office", "lbm", "rmx", "iagg", "ieco"].includes(businessUnit) ? "th" : businessUnit;
+    const adjustedMachine = machine === "Truck" && businessUnit !== "srb" ? "Truckall" : machine;
+    return machineTitles[adjustedBu + adjustedMachine] || `${machine} Inspection`;
+  };
+
+  // Add loading state while title is being fetched
+  if (isLoadingTitle) {
+    return (
+      <div className="bg-white border border-gray-200 rounded-lg shadow-sm mb-6">
+        <div className="p-6">
+          <h1 className="text-2xl font-bold text-gray-800 text-center">
+            Loading...
+          </h1>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-white border border-gray-200 rounded-lg shadow-sm mb-4">
+      <div className="p-6">
+        {formImage && (
+          <div className="flex justify-center mb-4">
+            <Image
+              src={formImage}
+              alt={getTitle()}
+              width={200}
+              height={150}
+              className="rounded-lg object-cover"
+              priority
+            />
+          </div>
+        )}
+        <h1 className="text-2xl font-bold text-gray-800 text-center">
+          {getTitle()}
+        </h1>
+      </div>
+    </div>
+  );
+}

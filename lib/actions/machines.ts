@@ -63,6 +63,32 @@ export async function submitMachineForm(
   }
 }
 
+export async function updateMachineInspectionRecord(
+  docId: string,
+  updateData: Record<string, any>
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    // Remove undefined values before saving to Firestore
+    const cleanedData = removeUndefinedValues(updateData);
+
+    // Update the inspection record in the machinetr collection
+    const docRef = firestore.collection("machinetr").doc(docId);
+    await docRef.update(cleanedData);
+
+    console.log("Machine inspection record updated with ID:", docId);
+
+    return {
+      success: true,
+    };
+  } catch (error) {
+    console.error("Error updating machine inspection record:", error);
+    return {
+      success: false,
+      error: "Failed to update machine inspection record",
+    };
+  }
+}
+
 export async function deleteMachineInspectionRecord(
   docId: string
 ): Promise<{ success: boolean; error?: string }> {

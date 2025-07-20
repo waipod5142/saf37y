@@ -1,14 +1,21 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { MachineInspectionRecord } from "@/types/machineInspectionRecord";
 import { MachineItem } from "@/lib/machine-types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { CalendarIcon, UserIcon, FileTextIcon, ToggleLeftIcon, ToggleRightIcon, Trash2Icon, MapPinIcon } from "lucide-react";
-import { deleteMachineInspectionRecord } from "@/lib/actions/machines";
+import { CalendarIcon, UserIcon, FileTextIcon, ToggleLeftIcon, ToggleRightIcon, Trash2Icon, MapPinIcon, WrenchIcon, CheckIcon } from "lucide-react";
+import { deleteMachineInspectionRecord, updateMachineInspectionRecord } from "@/lib/actions/machines";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import MultiImageUploader, { ImageUpload } from "@/components/multi-image-uploader";
+import { auth, storage } from "@/firebase/client";
+import { signInAnonymously } from "firebase/auth";
+import { ref, uploadBytesResumable, UploadTask } from "firebase/storage";
 
 interface MachineDetailClientProps {
   records: MachineInspectionRecord[];
@@ -23,6 +30,11 @@ export default function MachineDetailClient({ records, questions }: MachineDetai
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [isMapModalOpen, setIsMapModalOpen] = useState(false);
+  const [showDefectResponseModal, setShowDefectResponseModal] = useState<string | null>(null);
+  const [isSubmittingResponse, setIsSubmittingResponse] = useState(false);
+  const [responder, setResponder] = useState('');
+  const [defectAnswers, setDefectAnswers] = useState<{ [questionName: string]: string }>({});
+  const [defectFixImages, setDefectFixImages] = useState<{ [questionName: string]: ImageUpload[] }>({});
 
   // Create a mapping from question name to question text for descriptive display
   const questionMapping = React.useMemo(() => {
@@ -32,6 +44,44 @@ export default function MachineDetailClient({ records, questions }: MachineDetai
     });
     return mapping;
   }, [questions]);
+
+  // Populate form with existing data when modal opens
+  useEffect(() => {
+    if (showDefectResponseModal) {
+      const currentRecord = records.find(r => (r.docId || r.id) === showDefectResponseModal);
+      if (currentRecord) {
+        // Set responder if exists
+        if (currentRecord.responder) {
+          setResponder(currentRecord.responder);
+        }
+        
+        // Set existing answers and images
+        const answers: { [key: string]: string } = {};
+        const images: { [key: string]: ImageUpload[] } = {};
+        
+        Object.keys(currentRecord).forEach(key => {
+          if (key.endsWith('A')) {
+            const questionName = key.slice(0, -1);
+            answers[questionName] = currentRecord[key];
+          } else if (key.endsWith('F') && Array.isArray(currentRecord[key])) {
+            const questionName = key.slice(0, -1);
+            images[questionName] = currentRecord[key].map((url: string, index: number) => ({
+              id: `existing-${index}`,
+              url,
+            }));
+          }
+        });
+        
+        setDefectAnswers(answers);
+        setDefectFixImages(images);
+      }
+    } else {
+      // Reset form when modal closes
+      setResponder('');
+      setDefectAnswers({});
+      setDefectFixImages({});
+    }
+  }, [showDefectResponseModal, records]);
 
   // Helper functions for location formatting
   const formatCoordinates = (lat: number, lng: number) => {
@@ -74,6 +124,101 @@ export default function MachineDetailClient({ records, questions }: MachineDetai
   const handleMapClick = (lat: number, lng: number) => {
     setSelectedLocation({ lat, lng });
     setIsMapModalOpen(true);
+  };
+
+  const handleSubmitDefectResponse = async (record: MachineInspectionRecord) => {
+    if (!record.docId || !responder.trim()) return;
+    
+    setIsSubmittingResponse(true);
+    try {
+      // Authenticate anonymously if not already authenticated (for Storage upload)
+      if (!auth.currentUser) {
+        try {
+          await signInAnonymously(auth);
+        } catch (authError) {
+          console.error("Authentication error:", authError);
+          alert("Authentication failed. Please try again.");
+          return;
+        }
+      }
+
+      // Prepare the update data
+      const updateData: Record<string, any> = {
+        responder: responder.trim()
+      };
+
+      // Add question-specific answer fields (questionName + "A")
+      Object.keys(defectAnswers).forEach(questionName => {
+        if (defectAnswers[questionName]) {
+          updateData[questionName + "A"] = defectAnswers[questionName];
+        }
+      });
+
+      // Upload fix images to Firebase Storage and get paths
+      const uploadTasks: UploadTask[] = [];
+      const questionImagePaths: { [questionName: string]: string[] } = {};
+
+      // Process each question's fix images
+      Object.keys(defectFixImages).forEach(questionName => {
+        const images = defectFixImages[questionName];
+        if (images && images.length > 0) {
+          questionImagePaths[questionName] = [];
+          
+          images.forEach((image, index) => {
+            if (image.file) {
+              // Create path for fix images: machines/{bu}/{type}/{id}/{questionName}/fix-{timestamp}-{index}-{filename}
+              const path = `machines/${record.bu}/${record.type.toLowerCase()}/${record.id}/${questionName}/fix-${Date.now()}-${index}-${image.file.name}`;
+              questionImagePaths[questionName].push(path);
+              const storageRef = ref(storage, path);
+              uploadTasks.push(uploadBytesResumable(storageRef, image.file));
+            } else if (image.url && !image.url.startsWith('blob:')) {
+              // Keep existing Firebase Storage URLs
+              questionImagePaths[questionName].push(image.url);
+            }
+          });
+        }
+      });
+
+      // Wait for all image uploads to complete
+      if (uploadTasks.length > 0) {
+        try {
+          await Promise.all(uploadTasks);
+        } catch (uploadError) {
+          console.error("Image upload error:", uploadError);
+          alert("Failed to upload images. Please try again.");
+          return;
+        }
+      }
+
+      // Add question-specific fix image paths (questionName + "F")
+      Object.keys(questionImagePaths).forEach(questionName => {
+        if (questionImagePaths[questionName].length > 0) {
+          updateData[questionName + "F"] = questionImagePaths[questionName];
+        }
+      });
+
+      // Update the machinetr record using server action
+      const result = await updateMachineInspectionRecord(record.docId, updateData);
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to update record');
+      }
+      
+      // Reset form and close modal
+      setResponder('');
+      setDefectAnswers({});
+      setDefectFixImages({});
+      setShowDefectResponseModal(null);
+      
+      // Reload page to show updated data
+      window.location.reload();
+      
+    } catch (error) {
+      console.error('Error submitting defect response:', error);
+      alert('Failed to submit defect response. Please try again.');
+    } finally {
+      setIsSubmittingResponse(false);
+    }
   };
 
   const formatImageUrl = (image: string) => {
@@ -208,7 +353,9 @@ export default function MachineDetailClient({ records, questions }: MachineDetai
     const result = getInspectionResult(record);
     
     return (
-      <Card className={`${isLatest ? 'border-blue-500 bg-yellow-100 shadow-md' : 'bg-yellow-50'}`}>
+      <Card className={`${isLatest ? 'border-blue-500 shadow-md' : ''} ${
+        result.status === 'Failed' ? 'bg-red-50' : 'bg-green-50'
+      }`}>
         <CardHeader className="pb-3">
           <div className="flex justify-between items-start">
             <div>
@@ -229,47 +376,88 @@ export default function MachineDetailClient({ records, questions }: MachineDetai
               
               {/* Location Information Section */}
               {record.latitude && record.longitude && (
-                <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                  <h5 className="font-semibold text-sm text-blue-800 mb-2 flex items-center gap-2">
-                    <MapPinIcon className="h-4 w-4" />
-                    Inspection Location
-                  </h5>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-600">Coordinates:</span>
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono text-gray-800">
-                          {formatCoordinates(record.latitude, record.longitude)}
-                        </span>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleMapClick(record.latitude!, record.longitude!)}
-                          className="h-6 w-6 p-0 hover:bg-blue-100"
-                          title="View on map"
-                        >
-                          <MapPinIcon className="h-3 w-3" />
-                        </Button>
+                <div className="mt-3 relative">
+                  {/* Map-Centric Location Explorer */}
+                  <div 
+                    className="group relative bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-200 rounded-xl p-4 cursor-pointer transition-all duration-300 hover:shadow-lg hover:border-blue-300 hover:from-blue-100 hover:to-blue-150"
+                    onClick={() => handleMapClick(record.latitude!, record.longitude!)}
+                  >
+                    {/* Background Map Pattern */}
+                    <div className="absolute inset-0 opacity-5 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSIjMDAwIiBmaWxsLW9wYWNpdHk9Ii4xIj48cGF0aCBkPSJNMjAgMjBjMC0xMS04LTE4LTE4LTE4UzIgOSAyIDIwIDEwIDM4IDIwIDM4czE4LTcgMTgtMTgtOC0xOC0xOC0xOHptMCAxNmMtNy43IDAtMTQtNi4zLTE0LTE0UzEyLjMgNiAyMCA2czE0IDYuMyAxNCAxNC02LjMgMTQtMTQgMTR6Ii8+PC9nPjwvc3ZnPg==')] rounded-xl"></div>
+                    
+                    {/* Header with Large Map Icon */}
+                    <div className="relative flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="relative">
+                          <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center shadow-lg group-hover:bg-blue-600 transition-colors">
+                            <MapPinIcon className="h-6 w-6 text-white" />
+                          </div>
+                          {/* Pulsing Animation */}
+                          <div className="absolute inset-0 w-12 h-12 bg-blue-400 rounded-full animate-ping opacity-20"></div>
+                        </div>
+                        <div>
+                          <h5 className="font-bold text-lg text-blue-900 group-hover:text-blue-800 transition-colors">
+                            📍 Inspection Location
+                          </h5>
+                          <p className="text-sm text-blue-700 opacity-80">
+                            Click to explore on map
+                          </p>
+                        </div>
+                      </div>
+                      
+                      {/* Accuracy Visual Indicator */}
+                      {record.locationAccuracy && (
+                        <div className="text-right">
+                          <div className="flex items-center gap-2 mb-1">
+                            <div className={`w-3 h-3 rounded-full ${record.locationAccuracy <= 10 ? 'bg-green-500' : record.locationAccuracy <= 50 ? 'bg-yellow-500' : 'bg-red-500'}`}></div>
+                            <span className="text-xs font-medium text-gray-600">
+                              {record.locationAccuracy <= 10 ? 'High' : record.locationAccuracy <= 50 ? 'Medium' : 'Low'} Accuracy
+                            </span>
+                          </div>
+                          <div className="text-xs text-gray-500">±{Math.round(record.locationAccuracy)}m</div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Prominent View Map Button */}
+                    <div className="relative bg-white bg-opacity-70 rounded-lg p-3 mb-3 group-hover:bg-opacity-90 transition-all">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="font-semibold text-gray-800 text-sm mb-1">🗺️ View on Interactive Map</div>
+                          <div className="font-mono text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded inline-block">
+                            {formatCoordinates(record.latitude, record.longitude)}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigator.clipboard.writeText(`${record.latitude},${record.longitude}`);
+                            }}
+                            className="h-8 px-2 text-xs hover:bg-blue-100"
+                            title="Copy coordinates"
+                          >
+                            📋
+                          </Button>
+                          <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center text-white group-hover:bg-blue-600 transition-colors">
+                            <span className="text-sm">→</span>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                    
+
+                    {/* Location Metadata */}
                     {record.locationTimestamp && (
-                      <div className="flex items-center justify-between">
-                        <span className="text-gray-600">Time:</span>
-                        <span className="text-gray-800">
-                          {formatLocationTimestamp(record.locationTimestamp)}
-                        </span>
+                      <div className="text-xs text-blue-800 opacity-75 flex items-center gap-2">
+                        <span>🕒</span>
+                        <span>{formatLocationTimestamp(record.locationTimestamp)}</span>
                       </div>
                     )}
-                    
-                    {record.locationAccuracy && (
-                      <div className="flex items-center justify-between">
-                        <span className="text-gray-600">Accuracy:</span>
-                        <span className={`px-2 py-1 rounded text-xs font-medium ${getAccuracyColor(record.locationAccuracy)}`}>
-                          ±{Math.round(record.locationAccuracy)}m
-                        </span>
-                      </div>
-                    )}
+
+                    {/* Hover Overlay */}
+                    <div className="absolute inset-0 bg-blue-500 bg-opacity-0 group-hover:bg-opacity-5 rounded-xl transition-all duration-300 pointer-events-none"></div>
                   </div>
                 </div>
               )}
@@ -387,7 +575,18 @@ export default function MachineDetailClient({ records, questions }: MachineDetai
           {/* Defect Details Section */}
           {result.status === 'Failed' && (
             <div className="mb-4">
-              <h4 className="font-semibold text-sm text-gray-700 mb-3">Defect Details</h4>
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="font-semibold text-sm text-gray-700">Defect Details</h4>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowDefectResponseModal(record.docId || record.id)}
+                  className="flex items-center gap-2 hover:bg-green-50 hover:border-green-300"
+                >
+                  <WrenchIcon className="h-4 w-4 text-green-600" />
+                  <span className="text-green-700">Respond to Defects</span>
+                </Button>
+              </div>
               <div className="space-y-4">
                 {Object.entries(getQuestionGroups(record))
                   .filter(([questionName, data]) => data.status === 'fail' || data.status === false)
@@ -411,7 +610,7 @@ export default function MachineDetailClient({ records, questions }: MachineDetai
                       
                       {/* Images */}
                       {data.images && data.images.length > 0 && (
-                        <div>
+                        <div className="mb-3">
                           <span className="text-xs font-medium text-red-700 block mb-2">
                             Defect Images ({data.images.length}):
                           </span>
@@ -428,6 +627,47 @@ export default function MachineDetailClient({ records, questions }: MachineDetai
                               </div>
                             ))}
                           </div>
+                        </div>
+                      )}
+
+                      {/* Fix Response Section */}
+                      {(record[questionName + 'A'] || record[questionName + 'F']) && (
+                        <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                          <div className="flex items-center gap-2 mb-2">
+                            <CheckIcon className="h-4 w-4 text-green-600" />
+                            <span className="text-sm font-medium text-green-800">Fix Applied</span>
+                            {record.responder && (
+                              <span className="text-xs text-green-600">by {record.responder}</span>
+                            )}
+                          </div>
+                          
+                          {record[questionName + 'A'] && (
+                            <div className="mb-2">
+                              <span className="text-xs font-medium text-green-700">Fix Description: </span>
+                              <span className="text-xs text-green-600">{record[questionName + 'A']}</span>
+                            </div>
+                          )}
+                          
+                          {record[questionName + 'F'] && Array.isArray(record[questionName + 'F']) && record[questionName + 'F'].length > 0 && (
+                            <div>
+                              <span className="text-xs font-medium text-green-700 block mb-2">
+                                Fix Evidence ({record[questionName + 'F'].length}):
+                              </span>
+                              <div className="flex gap-2 flex-wrap">
+                                {record[questionName + 'F'].map((image: string, index: number) => (
+                                  <div key={index} className="w-16 h-16 rounded border overflow-hidden hover:shadow-lg transition-shadow cursor-pointer">
+                                    <img 
+                                      src={formatImageUrl(image)}
+                                      alt={`${questionName} fix image ${index + 1}`}
+                                      className="w-full h-full object-cover hover:scale-105 transition-transform"
+                                      onError={handleImageError}
+                                      onClick={() => handleImageClick(image)}
+                                    />
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
@@ -598,6 +838,133 @@ export default function MachineDetailClient({ records, questions }: MachineDetai
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Defect Response Modal */}
+      {showDefectResponseModal && (
+        <Dialog open={!!showDefectResponseModal} onOpenChange={() => setShowDefectResponseModal(null)}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <WrenchIcon className="h-5 w-5 text-green-600" />
+                Respond to Defects
+              </DialogTitle>
+            </DialogHeader>
+            
+            {(() => {
+              const currentRecord = records.find(r => (r.docId || r.id) === showDefectResponseModal);
+              if (!currentRecord) return null;
+              
+              const failedQuestions = Object.entries(getQuestionGroups(currentRecord))
+                .filter(([questionName, data]) => data.status === 'fail' || data.status === false);
+
+              return (
+                <div className="space-y-6">
+                  {/* Responder Field */}
+                  <div className="bg-blue-50 p-4 rounded-lg">
+                    <Label htmlFor="responder" className="text-sm font-semibold text-blue-800 mb-2 block">
+                      👤 Responder Name
+                    </Label>
+                    <Input
+                      id="responder"
+                      value={responder}
+                      onChange={(e) => setResponder(e.target.value)}
+                      placeholder="Enter name of person fixing the defects"
+                      className="w-full"
+                    />
+                    <p className="text-xs text-blue-600 mt-1">
+                      This person will be recorded as the defect responder for all fixes in this record.
+                    </p>
+                  </div>
+
+                  {/* Defect Response Forms */}
+                  <div className="space-y-4">
+                    <h4 className="font-semibold text-gray-700">
+                      Fix Details for {failedQuestions.length} Failed Item{failedQuestions.length > 1 ? 's' : ''}
+                    </h4>
+                    
+                    {failedQuestions.map(([questionName, data]) => (
+                      <div key={questionName} className="border border-red-200 bg-red-50 rounded-lg p-4">
+                        {/* Question Header */}
+                        <div className="flex items-center gap-2 mb-3">
+                          <Badge variant="destructive" className="text-xs">Failed</Badge>
+                          <span className="font-medium text-red-800">
+                            {questionMapping[questionName] || questionName.replace(/([A-Z])/g, ' $1').trim()}
+                          </span>
+                        </div>
+                        
+                        {/* Original Defect Info */}
+                        {data.remark && (
+                          <div className="mb-3 p-2 bg-white bg-opacity-50 rounded text-xs">
+                            <span className="font-medium text-red-700">Original Issue: </span>
+                            <span className="text-red-600">{data.remark}</span>
+                          </div>
+                        )}
+
+                        {/* Response Text Field */}
+                        <div className="mb-4">
+                          <Label className="text-sm font-medium text-gray-700 mb-2 block">
+                            📝 Fix Description
+                          </Label>
+                          <Textarea
+                            value={defectAnswers[questionName] || ''}
+                            onChange={(e) => setDefectAnswers(prev => ({ ...prev, [questionName]: e.target.value }))}
+                            placeholder="Describe how this defect was fixed or addressed..."
+                            className="w-full min-h-20"
+                          />
+                        </div>
+
+                        {/* Fix Images Upload */}
+                        <div>
+                          <Label className="text-sm font-medium text-gray-700 mb-2 block">
+                            📷 Fix Evidence Photos
+                          </Label>
+                          <MultiImageUploader
+                            images={defectFixImages[questionName] || []}
+                            onImagesChange={(images) => setDefectFixImages(prev => ({ ...prev, [questionName]: images }))}
+                            urlFormatter={(image) => image.url}
+                            compressionType="defect"
+                          />
+                          <p className="text-xs text-gray-500 mt-1">
+                            Upload photos showing the completed fix or resolution
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Submit Button */}
+                  <div className="flex justify-end gap-3 pt-4 border-t">
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowDefectResponseModal(null)}
+                      disabled={isSubmittingResponse}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={() => handleSubmitDefectResponse(currentRecord)}
+                      disabled={isSubmittingResponse || !responder.trim()}
+                      className="bg-green-600 hover:bg-green-700 text-white"
+                    >
+                      {isSubmittingResponse ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          Submitting...
+                        </>
+                      ) : (
+                        <>
+                          <CheckIcon className="h-4 w-4 mr-2" />
+                          Submit Response
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              );
+            })()}
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }

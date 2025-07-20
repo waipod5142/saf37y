@@ -73,9 +73,10 @@ This is a Next.js 15 property management application with Firebase authenticatio
 - `components/ui/` - Reusable UI components (shadcn/ui)
   - Form components, buttons, dialogs, tables, and other primitive UI elements
 - `components/` - Application-specific components
-  - `components/machine-form.tsx` - Machine inspection form with Firebase integration
+  - `components/machine-form.tsx` - Full machine inspection form with Firebase integration, geolocation, form submission, and image uploads
+  - `components/machine-title.tsx` - Simplified component displaying only machine title fetched from Firebase forms collection
   - `components/machine-detail.tsx` - Machine inspection records display
-  - `components/machine-detail-client.tsx` - Client-side machine detail functionality
+  - `components/machine-detail-client.tsx` - Client-side machine detail functionality with defect response system
   - `components/machine-header.tsx` - Machine information header
   - `components/multi-image-uploader.tsx` - Multi-image upload component
   - `components/property-form.tsx` - Property management form
@@ -114,12 +115,15 @@ This is a Next.js 15 property management application with Firebase authenticatio
 - Form submissions trigger page reload to refresh inspection records
 - Dynamic form titles fetched from Firebase forms collection instead of hardcoded values
 - Machine header displays dynamic fields (country, site) when available from machine collection
+- **Defect response system** - Failed inspection items can be responded to with fix descriptions and evidence photos
 
 **Image Management:**
 - Multi-image uploader component
 - Firebase Storage integration
 - Image optimization for property listings
 - Machine inspection images stored in `machines/{bu}/{type}/{id}/` paths
+- **Defect fix images** stored in `machines/{bu}/{type}/{id}/{questionName}/fix-{timestamp}-{index}-{filename}` paths
+- **Image compression** with different types (general, defect) for optimal storage
 
 **State Management:**
 - React Context for authentication
@@ -128,6 +132,15 @@ This is a Next.js 15 property management application with Firebase authenticatio
 - Machine form state managed via React Hook Form with dynamic title state
 - Inspection records fetched server-side and cached with Next.js
 - Form questions and titles dynamically loaded from Firebase forms collection
+
+**Machine Inspection Components:**
+- **Dual-component architecture** for machine inspection pages:
+  - `machine-form.tsx` - Full-featured inspection form with all functionality
+  - `machine-title.tsx` - Lightweight title-only display component
+- **Title fetching pattern** - Both components use `getMachineQuestions()` from `@/lib/actions/forms` to fetch dynamic titles from Firebase forms collection
+- **Fallback title logic** - Components fall back to hardcoded titles from `machineTitles` when Firebase title is unavailable
+- **Loading states** - Proper loading indicators while fetching titles from Firebase
+- **Error handling** - Toast notifications for title fetching failures with graceful degradation
 
 **Security:**
 - Middleware-based route protection

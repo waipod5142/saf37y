@@ -45,8 +45,6 @@ export default async function MachineDetail({ bu, type, id }: MachineDetailProps
   const questions = questionsResult.success && questionsResult.questions ? questionsResult.questions : [];
   
   return (
-    <div className="max-w-4xl mx-auto p-2">
-      <MachineDetailClient records={serializedRecords} questions={questions} />
-    </div>
+    <MachineDetailClient records={serializedRecords} questions={questions} />
   );
 }

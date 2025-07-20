@@ -3,9 +3,9 @@ import "./globals.css";
 import Link from "next/link";
 import { AuthProvider } from "@/context/auth";
 import AuthButtons from "@/components/auth-buttons";
-import { HomeIcon } from "lucide-react";
 import { Poppins } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
+import Image from "next/image";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -29,20 +29,26 @@ export default function RootLayout({
           <nav className="bg-red-600 text-white p-5 h-14 flex items-center justify-between z-10 relative">
             <Link
               href="/"
-              className="text-3xl tracking-widest flex gap-2 items-center uppercase"
+              className="flex gap-3 items-center"
             >
-              <HomeIcon />
-              <span>Safety</span>
+              <Image
+                src="/SCCC.BK.svg"
+                alt="INSEE Logo"
+                width={40}
+                height={40}
+                className="w-10 h-10 filter brightness-0 invert"
+              />
+              <span className="text-2xl tracking-widest uppercase font-semibold">INSEE Safety</span>
             </Link>
             <ul className="flex gap-6 items-center">
-              <li>
+              {/* <li>
                 <Link
                   href="/property-search"
                   className="uppercase tracking-widest hover:underline"
                 >
                   Property search
                 </Link>
-              </li>
+              </li> */}
               <li>
                 <AuthButtons />
               </li>

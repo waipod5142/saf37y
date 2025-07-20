@@ -6,7 +6,7 @@ import { MachineItem } from "@/lib/machine-types";
 export async function getMachineQuestions(
   bu: string,
   type: string,
-): Promise<{ success: boolean; questions?: MachineItem[]; title?: string; error?: string }> {
+): Promise<{ success: boolean; questions?: MachineItem[]; title?: string; image?: string; error?: string }> {
   try {
     const formData = await getFormWithTitle(bu, type);
     
@@ -21,7 +21,8 @@ export async function getMachineQuestions(
       return {
         success: true,
         questions: [],
-        title: formData.title
+        title: formData.title,
+        image: formData.image
       };
     }
 
@@ -36,7 +37,8 @@ export async function getMachineQuestions(
     return {
       success: true,
       questions: formattedQuestions,
-      title: formData.title
+      title: formData.title,
+      image: formData.image
     };
   } catch (error) {
     console.error("Error fetching machine questions:", error);
