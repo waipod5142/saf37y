@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { CalendarIcon, UserIcon, FileTextIcon, ToggleLeftIcon, ToggleRightIcon, Trash2Icon } from "lucide-react";
+import { CalendarIcon, UserIcon, FileTextIcon, ToggleLeftIcon, ToggleRightIcon, Trash2Icon, MapPinIcon } from "lucide-react";
 import { deleteMachineInspectionRecord } from "@/lib/actions/machines";
 
 interface MachineDetailClientProps {
@@ -21,6 +21,8 @@ export default function MachineDetailClient({ records, questions }: MachineDetai
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [isMapModalOpen, setIsMapModalOpen] = useState(false);
 
   // Create a mapping from question name to question text for descriptive display
   const questionMapping = React.useMemo(() => {
@@ -30,6 +32,49 @@ export default function MachineDetailClient({ records, questions }: MachineDetai
     });
     return mapping;
   }, [questions]);
+
+  // Helper functions for location formatting
+  const formatCoordinates = (lat: number, lng: number) => {
+    return `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+  };
+
+  const formatLocationTimestamp = (timestamp: any) => {
+    if (!timestamp) return "N/A";
+    try {
+      let date: Date;
+      
+      if (timestamp.toDate) {
+        date = timestamp.toDate();
+      } else if (timestamp instanceof Date) {
+        date = timestamp;
+      } else {
+        date = new Date(timestamp);
+      }
+      
+      return `Captured: ${date.toLocaleDateString("en-US", { 
+        month: "short", 
+        day: "numeric", 
+        year: "numeric" 
+      })} at ${date.toLocaleTimeString("en-US", { 
+        hour: "numeric", 
+        minute: "2-digit",
+        hour12: true 
+      })}`;
+    } catch (error) {
+      return "Invalid Date";
+    }
+  };
+
+  const getAccuracyColor = (accuracy: number) => {
+    if (accuracy <= 10) return "text-green-700 bg-green-50";
+    if (accuracy <= 50) return "text-yellow-700 bg-yellow-50";
+    return "text-red-700 bg-red-50";
+  };
+
+  const handleMapClick = (lat: number, lng: number) => {
+    setSelectedLocation({ lat, lng });
+    setIsMapModalOpen(true);
+  };
 
   const formatImageUrl = (image: string) => {
     return `https://firebasestorage.googleapis.com/v0/b/sccc-inseesafety-prod.firebasestorage.app/o/${encodeURIComponent(image)}?alt=media`;
@@ -127,7 +172,7 @@ export default function MachineDetailClient({ records, questions }: MachineDetai
         const questionName = key.slice(0, -1);
         if (!groups[questionName]) groups[questionName] = { status: null };
         groups[questionName].images = Array.isArray(record[key]) ? record[key] : [record[key]];
-      } else if (!['id', 'bu', 'type', 'inspector', 'timestamp', 'createdAt', 'remark', 'images', 'docId'].includes(key)) {
+      } else if (!['id', 'bu', 'type', 'inspector', 'timestamp', 'createdAt', 'remark', 'images', 'docId', 'latitude', 'longitude', 'locationTimestamp', 'locationAccuracy'].includes(key)) {
         // Status field
         if (!groups[key]) groups[key] = { status: null };
         groups[key].status = record[key];
@@ -143,7 +188,9 @@ export default function MachineDetailClient({ records, questions }: MachineDetai
     const resultKeys = keys.filter(key => 
       key !== 'id' && key !== 'bu' && key !== 'type' && key !== 'inspector' && 
       key !== 'timestamp' && key !== 'createdAt' && key !== 'remark' && 
-      key !== 'images' && key !== 'docId' && !key.endsWith('R') && !key.endsWith('P')
+      key !== 'images' && key !== 'docId' && 
+      key !== 'latitude' && key !== 'longitude' && key !== 'locationTimestamp' && key !== 'locationAccuracy' &&
+      !key.endsWith('R') && !key.endsWith('P')
     );
     
     const failedItems = resultKeys.filter(key => 
@@ -179,6 +226,53 @@ export default function MachineDetailClient({ records, questions }: MachineDetai
                   {record.inspector || "Unknown Inspector"}
                 </div>
               </div>
+              
+              {/* Location Information Section */}
+              {record.latitude && record.longitude && (
+                <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <h5 className="font-semibold text-sm text-blue-800 mb-2 flex items-center gap-2">
+                    <MapPinIcon className="h-4 w-4" />
+                    Inspection Location
+                  </h5>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-600">Coordinates:</span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-gray-800">
+                          {formatCoordinates(record.latitude, record.longitude)}
+                        </span>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleMapClick(record.latitude!, record.longitude!)}
+                          className="h-6 w-6 p-0 hover:bg-blue-100"
+                          title="View on map"
+                        >
+                          <MapPinIcon className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    {record.locationTimestamp && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-600">Time:</span>
+                        <span className="text-gray-800">
+                          {formatLocationTimestamp(record.locationTimestamp)}
+                        </span>
+                      </div>
+                    )}
+                    
+                    {record.locationAccuracy && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-600">Accuracy:</span>
+                        <span className={`px-2 py-1 rounded text-xs font-medium ${getAccuracyColor(record.locationAccuracy)}`}>
+                          ±{Math.round(record.locationAccuracy)}m
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
             <div className="flex items-center gap-2">
               <Badge 
@@ -226,6 +320,7 @@ export default function MachineDetailClient({ records, questions }: MachineDetai
                     key !== 'id' && key !== 'bu' && key !== 'type' && key !== 'inspector' && 
                     key !== 'timestamp' && key !== 'createdAt' && key !== 'remark' && 
                     key !== 'images' && key !== 'docId' &&
+                    key !== 'latitude' && key !== 'longitude' && key !== 'locationTimestamp' && key !== 'locationAccuracy' &&
                     !key.endsWith('R') && !key.endsWith('P') // Exclude remark and image fields
                   )
                   .map(key => {
@@ -441,6 +536,63 @@ export default function MachineDetailClient({ records, questions }: MachineDetai
                     e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCA0MDAgMzAwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgogIDxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjRjNGNEY2Ii8+CiAgPHRleHQgeD0iMjAwIiB5PSIxNTAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM5Q0E0QUYiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNiI+SW1hZ2UgY291bGQgbm90IGJlIGxvYWRlZDwvdGV4dD4KPC9zdmc+';
                   }}
                 />
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Map Modal */}
+      <Dialog open={isMapModalOpen} onOpenChange={setIsMapModalOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] p-0">
+          <DialogHeader className="p-6 pb-0">
+            <DialogTitle className="flex items-center gap-2">
+              <MapPinIcon className="h-5 w-5" />
+              Inspection Location
+            </DialogTitle>
+          </DialogHeader>
+          <div className="p-6 pt-2">
+            {selectedLocation && (
+              <div className="space-y-4">
+                <div className="bg-gray-50 p-3 rounded-lg">
+                  <div className="text-sm text-gray-600 mb-1">Coordinates:</div>
+                  <div className="font-mono text-lg font-semibold">
+                    {formatCoordinates(selectedLocation.lat, selectedLocation.lng)}
+                  </div>
+                </div>
+                
+                <div className="w-full h-96 border rounded-lg overflow-hidden">
+                  <iframe
+                    src={`https://maps.google.com/maps?q=${selectedLocation.lat},${selectedLocation.lng}&z=18&output=embed`}
+                    width="100%"
+                    height="100%"
+                    style={{ border: 0 }}
+                    allowFullScreen
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    title="Inspection Location Map"
+                  />
+                </div>
+                
+                <div className="flex items-center justify-center gap-4 text-sm text-gray-600">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => window.open(`https://maps.google.com/maps?q=${selectedLocation.lat},${selectedLocation.lng}&z=18`, '_blank')}
+                    className="flex items-center gap-2"
+                  >
+                    <MapPinIcon className="h-4 w-4" />
+                    Open in Google Maps
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => navigator.clipboard.writeText(`${selectedLocation.lat},${selectedLocation.lng}`)}
+                    className="flex items-center gap-2"
+                  >
+                    📋 Copy Coordinates
+                  </Button>
+                </div>
               </div>
             )}
           </div>

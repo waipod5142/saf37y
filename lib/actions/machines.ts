@@ -5,6 +5,20 @@ import { MachineInspectionRecord } from "@/types/machineInspectionRecord";
 import { FieldValue } from "firebase-admin/firestore";
 import admin from "firebase-admin";
 
+// Utility function to remove undefined values from an object
+function removeUndefinedValues(obj: Record<string, any>): Record<string, any> {
+  const cleaned: Record<string, any> = {};
+  
+  for (const [key, value] of Object.entries(obj)) {
+    if (value !== undefined) {
+      // Keep null values as they are valid in Firestore, only filter undefined
+      cleaned[key] = value;
+    }
+  }
+  
+  return cleaned;
+}
+
 export async function submitMachineForm(
   formData: Record<string, any>
 ): Promise<{ success: boolean; error?: string }> {
@@ -19,13 +33,21 @@ export async function submitMachineForm(
       createdAt: FieldValue.serverTimestamp(),
       remark: formData.remark,
       images: formData.images || [],
+      // Location data
+      latitude: formData.latitude,
+      longitude: formData.longitude,
+      locationTimestamp: formData.locationTimestamp ? admin.firestore.Timestamp.fromDate(new Date(formData.locationTimestamp)) : null,
+      locationAccuracy: formData.locationAccuracy,
       ...formData, // Include all form fields
     };
+
+    // Remove undefined values before saving to Firestore
+    const cleanedRecord = removeUndefinedValues(inspectionRecord);
 
     // Save to the machinetr collection
     const docRef = await firestore
       .collection("machinetr")
-      .add(inspectionRecord);
+      .add(cleanedRecord);
 
     console.log("Machine inspection record saved with ID:", docRef.id);
 

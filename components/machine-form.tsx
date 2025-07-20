@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useForm, FieldValues, SubmitHandler } from "react-hook-form";
-import { Camera } from "lucide-react";
 import { getMachineQuestions } from "@/lib/actions/forms";
 import { getVocabulary } from "@/lib/actions/vocabulary";
 import { MachineItem, machineTitles, quarterlyEquipment } from "@/lib/machine-types";
@@ -18,6 +17,7 @@ import { auth, storage } from "@/firebase/client";
 import { signInAnonymously } from "firebase/auth";
 import { ref, uploadBytesResumable, UploadTask } from "firebase/storage";
 import { submitMachineForm } from "@/lib/actions/machines";
+import { useGeolocation } from "@/hooks/useGeolocation";
 
 interface MachineFormProps {
   bu: string;
@@ -31,6 +31,10 @@ interface FormData extends FieldValues {
   tag?: string;
   certificate?: string;
   remark?: string;
+  latitude?: number;
+  longitude?: number;
+  locationTimestamp?: Date;
+  locationAccuracy?: number;
   [key: string]: any;
 }
 
@@ -55,6 +59,17 @@ export default function MachineForm({ bu, type, id }: MachineFormProps) {
   const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [images, setImages] = useState<ImageUpload[]>([]);
   const [questionImages, setQuestionImages] = useState<{ [questionName: string]: ImageUpload[] }>({});
+  
+  // Use geolocation hook for automatic location capture
+  const { 
+    latitude, 
+    longitude, 
+    accuracy, 
+    error: locationError, 
+    loading: locationLoading, 
+    getCurrentLocation,
+    hasLocation 
+  } = useGeolocation();
 
   // Determine BU (business unit) and machine type
   const businessUnit = bu === "thailand" ? "th" : bu === "vietnam" ? "vn" : 
@@ -107,6 +122,11 @@ export default function MachineForm({ bu, type, id }: MachineFormProps) {
 
     fetchData();
   }, [bu, type, id, businessUnit]);
+
+  // Automatically request location when component mounts (only once)
+  useEffect(() => {
+    getCurrentLocation();
+  }, []); // Empty dependency array ensures this runs only once on mount
 
   const handleRadioChange = (questionName: string, value: string) => {
     setSelectedValues((prev) => ({ ...prev, [questionName]: value }));
@@ -192,6 +212,11 @@ export default function MachineForm({ bu, type, id }: MachineFormProps) {
         bu: businessUnit,
         type: machine.toLowerCase(),
         id,
+        // Include location data
+        latitude: latitude || undefined,
+        longitude: longitude || undefined,
+        locationTimestamp: hasLocation ? new Date() : undefined,
+        locationAccuracy: accuracy || undefined,
       };
 
       // Add file URLs to the data (for questions with images)
@@ -354,13 +379,35 @@ export default function MachineForm({ bu, type, id }: MachineFormProps) {
     );
   }
 
-  return (
+  const formContent = (
     <div className="max-w-4xl mx-auto p-2">
       <Card className="mb-6">
         <CardHeader>
           <CardTitle className="text-center text-2xl font-bold">
             {getTitle()}
           </CardTitle>
+          {/* Location status alert */}
+          <div className="text-center text-sm mt-2">
+            {locationLoading && (
+              <div className="text-blue-600 flex items-center justify-center gap-2">
+                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-600"></div>
+                Getting location...
+              </div>
+            )}
+            {hasLocation && (
+              <div className="text-green-700 bg-green-50 px-3 py-1 rounded-md inline-block">
+                📍 Location: {latitude!.toFixed(6)}, {longitude!.toFixed(6)}
+                {accuracy && (
+                  <span className="block text-xs mt-1">Accuracy: ±{Math.round(accuracy)}m</span>
+                )}
+              </div>
+            )}
+            {locationError && !locationLoading && (
+              <div className="text-orange-600 bg-orange-50 px-3 py-1 rounded-md inline-block">
+                ⚠️ Location unavailable - form can still be submitted
+              </div>
+            )}
+          </div>
         </CardHeader>
       </Card>
 
@@ -591,4 +638,6 @@ export default function MachineForm({ bu, type, id }: MachineFormProps) {
       </form>
     </div>
   );
+
+  return formContent;
 }

@@ -27,6 +27,7 @@ const serializeRecord = (record: MachineInspectionRecord): MachineInspectionReco
     ...record,
     timestamp: convertTimestamp(record.timestamp),
     createdAt: convertTimestamp(record.createdAt),
+    locationTimestamp: convertTimestamp(record.locationTimestamp),
   };
 };
 
