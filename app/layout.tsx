@@ -41,14 +41,14 @@ export default function RootLayout({
               <span className="text-2xl tracking-widest uppercase font-semibold">INSEE Safety</span>
             </Link>
             <ul className="flex gap-6 items-center">
-              {/* <li>
+              <li>
                 <Link
-                  href="/property-search"
+                  href="/Machine/vn/Lifting/CANT-1"
                   className="uppercase tracking-widest hover:underline"
                 >
-                  Property search
+                  1st inspection
                 </Link>
-              </li> */}
+              </li>
               <li>
                 <AuthButtons />
               </li>
