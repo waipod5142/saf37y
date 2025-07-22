@@ -46,7 +46,15 @@ export default function RootLayout({
                   href="/Machine/vn/Lifting/CANT-1"
                   className="uppercase tracking-widest hover:underline"
                 >
-                  1st inspection
+                  Lifting equipment
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/Machine/vn/Lifevest/HONC-SC-LV-22"
+                  className="uppercase tracking-widest hover:underline"
+                >
+                  Life vest
                 </Link>
               </li>
               <li>

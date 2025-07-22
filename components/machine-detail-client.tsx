@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { CalendarIcon, UserIcon, FileTextIcon, ToggleLeftIcon, ToggleRightIcon, Trash2Icon, MapPinIcon, WrenchIcon, CheckIcon } from "lucide-react";
+import { CalendarIcon, UserIcon, FileTextIcon, ToggleLeftIcon, ToggleRightIcon, Trash2Icon, MapPinIcon, WrenchIcon, CheckIcon, AwardIcon } from "lucide-react";
 import { deleteMachineInspectionRecord, updateMachineInspectionRecord } from "@/lib/actions/machines";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,6 +16,7 @@ import MultiImageUploader, { ImageUpload } from "@/components/multi-image-upload
 import { auth, storage } from "@/firebase/client";
 import { signInAnonymously } from "firebase/auth";
 import { ref, uploadBytesResumable, UploadTask } from "firebase/storage";
+import { Certificate } from "crypto";
 
 interface MachineDetailClientProps {
   records: MachineInspectionRecord[];
@@ -374,6 +375,21 @@ export default function MachineDetailClient({ records, questions }: MachineDetai
                 </div>
               </div>
               
+              {/* Certificate Section */}
+              {record.certificate && (
+                <div className="mt-3">
+                  <div className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200 px-3 py-2 rounded-lg shadow-sm">
+                    <div className="flex items-center justify-center w-8 h-8 bg-gradient-to-br from-amber-400 to-yellow-500 rounded-full shadow-sm">
+                      <AwardIcon className="h-4 w-4 text-white" />
+                    </div>
+                    <div>
+                      <div className="text-xs font-medium text-amber-800 uppercase tracking-wide">Certification</div>
+                      <div className="text-sm font-semibold text-amber-900">{record.certificate}</div>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
               {/* Location Information Section */}
               {record.latitude && record.longitude && (
                 <div className="mt-3 relative">
@@ -487,7 +503,6 @@ export default function MachineDetailClient({ records, questions }: MachineDetai
             </div>
           </div>
         </CardHeader>
-        
         <CardContent>
           {/* Inspection Results Summary */}
           <div className="mb-4">
@@ -505,13 +520,13 @@ export default function MachineDetailClient({ records, questions }: MachineDetai
               <div className="grid gap-2">
                 {Object.keys(record)
                   .filter(key => 
-                    key !== 'id' && key !== 'bu' && key !== 'type' && key !== 'inspector' && 
+                    key !== 'id' && key !== 'bu' && key !== 'type' && key !== 'inspector' && key !== 'certificate' && 
                     key !== 'timestamp' && key !== 'createdAt' && key !== 'remark' && 
                     key !== 'images' && key !== 'docId' &&
                     key !== 'latitude' && key !== 'longitude' && key !== 'locationTimestamp' && key !== 'locationAccuracy' &&
                     !key.endsWith('R') && !key.endsWith('P') // Exclude remark and image fields
                   )
-                  .map(key => {
+                  .map((key, idx) => {
                     const value = record[key];
                     const isPassed = value === 'pass' || value === true || value === 'Passed';
                     const isFailed = value === 'fail' || value === false || value === 'Failed';
@@ -525,7 +540,7 @@ export default function MachineDetailClient({ records, questions }: MachineDetai
                             : 'bg-gray-50 text-gray-700 border-gray-200'
                         }`}
                       >
-                        <span className="font-medium">
+                        <span className="font-medium">{idx + 1}{'. '}
                           {questionMapping[key] || key.replace(/([A-Z])/g, ' $1').trim()}
                         </span>
                         <Badge 
