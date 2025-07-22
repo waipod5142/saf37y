@@ -6,7 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "deploy": "firebase apphosting:rollouts:create saf37y --git-branch main"
   },
   "dependencies": {
     "@hello-pangea/dnd": "^18.0.1",

@@ -1,12 +1,8 @@
 import type { NextConfig } from "next";
 
-// next.config.ts for static export
+// next.config.ts for Firebase App Hosting
 const nextConfig: NextConfig = {
-  output: 'export',
-  distDir: 'out',
-  trailingSlash: true,
   images: {
-    unoptimized: true,
     remotePatterns: [
       {
         protocol: "https",
