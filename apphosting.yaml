@@ -1,6 +1,6 @@
 # apphosting.yaml
 runConfig:
-  runtime: nodejs20
+  runtime: nodejs18
   cpu: 2
   memory: 2GB
   minInstances: 0
