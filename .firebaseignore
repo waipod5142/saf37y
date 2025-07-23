@@ -1,0 +1,14 @@
+# Firebase ignore
+node_modules/
+.git/
+.env*
+.next/
+out/
+coverage/
+*.log
+.DS_Store
+*.pem
+.vercel/
+*.tsbuildinfo
+firebase-debug.log
+.firebase/

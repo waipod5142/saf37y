@@ -1,6 +1,6 @@
 "use client";
 
-import ContinueWithGoogleButton from "@/components/continue-with-google-button";
+import ContinueWithGoogleButton from "./continue-with-google-button";
 import { Button } from "@/components/ui/button";
 import {
   Form,

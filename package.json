@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "deploy": "firebase apphosting:rollouts:create saf37y --git-branch main"
+    "deploy": "firebase apphosting:rollouts:create saf37y-1 --git-branch main",
+    "deploy:old": "firebase deploy"
   },
   "dependencies": {
     "@hello-pangea/dnd": "^18.0.1",
