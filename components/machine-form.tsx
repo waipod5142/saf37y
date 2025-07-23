@@ -473,7 +473,7 @@ export default function MachineForm({ bu, type, id }: MachineFormProps) {
                   {index + 1}. {question.question}
                 </div>
                 
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-gray-400 drop-shadow-sm opacity-75">
                   {question.howto && (
                   <p><strong>{getTranslation('howto', 'How to check')}:</strong> {question.howto}</p>
                   )}
