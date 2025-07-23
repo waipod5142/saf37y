@@ -5,7 +5,7 @@ import { MachineInspectionRecord } from "@/types/machineInspectionRecord";
 import { MachineItem } from "@/lib/machine-types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button } from "./ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { CalendarIcon, UserIcon, FileTextIcon, ToggleLeftIcon, ToggleRightIcon, Trash2Icon, MapPinIcon, WrenchIcon, CheckIcon, AwardIcon } from "lucide-react";
 import { deleteMachineInspectionRecord, updateMachineInspectionRecord } from "@/lib/actions/machines";

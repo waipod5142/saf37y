@@ -7,7 +7,7 @@ import { getVocabulary } from "@/lib/actions/vocabulary";
 import { MachineItem, machineTitles, quarterlyEquipment } from "@/lib/machine-types";
 import { Vocabulary, Choice } from "@/types/vocabulary";
 import RadioButtonGroup from "@/components/ui/radio-button-group";
-import { Button } from "@/components/ui/button";
+import { Button } from "./ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
