@@ -9,10 +9,9 @@ export async function getMachineQuestions(
 ): Promise<{ success: boolean; questions?: MachineItem[]; title?: string; image?: string; error?: string }> {
   try {
     // Process parameters
-    const processedBu = bu && ['srb', 'mkt', 'office', 'lbm', 'rmx', 'iagg', 'ieco'].includes(bu) ? 'th' : bu;
     const processedType = type.toLowerCase();
     
-    const formData = await getFormWithTitle(processedBu, processedType);
+    const formData = await getFormWithTitle(bu, processedType);
     if (!formData) {
       return {
         success: false,

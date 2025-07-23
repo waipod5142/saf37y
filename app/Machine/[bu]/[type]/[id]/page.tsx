@@ -13,12 +13,17 @@ export default async function MachinePage({
 }) {
   const { bu, type, id } = await params;
   
+  // Decode URL parameters to handle special characters (including Thai characters)
+  const decodedBu = decodeURIComponent(bu);
+  const decodedType = decodeURIComponent(type);
+  const decodedId = decodeURIComponent(id);
+  
   return (
     <div className="max-w-4xl mx-auto p-2">     
-      <MachineTitle bu={bu} type={type} id={id} />
-      <MachineHeader bu={bu} type={type} id={id} />
-      <MachineDetail bu={bu} type={type} id={id} />
-      <MachineForm bu={bu} type={type} id={id} />
+      <MachineTitle bu={decodedBu} type={decodedType} id={decodedId} />
+      <MachineHeader bu={decodedBu} type={decodedType} id={decodedId} />
+      <MachineDetail bu={decodedBu} type={decodedType} id={decodedId} />
+      <MachineForm bu={decodedBu} type={decodedType} id={decodedId} />
     </div>
   );
 }

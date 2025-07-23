@@ -1,5 +1,5 @@
 import { getMachineById } from "@/data/machines";
-import { SettingsIcon, AlertTriangleIcon, QrCodeIcon } from "lucide-react";
+import { AlertTriangleIcon } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import QRCodeComponent from "./qr-code";
 

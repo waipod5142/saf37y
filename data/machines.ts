@@ -9,12 +9,17 @@ export const getMachineById = async (
   id: string
 ): Promise<Machine | null> => {
   try {
+    // Decode URL parameters to handle special characters (including Thai characters)
+    const decodedBu = decodeURIComponent(bu);
+    const decodedType = decodeURIComponent(type);
+    const decodedId = decodeURIComponent(id);
+    
     // Query the machine collection with matching bu, type, and id
     const machineQuery = firestore
       .collection("machine")
-      .where("bu", "==", bu)
-      .where("type", "==", type.toLowerCase())
-      .where("id", "==", id);
+      .where("bu", "==", decodedBu)
+      .where("type", "==", decodedType.toLowerCase())
+      .where("id", "==", decodedId);
 
     const machineSnapshot = await machineQuery.get();
 
@@ -41,12 +46,17 @@ export const getMachineInspectionRecords = async (
   id: string
 ): Promise<MachineInspectionRecord[]> => {
   try {
+    // Decode URL parameters to handle special characters (including Thai characters)
+    const decodedBu = decodeURIComponent(bu);
+    const decodedType = decodeURIComponent(type);
+    const decodedId = decodeURIComponent(id);
+    
     // Query the machinetr collection with matching bu, type (lowercase), and id
     const inspectionQuery = firestore
       .collection("machinetr")
-      .where("bu", "==", bu)
-      .where("type", "==", type.toLowerCase())
-      .where("id", "==", id)
+      .where("bu", "==", decodedBu)
+      .where("type", "==", decodedType.toLowerCase())
+      .where("id", "==", decodedId)
       .orderBy("timestamp", "desc"); // Latest first
 
     const inspectionSnapshot = await inspectionQuery.get();
