@@ -7,7 +7,10 @@ export async function getVocabulary(
   bu: string
 ): Promise<{ success: boolean; vocabulary?: Vocabulary; error?: string }> {
   try {
-    const vocabulary = await getVocabularyByBu(bu);
+    // Process parameters
+    const processedBu = bu && ['srb', 'mkt', 'office', 'lbm', 'rmx', 'iagg', 'ieco'].includes(bu) ? 'th' : bu;
+    
+    const vocabulary = await getVocabularyByBu(processedBu);
     
     if (!vocabulary) {
       return {

@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { getMachineQuestions } from "@/lib/actions/forms";
-import { machineTitles } from "@/lib/machine-types";
 import { toast } from "sonner";
 import Image from "next/image";
 
@@ -18,11 +17,6 @@ export default function MachineTitle({ bu, type, id }: MachineTitleProps) {
   const [isLoadingTitle, setIsLoadingTitle] = useState<boolean>(true);
   const [imageError, setImageError] = useState<boolean>(false);
   
-  // Determine BU (business unit) and machine type
-  const businessUnit = bu === "thailand" ? "th" : bu === "vietnam" ? "vn" : 
-                    bu === "bangladesh" ? "bd" : bu === "srilanka" ? "lk" : 
-                      bu === "cambodia" ? "cmic" : bu;
-  const machine = type.charAt(0).toUpperCase() + type.slice(1);
 
   useEffect(() => {
     const fetchTitle = async () => {
@@ -78,10 +72,8 @@ export default function MachineTitle({ bu, type, id }: MachineTitleProps) {
     if (formTitle) {
       return formTitle;
     }
-    // Fallback to hardcoded titles if no dynamic title is available
-    const adjustedBu = ["srb", "mkt", "office", "lbm", "rmx", "iagg", "ieco"].includes(businessUnit) ? "th" : businessUnit;
-    const adjustedMachine = machine === "Truck" && businessUnit !== "srb" ? "Truckall" : machine;
-    return machineTitles[adjustedBu + adjustedMachine] || `${machine} Inspection`;
+    // Simple fallback if no dynamic title is available
+    return `${type} Inspection`;
   };
 
   // Add loading state while title is being fetched

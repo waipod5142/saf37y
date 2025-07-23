@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useForm, FieldValues, SubmitHandler } from "react-hook-form";
 import { getMachineQuestions } from "@/lib/actions/forms";
 import { getVocabulary } from "@/lib/actions/vocabulary";
-import { MachineItem, machineTitles, quarterlyEquipment } from "@/lib/machine-types";
+import { MachineItem, quarterlyEquipment } from "@/lib/machine-types";
 import { Vocabulary, Choice } from "@/types/vocabulary";
 import RadioButtonGroup from "@/components/ui/radio-button-group";
 import { Button } from "./ui/button";
@@ -54,9 +54,6 @@ export default function MachineForm({ bu, type, id }: MachineFormProps) {
   const [selectedValues, setSelectedValues] = useState<{
     [key: string]: string | null;
   }>({});
-  const [fileUrls, setFileUrls] = useState<{ [key: string]: string | null }>({});
-  const [isUploading, setIsUploading] = useState<{ [key: string]: boolean }>({});
-  const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [images, setImages] = useState<ImageUpload[]>([]);
   const [questionImages, setQuestionImages] = useState<{ [questionName: string]: ImageUpload[] }>({});
   
@@ -71,12 +68,6 @@ export default function MachineForm({ bu, type, id }: MachineFormProps) {
     hasLocation 
   } = useGeolocation();
 
-  // Determine BU (business unit) and machine type
-  const businessUnit = bu === "thailand" ? "th" : bu === "vietnam" ? "vn" : 
-                      bu === "bangladesh" ? "bd" : bu === "srilanka" ? "lk" : 
-                      bu === "cambodia" ? "cmic" : bu;
-  const machine = type.charAt(0).toUpperCase() + type.slice(1);
-
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -86,7 +77,7 @@ export default function MachineForm({ bu, type, id }: MachineFormProps) {
         // Fetch questions and vocabulary in parallel
         const [questionsResult, vocabularyResult] = await Promise.all([
           getMachineQuestions(bu, type),
-          getVocabulary(businessUnit)
+          getVocabulary(bu)
         ]);
         
         // Handle questions
@@ -106,7 +97,7 @@ export default function MachineForm({ bu, type, id }: MachineFormProps) {
         if (vocabularyResult.success && vocabularyResult.vocabulary) {
           setVocabulary(vocabularyResult.vocabulary);
         } else {
-          console.warn("No vocabulary found for business unit:", businessUnit);
+          console.warn("No vocabulary found for business unit:", bu);
           setVocabulary(null);
         }
       } catch (error) {
@@ -121,7 +112,7 @@ export default function MachineForm({ bu, type, id }: MachineFormProps) {
     };
 
     fetchData();
-  }, [bu, type, id, businessUnit]);
+  }, [bu, type, id]);
 
   // Automatically request location when component mounts (only once)
   useEffect(() => {
@@ -136,50 +127,6 @@ export default function MachineForm({ bu, type, id }: MachineFormProps) {
     setQuestionImages((prev) => ({ ...prev, [questionName]: images }));
   };
 
-  const handleFileChange = async (
-    e: React.ChangeEvent<HTMLInputElement>,
-    questionName: string
-  ) => {
-    const selectedFile = e.target.files?.[0];
-    if (selectedFile) {
-      try {
-        setIsUploading((prev) => ({ ...prev, [questionName]: true }));
-        setUploadProgress(0);
-        
-        // Simulate file upload progress
-        const interval = setInterval(() => {
-          setUploadProgress((prev) => {
-            if (prev >= 100) {
-              clearInterval(interval);
-              return 100;
-            }
-            return prev + 10;
-          });
-        }, 100);
-
-        // Simulate upload delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // Create a mock URL for the uploaded file
-        const mockUrl = URL.createObjectURL(selectedFile);
-        
-        setFileUrls((prev) => {
-          const newKey = questionName === "url" ? questionName : questionName + "P";
-          return { ...prev, [newKey]: mockUrl };
-        });
-
-        setIsUploading((prev) => ({ ...prev, [questionName]: false }));
-        setUploadProgress(0);
-        
-        toast.success("File uploaded successfully");
-      } catch (error) {
-        console.error("Upload error:", error);
-        setIsUploading((prev) => ({ ...prev, [questionName]: false }));
-        setUploadProgress(0);
-        toast.error("Failed to upload file");
-      }
-    }
-  };
 
   const onSubmit: SubmitHandler<FormData> = async (formData) => {
     try {
@@ -199,9 +146,13 @@ export default function MachineForm({ bu, type, id }: MachineFormProps) {
       if (!auth.currentUser) {
         try {
           await signInAnonymously(auth);
-        } catch (authError) {
+        } catch (authError: any) {
           console.error("Authentication error:", authError);
-          toast.error("Authentication failed. Please try again.");
+          if (authError?.code === 'auth/api-key-expired') {
+            toast.error("Firebase API key has expired. Please contact administrator to renew the key.");
+          } else {
+            toast.error("Authentication failed. Please try again.");
+          }
           return;
         }
       }
@@ -209,8 +160,8 @@ export default function MachineForm({ bu, type, id }: MachineFormProps) {
       const updatedData: FormData = {
         ...formData,
         ...selectedValues,
-        bu: businessUnit,
-        type: machine.toLowerCase(),
+        bu,
+        type: type.toLowerCase(),
         id,
         // Include location data
         latitude: latitude || undefined,
@@ -219,12 +170,6 @@ export default function MachineForm({ bu, type, id }: MachineFormProps) {
         locationAccuracy: accuracy || undefined,
       };
 
-      // Add file URLs to the data (for questions with images)
-      Object.keys(fileUrls).forEach((key) => {
-        if (fileUrls[key]) {
-          updatedData[key] = fileUrls[key];
-        }
-      });
 
       // Upload images to Firebase Storage
       const uploadTasks: UploadTask[] = [];
@@ -283,7 +228,6 @@ export default function MachineForm({ bu, type, id }: MachineFormProps) {
           toast.success("Form submitted successfully!");
           reset();
           setSelectedValues({});
-          setFileUrls({});
           setImages([]);
           setQuestionImages({});
           
@@ -308,10 +252,8 @@ export default function MachineForm({ bu, type, id }: MachineFormProps) {
     if (formTitle) {
       return formTitle;
     }
-    // Fallback to hardcoded titles if no dynamic title is available
-    const adjustedBu = ["srb", "mkt", "office", "lbm", "rmx", "iagg", "ieco"].includes(businessUnit) ? "th" : businessUnit;
-    const adjustedMachine = machine === "Truck" && businessUnit !== "srb" ? "Truckall" : machine;
-    return machineTitles[adjustedBu + adjustedMachine] || `${machine} Inspection`;
+    // Simple fallback if no dynamic title is available
+    return `${type} Inspection`;
   };
 
   // Get choices for radio buttons from vocabulary or fallback
@@ -371,7 +313,7 @@ export default function MachineForm({ bu, type, id }: MachineFormProps) {
         <Card>
           <CardContent className="pt-6">
             <div className="text-center">
-              <p>No questions available for this machine type.</p>
+              <p>No questions available for this type.</p>
             </div>
           </CardContent>
         </Card>
@@ -419,7 +361,7 @@ export default function MachineForm({ bu, type, id }: MachineFormProps) {
               <Label htmlFor="inspector" className="text-lg font-semibold">
                 {getTranslation('inspector', 'Inspector')}
               </Label>
-              {businessUnit === "rmx" && machine === "Mixertsm" ? (
+              {bu === "rmx" && type.toLowerCase() === "mixertsm" ? (
                 <select
                   {...register("inspector", { required: "Inspector is required" })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
@@ -457,7 +399,7 @@ export default function MachineForm({ bu, type, id }: MachineFormProps) {
         </Card>
 
         {/* Mileage Field for Thai cars */}
-        {["srb", "mkt", "office", "lbm", "rmx", "iagg", "ieco"].includes(businessUnit) && machine === "Car" && (
+        {["srb", "mkt", "office", "lbm", "rmx", "iagg", "ieco"].includes(bu) && type.toLowerCase() === "car" && (
           <Card>
             <CardContent className="pt-6">
               <div className="space-y-2">
@@ -479,7 +421,7 @@ export default function MachineForm({ bu, type, id }: MachineFormProps) {
         )}
 
         {/* Tag Number for Vietnam quarterly equipment */}
-        {quarterlyEquipment.some((item) => item.id === machine) && businessUnit === "vn" && (
+        {quarterlyEquipment.some((item) => item.id === type.toLowerCase()) && bu === "vn" && (
           <Card>
             <CardContent className="pt-6">
               <div className="space-y-2">
@@ -501,7 +443,7 @@ export default function MachineForm({ bu, type, id }: MachineFormProps) {
         )}
 
         {/* Certificate Field for Vietnam */}
-        {["Lifting", "Vehicle", "Mobile"].includes(machine) && businessUnit === "vn" && (
+        {["lifting", "vehicle", "mobile"].includes(type.toLowerCase()) && bu === "vn" && (
           <Card>
             <CardContent className="pt-6">
               <div className="space-y-2">
@@ -630,7 +572,7 @@ export default function MachineForm({ bu, type, id }: MachineFormProps) {
         {/* Submit Button */}
         <Button
           type="submit"
-          disabled={isSubmitting || Object.values(isUploading).some((uploading) => uploading)}
+          disabled={isSubmitting}
           className="w-full h-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-full shadow-lg"
         >
           {isSubmitting ? "Submitting..." : getTranslation('submit', 'Submit')}

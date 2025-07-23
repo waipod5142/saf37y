@@ -8,8 +8,11 @@ export async function getMachineQuestions(
   type: string,
 ): Promise<{ success: boolean; questions?: MachineItem[]; title?: string; image?: string; error?: string }> {
   try {
-    const formData = await getFormWithTitle(bu, type);
+    // Process parameters
+    const processedBu = bu && ['srb', 'mkt', 'office', 'lbm', 'rmx', 'iagg', 'ieco'].includes(bu) ? 'th' : bu;
+    const processedType = type.toLowerCase();
     
+    const formData = await getFormWithTitle(processedBu, processedType);
     if (!formData) {
       return {
         success: false,
@@ -17,6 +20,15 @@ export async function getMachineQuestions(
       };
     }
 
+    // Validate that questions exists and is an array
+    if (!formData.questions || !Array.isArray(formData.questions)) {
+      return {
+        success: true,
+        questions: [],
+        title: formData.title,
+        image: formData.image
+      };
+    }
     if (formData.questions.length === 0) {
       return {
         success: true,
@@ -27,7 +39,7 @@ export async function getMachineQuestions(
     }
 
     // Convert form questions to MachineItem format
-    const formattedQuestions: MachineItem[] = formData.questions.map((q, index) => ({
+    const formattedQuestions: MachineItem[] = formData.questions.map((q) => ({
       name: q.name,
       question: q.question,
       howto: q.howto,

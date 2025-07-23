@@ -9,13 +9,13 @@ import { Firestore, getFirestore } from "firebase/firestore";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyCbLOLR4KqlWaGOfvZesdVVgFzlyDluPkI",
-  authDomain: "sccc-inseesafety-prod.firebaseapp.com",
-  projectId: "sccc-inseesafety-prod",
-  storageBucket: "sccc-inseesafety-prod.firebasestorage.app",
-  messagingSenderId: "874085997493",
-  appId: "1:874085997493:web:5156272fd22b224b5097fc",
-  measurementId: "G-KZT8MZC6MB",
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "AIzaSyDOi9vLxu7CeOtoT1Q-Z5Hq3m4ajmfXYL0",
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "sccc-inseesafety-prod.firebaseapp.com",
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "sccc-inseesafety-prod",
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "sccc-inseesafety-prod.firebasestorage.app",
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "874085997493",
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "1:874085997493:web:280caa4e438035005097fc",
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID || "G-52XL7ZNC27",
 };
 
 // Initialize Firebase

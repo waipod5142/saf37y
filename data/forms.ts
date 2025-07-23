@@ -24,8 +24,19 @@ export const getFormQuestions = async (
     const doc = formsSnapshot.docs[0];
     const formData = doc.data();
 
+    // Parse questions if it's stored as a JSON string
+    let questions = formData.questions || [];
+    if (typeof questions === 'string') {
+      try {
+        questions = JSON.parse(questions);
+      } catch (error) {
+        console.error('Error parsing questions JSON:', error);
+        questions = [];
+      }
+    }
+    
     // Return the questions array from the form document
-    return formData.questions || [];
+    return questions;
   } catch (error) {
     console.error("Error fetching form questions:", error);
     return null;
@@ -53,9 +64,20 @@ export const getFormWithTitle = async (
     const doc = formsSnapshot.docs[0];
     const formData = doc.data();
 
+    // Parse questions if it's stored as a JSON string
+    let questions = formData.questions || [];
+    if (typeof questions === 'string') {
+      try {
+        questions = JSON.parse(questions);
+      } catch (error) {
+        console.error('Error parsing questions JSON:', error);
+        questions = [];
+      }
+    }
+    
     // Return questions, title, and image from the form document
     return {
-      questions: formData.questions || [],
+      questions,
       title: formData.title,
       image: formData.image
     };
