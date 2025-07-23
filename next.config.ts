@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import path from "path";
 
 // next.config.ts for Firebase App Hosting
 const nextConfig: NextConfig = {
@@ -17,5 +18,12 @@ const nextConfig: NextConfig = {
         hostname: "www.en-renova.com",
       },
     ],
+  },
+  webpack: (config) => {
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      "@": path.resolve(__dirname),
+    };
+    return config;
   },
 };
