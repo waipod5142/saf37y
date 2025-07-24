@@ -1,6 +1,7 @@
 import { firestore } from "@/firebase/server";
 import { Machine } from "@/types/machine";
 import { MachineInspectionRecord } from "@/types/machineInspectionRecord";
+import { getFormInspectionPeriods, InspectionPeriod } from "./forms";
 import "server-only";
 
 export const getMachineById = async (
@@ -132,6 +133,44 @@ export const getMachineInspectionCountry = async (
   }
 };
 
+export const getMachinesBySiteAndType = async (
+  bu: string,
+  site: string,
+  type: string
+): Promise<Machine[]> => {
+  try {
+    // Query the machine collection with matching bu, site, and type
+    const machineQuery = firestore
+      .collection("machine")
+      .where("bu", "==", bu)
+      .where("site", "==", site)
+      .where("type", "==", type.toLowerCase());
+
+    const machineSnapshot = await machineQuery.get();
+
+    if (machineSnapshot.empty) {
+      return [];
+    }
+
+    // Map all matching documents to Machine objects
+    const machines: Machine[] = machineSnapshot.docs.map((doc) => {
+      const machineData = doc.data();
+      return {
+        ...machineData,
+        docId: doc.id,
+      } as Machine;
+    });
+
+    // Sort by machine ID for consistent ordering
+    machines.sort((a, b) => (a.id || "").localeCompare(b.id || ""));
+
+    return machines;
+  } catch (error) {
+    console.error("Error fetching machines by site and type:", error);
+    return [];
+  }
+};
+
 export interface DashboardMachineStats {
   [machineType: string]: {
     [businessUnit: string]: {
@@ -150,6 +189,9 @@ export const getDashboardMachineStats = async (period?: string): Promise<{
 }> => {
   try {
     const BUSINESS_UNITS = ["th", "vn"];
+    
+    // Get form inspection periods for filtering (get all forms, not BU-specific)
+    const formInspectionPeriods = await getFormInspectionPeriods();
     
     // Get all machines
     const machineQuery = firestore.collection("machine");
@@ -199,8 +241,24 @@ export const getDashboardMachineStats = async (period?: string): Promise<{
     });
     allRecords.forEach(record => allMachineTypes.add(record.type));
 
-    // Initialize stats for all combinations
-    allMachineTypes.forEach(type => {
+    // Filter machine types based on form inspection periods and requested period
+    const filteredMachineTypes = Array.from(allMachineTypes).filter(type => {
+      const formPeriod = formInspectionPeriods[type];
+      
+      // If no period is specified, show all types
+      if (!period) return true;
+      
+      // If form has inspection period defined, only show if it matches requested period
+      if (formPeriod) {
+        return formPeriod === period;
+      }
+      
+      // If no form inspection period is defined, show in all periods (backward compatibility)
+      return true;
+    });
+
+    // Initialize stats for filtered machine types only
+    filteredMachineTypes.forEach(type => {
       stats[type] = {};
       BUSINESS_UNITS.forEach(bu => {
         stats[type][bu] = {
@@ -213,10 +271,10 @@ export const getDashboardMachineStats = async (period?: string): Promise<{
       });
     });
 
-    // Set total machine counts
+    // Set total machine counts for filtered types only
     Object.keys(machinesByBuType).forEach(bu => {
       Object.keys(machinesByBuType[bu]).forEach(type => {
-        if (stats[type] && stats[type][bu]) {
+        if (filteredMachineTypes.includes(type) && stats[type] && stats[type][bu]) {
           stats[type][bu].total = machinesByBuType[bu][type].length;
         }
       });
@@ -267,9 +325,10 @@ export const getDashboardMachineStats = async (period?: string): Promise<{
       }
     });
 
-    // Process latest inspection records to calculate stats
+    // Process latest inspection records to calculate stats (only for filtered types)
     Object.values(latestInspectionsByMachine).forEach(record => {
-      if (stats[record.type] && stats[record.type][record.bu]) {
+      // Only process records for filtered machine types
+      if (filteredMachineTypes.includes(record.type) && stats[record.type] && stats[record.type][record.bu]) {
         // Only count if this machine actually exists in the machine collection
         const machineExists = machinesByBuType[record.bu]?.[record.type]?.some(m => m.id === record.id);
         
@@ -330,11 +389,14 @@ export const getDashboardMachineStatsByBU = async (period?: string, bu?: string)
 }> => {
   try {
     const SITE_MAPPING: Record<string, string[]> = {
-      "th": ["ho"],
-      "vn": ["honc", "catl"]
+      "th": ["ho", "srb"],
+      "vn": ["honc", "catl", "nhon", "thiv"]
     };
     
     const sites = SITE_MAPPING[bu || ""] || [];
+    
+    // Get form inspection periods for filtering
+    const formInspectionPeriods = await getFormInspectionPeriods(bu);
     
     // Get all machines filtered by business unit
     const machineQuery = bu 
@@ -404,8 +466,24 @@ export const getDashboardMachineStatsByBU = async (period?: string, bu?: string)
     });
     allRecords.forEach(record => allMachineTypes.add(record.type));
 
-    // Initialize stats for all combinations
-    allMachineTypes.forEach(type => {
+    // Filter machine types based on form inspection periods and requested period
+    const filteredMachineTypes = Array.from(allMachineTypes).filter(type => {
+      const formPeriod = formInspectionPeriods[type];
+      
+      // If no period is specified, show all types
+      if (!period) return true;
+      
+      // If form has inspection period defined, only show if it matches requested period
+      if (formPeriod) {
+        return formPeriod === period;
+      }
+      
+      // If no form inspection period is defined, show in all periods (backward compatibility)
+      return true;
+    });
+
+    // Initialize stats for filtered machine types only
+    filteredMachineTypes.forEach(type => {
       stats[type] = {};
       sites.forEach(site => {
         stats[type][site] = {
@@ -418,10 +496,10 @@ export const getDashboardMachineStatsByBU = async (period?: string, bu?: string)
       });
     });
 
-    // Set total machine counts
+    // Set total machine counts for filtered types only
     Object.keys(machinesBySiteType).forEach(site => {
       Object.keys(machinesBySiteType[site]).forEach(type => {
-        if (stats[type] && stats[type][site]) {
+        if (filteredMachineTypes.includes(type) && stats[type] && stats[type][site]) {
           stats[type][site].total = machinesBySiteType[site][type].length;
         }
       });
@@ -472,11 +550,12 @@ export const getDashboardMachineStatsByBU = async (period?: string, bu?: string)
       }
     });
 
-    // Process latest inspection records to calculate stats
+    // Process latest inspection records to calculate stats (only for filtered types)
     Object.values(latestInspectionsByMachine).forEach(record => {
       const site = record.site || "unknown";
       
-      if (stats[record.type] && stats[record.type][site]) {
+      // Only process records for filtered machine types
+      if (filteredMachineTypes.includes(record.type) && stats[record.type] && stats[record.type][site]) {
         // Only count if this machine actually exists in the machine collection
         const machineExists = machinesBySiteType[site]?.[record.type]?.some(m => m.id === record.id);
         

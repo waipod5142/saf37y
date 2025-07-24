@@ -2,6 +2,7 @@
 
 import { firestore } from "@/firebase/server";
 import { MachineInspectionRecord } from "@/types/machineInspectionRecord";
+import { Machine } from "@/types/machine";
 import { FieldValue } from "firebase-admin/firestore";
 import admin from "firebase-admin";
 
@@ -167,6 +168,102 @@ export async function deleteMachineInspectionRecord(
     return {
       success: false,
       error: "Failed to delete machine inspection record",
+    };
+  }
+}
+
+export async function getMachinesAction(
+  bu: string,
+  site: string,
+  type: string
+): Promise<{ success: boolean; machines?: Machine[]; error?: string }> {
+  try {
+    // Debug logging
+    console.log("=== getMachinesAction Debug Info ===");
+    console.log("Input parameters:", { bu, site, type });
+    console.log("Query type (lowercased):", type.toLowerCase());
+
+    // Query the machine collection with matching bu, site, and type
+    const machineQuery = firestore
+      .collection("machine")
+      .where("bu", "==", bu)
+      .where("site", "==", site)
+      .where("type", "==", type.toLowerCase());
+
+    console.log("Executing Firestore query...");
+    const machineSnapshot = await machineQuery.get();
+    
+    console.log("Query result:", {
+      empty: machineSnapshot.empty,
+      size: machineSnapshot.size,
+      docs: machineSnapshot.docs.length
+    });
+
+    if (machineSnapshot.empty) {
+      console.log("No documents found - returning empty array");
+      
+      // Additional debug: Let's check if there are any machines with this bu and site (ignoring type)
+      const debugQuery = firestore
+        .collection("machine")
+        .where("bu", "==", bu)
+        .where("site", "==", site);
+      
+      const debugSnapshot = await debugQuery.get();
+      console.log("Debug check - machines with same bu/site (any type):", debugSnapshot.size);
+      
+      if (!debugSnapshot.empty) {
+        const types = debugSnapshot.docs.map(doc => doc.data().type);
+        console.log("Available types for this bu/site:", [...new Set(types)]);
+      }
+      
+      return {
+        success: true,
+        machines: [],
+      };
+    }
+
+    // Map all matching documents to Machine objects
+    const machines: Machine[] = machineSnapshot.docs.map((doc) => {
+      const machineData = doc.data();
+      console.log("Found machine:", { id: machineData.id, type: machineData.type, site: machineData.site, bu: machineData.bu });
+      
+      // Serialize Firestore data for client-server boundary
+      const serializedData: any = {};
+      Object.keys(machineData).forEach(key => {
+        const value = machineData[key];
+        if (value && typeof value === 'object' && value.toDate) {
+          // Convert Firestore Timestamp to ISO string
+          serializedData[key] = value.toDate().toISOString();
+        } else {
+          serializedData[key] = value;
+        }
+      });
+      
+      return {
+        ...serializedData,
+        docId: doc.id,
+      } as Machine;
+    });
+
+    // Sort by machine ID for consistent ordering
+    machines.sort((a, b) => (a.id || "").localeCompare(b.id || ""));
+
+    console.log("Returning machines:", machines.length);
+    console.log("=== End Debug Info ===");
+
+    return {
+      success: true,
+      machines,
+    };
+  } catch (error) {
+    console.error("Error fetching machines by site and type:", error);
+    console.error("Error details:", {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : 'No stack trace'
+    });
+    return {
+      success: false,
+      error: `Failed to fetch machines: ${error instanceof Error ? error.message : 'Unknown error'}`,
     };
   }
 }

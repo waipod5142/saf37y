@@ -67,7 +67,15 @@ export type DetailTypes =
   | "firepump"
   | "fullbodyharness"
   | "hoist"
-  | "overheadcrane";
+  | "overheadcrane"
+  | "electrical"
+  | "firstaid"
+  | "firstaidbox"
+  | "liftinggear"
+  | "slope"
+  | "socket"
+  | "stock"
+  | "thermal";
 
 export const isValidDetailType = (id: string): id is DetailTypes => {
   return [
@@ -113,6 +121,14 @@ export const isValidDetailType = (id: string): id is DetailTypes => {
     "fullbodyharness",
     "hoist",
     "overheadcrane",
+    "electrical",
+    "firstaid",
+    "firstaidbox",
+    "liftinggear",
+    "slope",
+    "socket",
+    "stock",
+    "thermal",
   ].includes(id);
 };
 
