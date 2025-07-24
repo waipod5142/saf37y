@@ -2,6 +2,7 @@ export interface MachineInspectionRecord {
   id: string;
   bu: string;
   type: string;
+  site?: string; // Site information joined from machine collection
   inspector: string;
   timestamp: any; // Firebase Timestamp
   createdAt?: any; // Firebase Timestamp

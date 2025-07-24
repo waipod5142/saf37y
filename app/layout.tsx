@@ -36,9 +36,9 @@ export default function RootLayout({
                 alt="INSEE Logo"
                 width={40}
                 height={40}
-                className="w-10 h-10 filter brightness-0 invert"
+                className="w-8 h-8 filter brightness-0 invert"
               />
-              <span className="text-2xl tracking-widest uppercase font-semibold">INSEE Safety</span>
+              <span className="text-xl tracking-widest uppercase font-semibold">INSEE Safety</span>
             </Link>
             <ul className="flex gap-6 items-center">
               <li>
