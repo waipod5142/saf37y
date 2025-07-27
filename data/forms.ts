@@ -88,7 +88,7 @@ export const getFormWithTitle = async (
   }
 };
 
-export type InspectionPeriod = "daily" | "monthly" | "quarterly" | "annually";
+export type InspectionPeriod = "daily" | "monthly" | "quarterly" | "annual";
 
 export const getFormInspectionPeriods = async (
   bu?: string
@@ -113,7 +113,7 @@ export const getFormInspectionPeriods = async (
       const type = formData.type;
       const inspection = formData.inspection;
       
-      if (type && inspection && (inspection === "daily" || inspection === "monthly" || inspection === "quarterly" || inspection === "annually")) {
+      if (type && inspection && (inspection === "daily" || inspection === "monthly" || inspection === "quarterly" || inspection === "annual")) {
         inspectionMapping[type] = inspection as InspectionPeriod;
       }
     });
@@ -147,7 +147,7 @@ export const getFormInspectionPeriodForType = async (
     const formData = doc.data();
     const inspection = formData.inspection;
     
-    if (inspection && (inspection === "daily" || inspection === "monthly" || inspection === "quarterly" || inspection === "annually")) {
+    if (inspection && (inspection === "daily" || inspection === "monthly" || inspection === "quarterly" || inspection === "annual")) {
       return inspection as InspectionPeriod;
     }
 

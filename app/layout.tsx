@@ -43,18 +43,10 @@ export default function RootLayout({
             <ul className="flex gap-6 items-center">
               <li>
                 <Link
-                  href="/Machine/vn/Lifting/CANT-1"
+                  href="/dashboard"
                   className="uppercase tracking-widest hover:underline"
                 >
-                  Lifting equipment
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/Machine/vn/Lifevest/HONC-SC-LV-22"
-                  className="uppercase tracking-widest hover:underline"
-                >
-                  Life vest
+                  Machine Dashboard
                 </Link>
               </li>
               <li>

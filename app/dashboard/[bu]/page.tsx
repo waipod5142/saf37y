@@ -11,13 +11,19 @@ import { useParams } from "next/navigation";
 import { MachineListModal } from "@/components/MachineListModal";
 
 const SITE_MAPPING: Record<string, string[]> = {
-  "th": ["ho", "srb"],
-  "vn": ["honc", "catl", "nhon", "thiv"]
+  "th": ["ho", "srb", "log"],
+  "vn": ["honc", "thiv", "catl", "hiep", "nhon", "cant", "ho"],
+  "lk": ["pcw", "rcw", "elc", "hbp", "quarry"],
+  "bd": ["plant"],
+  "cmic": ["cmic"],
 };
 
 const BU_DISPLAY: Record<string, { name: string; flag: string }> = {
   "th": { name: "Thailand", flag: "🇹🇭" },
-  "vn": { name: "Vietnam", flag: "🇻🇳" }
+  "vn": { name: "Vietnam", flag: "🇻🇳" },
+  "lk": { name: "Sri Lanka", flag: "🇱🇰" },
+  "bd": { name: "Bangladesh", flag: "🇧🇩" },
+  "cmic": { name: "Cambodia", flag: "🇰🇭" }
 };
 
 const MACHINE_TYPE_DISPLAY: Record<string, string> = {
@@ -27,9 +33,40 @@ const MACHINE_TYPE_DISPLAY: Record<string, string> = {
 };
 
 const MACHINE_TYPE_ICONS: Record<string, string> = {
+  "bulk": "🚛",
+  "cable": "🔌",
   "car": "🚗",
+  "cctv": "📹",
+  "crane": "🏗️",
+  "dump": "🚚",
+  "electrical": "⚡",
+  "equipment": "🔧",
+  "extinguisher": "🧯",
+  "fan": "🌀",
+  "firstaid": "🏥",
+  "firstaidbox": "🚑",
+  "foam": "🧼",
+  "forklift": "🚜",
+  "harness": "🔗",
+  "hydrant": "🚰",
+  "lifeline": "🪢",
+  "lifering": "🛟",
+  "lifevest": "🦺",
   "lifting": "🏗️",
-  "lifevest": "🦺"
+  "liftinggear": "⚙️",
+  "light": "💡",
+  "loader": "🏗️",
+  "mobile": "📱",
+  "portable": "📦",
+  "pump": "⛽",
+  "rescue": "🚨",
+  "slope": "⛰️",
+  "socket": "🔌",
+  "stock": "📋",
+  "thermal": "🌡️",
+  "valve": "🔧",
+  "vehicle": "🚙",
+  "welding": "🔥"
 };
 
 
@@ -296,12 +333,12 @@ export default function DashboardPage() {
     daily: DashboardMachineStatsByBU;
     monthly: DashboardMachineStatsByBU;
     quarterly: DashboardMachineStatsByBU;
-    annually: DashboardMachineStatsByBU;
+    annual: DashboardMachineStatsByBU;
   }>({
     daily: {},
     monthly: {},
     quarterly: {},
-    annually: {}
+    annual: {}
   });
   const [loading, setLoading] = useState(true);
   const [showDefects, setShowDefects] = useState(false);
@@ -313,7 +350,7 @@ export default function DashboardPage() {
     async function fetchData() {
       try {
         // Fetch stats for all periods
-        const periods = ['daily', 'monthly', 'quarterly', 'annually'];
+        const periods = ['daily', 'monthly', 'quarterly', 'annual'];
         const statsPromises = periods.map(async (period) => {
           const response = await fetch(`/api/dashboard-data?period=${period}&bu=${bu}`);
           const data = await response.json();
@@ -326,7 +363,7 @@ export default function DashboardPage() {
           daily: {},
           monthly: {},
           quarterly: {},
-          annually: {}
+          annual: {}
         };
         
         results.forEach(({ period, stats }) => {
@@ -356,7 +393,7 @@ export default function DashboardPage() {
       <div className="mt-6 mb-8">
         <div className="flex items-center gap-3 mb-4">
           <span className="text-3xl">{buInfo.flag}</span>
-          <h1 className="text-3xl font-bold">{buInfo.name} - Combined daily, monthly, quarterly, annually</h1>
+          <h1 className="text-3xl font-bold">{buInfo.name} - Combined daily, monthly, quarterly, annual</h1>
         </div>
         
         <div className="flex items-center gap-6 mb-4">
@@ -397,7 +434,7 @@ export default function DashboardPage() {
         <div className="flex justify-center items-center h-64">
           <div className="text-lg text-gray-600">Loading dashboard data...</div>
         </div>
-      ) : Object.keys(dashboardStats.annually).length === 0 ? (
+      ) : Object.keys(dashboardStats.annual).length === 0 ? (
         <div className="flex justify-center items-center h-64">
           <div className="text-center">
             <div className="text-lg text-gray-600 mb-2">No inspection data available</div>
@@ -410,7 +447,7 @@ export default function DashboardPage() {
             <TabsTrigger value="daily" className="text-sm md:text-base">DAILY</TabsTrigger>
             <TabsTrigger value="monthly" className="text-sm md:text-base">MONTHLY</TabsTrigger>
             <TabsTrigger value="quarterly" className="text-sm md:text-base">QUARTERLY</TabsTrigger>
-            <TabsTrigger value="annually" className="text-sm md:text-base">ANNUALLY</TabsTrigger>
+            <TabsTrigger value="annual" className="text-sm md:text-base">ANNUAL</TabsTrigger>
           </TabsList>
           
           <TabsContent value="daily">
@@ -443,9 +480,9 @@ export default function DashboardPage() {
             />
           </TabsContent>
           
-          <TabsContent value="annually">
+          <TabsContent value="annual">
             <DashboardTable 
-              stats={dashboardStats.annually} 
+              stats={dashboardStats.annual} 
               title="Annual Inspection Report"
               showDefects={showDefects}
               sites={sites}

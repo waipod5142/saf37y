@@ -288,17 +288,22 @@ export const getDashboardMachineStats = async (period?: string): Promise<{
         if (!record.timestamp) return false;
         
         const recordDate = record.timestamp.toDate ? record.timestamp.toDate() : new Date(record.timestamp);
-        const daysDiff = (now.getTime() - recordDate.getTime()) / (1000 * 60 * 60 * 24);
         
         switch (period) {
           case "daily":
-            return daysDiff <= 1;
+            // Check if the inspection was done within today local time
+            const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+            return recordDate >= todayStart && recordDate < todayEnd;
           case "monthly": 
-            return daysDiff <= 30;
+            const daysDiffMonthly = (now.getTime() - recordDate.getTime()) / (1000 * 60 * 60 * 24);
+            return daysDiffMonthly <= 31;
           case "quarterly":
-            return daysDiff <= 90;
-          case "annually":
-            return daysDiff <= 365;
+            const daysDiffQuarterly = (now.getTime() - recordDate.getTime()) / (1000 * 60 * 60 * 24);
+            return daysDiffQuarterly <= 90;
+          case "annual":
+            const daysDiffAnnually = (now.getTime() - recordDate.getTime()) / (1000 * 60 * 60 * 24);
+            return daysDiffAnnually <= 365;
           default:
             return true;
         }
@@ -389,8 +394,11 @@ export const getDashboardMachineStatsByBU = async (period?: string, bu?: string)
 }> => {
   try {
     const SITE_MAPPING: Record<string, string[]> = {
-      "th": ["ho", "srb"],
-      "vn": ["honc", "catl", "nhon", "thiv"]
+      "th": ["ho", "srb", "log"],
+      "vn": ["honc", "thiv", "catl", "hiep", "nhon", "cant", "ho"],
+      "lk": ["pcw", "rcw", "elc", "hbp", "quarry"],
+      "bd": ["plant"],
+      "cmic": ["cmic"]
     };
     
     const sites = SITE_MAPPING[bu || ""] || [];
@@ -513,17 +521,22 @@ export const getDashboardMachineStatsByBU = async (period?: string, bu?: string)
         if (!record.timestamp) return false;
         
         const recordDate = record.timestamp.toDate ? record.timestamp.toDate() : new Date(record.timestamp);
-        const daysDiff = (now.getTime() - recordDate.getTime()) / (1000 * 60 * 60 * 24);
         
         switch (period) {
           case "daily":
-            return daysDiff <= 1;
+            // Check if the inspection was done within today local time
+            const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+            return recordDate >= todayStart && recordDate < todayEnd;
           case "monthly": 
-            return daysDiff <= 30;
+            const daysDiffMonthly = (now.getTime() - recordDate.getTime()) / (1000 * 60 * 60 * 24);
+            return daysDiffMonthly <= 31;
           case "quarterly":
-            return daysDiff <= 90;
-          case "annually":
-            return daysDiff <= 365;
+            const daysDiffQuarterly = (now.getTime() - recordDate.getTime()) / (1000 * 60 * 60 * 24);
+            return daysDiffQuarterly <= 90;
+          case "annual":
+            const daysDiffAnnually = (now.getTime() - recordDate.getTime()) / (1000 * 60 * 60 * 24);
+            return daysDiffAnnually <= 365;
           default:
             return true;
         }
@@ -554,8 +567,8 @@ export const getDashboardMachineStatsByBU = async (period?: string, bu?: string)
     Object.values(latestInspectionsByMachine).forEach(record => {
       const site = record.site || "unknown";
       
-      // Only process records for filtered machine types
-      if (filteredMachineTypes.includes(record.type) && stats[record.type] && stats[record.type][site]) {
+      // Only process records for filtered machine types and valid sites
+      if (filteredMachineTypes.includes(record.type) && stats[record.type] && stats[record.type][site] && site !== "unknown") {
         // Only count if this machine actually exists in the machine collection
         const machineExists = machinesBySiteType[site]?.[record.type]?.some(m => m.id === record.id);
         
@@ -577,6 +590,8 @@ export const getDashboardMachineStatsByBU = async (period?: string, bu?: string)
           if (hasDefects) {
             stats[record.type][site].defects++;
           }
+        } else {
+          console.log(`Warning: Inspection record for ${record.id} (${record.type}) found but no corresponding machine in site ${site}`);
         }
       }
     });

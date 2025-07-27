@@ -20,6 +20,35 @@ function removeUndefinedValues(obj: Record<string, any>): Record<string, any> {
   return cleaned;
 }
 
+// Utility function to serialize Firestore objects for client-server boundary
+function serializeFirestoreData(obj: any): any {
+  if (obj === null || obj === undefined) {
+    return obj;
+  }
+  
+  // Handle Firestore Timestamp objects
+  if (obj && typeof obj === 'object' && obj.toDate) {
+    return obj.toDate().toISOString();
+  }
+  
+  // Handle arrays
+  if (Array.isArray(obj)) {
+    return obj.map(item => serializeFirestoreData(item));
+  }
+  
+  // Handle plain objects
+  if (obj && typeof obj === 'object' && obj.constructor === Object) {
+    const serialized: any = {};
+    Object.keys(obj).forEach(key => {
+      serialized[key] = serializeFirestoreData(obj[key]);
+    });
+    return serialized;
+  }
+  
+  // Return primitive values as-is
+  return obj;
+}
+
 export async function submitMachineForm(
   formData: Record<string, any>
 ): Promise<{ success: boolean; error?: string }> {
@@ -172,6 +201,287 @@ export async function deleteMachineInspectionRecord(
   }
 }
 
+// Helper function to check if inspection has defects
+function hasDefects(record: any): boolean {
+  return Object.keys(record).some(key => {
+    const value = record[key];
+    return typeof value === 'string' && (
+      value.toLowerCase() === 'fail' ||
+      value.toLowerCase() === 'failed' ||
+      value.toLowerCase() === 'ng' ||
+      value.toLowerCase() === 'no'
+    );
+  });
+}
+
+export interface MachineWithInspection extends Omit<Machine, 'lastInspection'> {
+  lastInspection?: MachineInspectionRecord;
+  hasDefects?: boolean;
+  inspectionDate?: string;
+  daysSinceInspection?: number;
+}
+
+export async function getMachinesWithInspectionsAction(
+  bu: string,
+  site: string,
+  type: string
+): Promise<{ success: boolean; machines?: MachineWithInspection[]; error?: string }> {
+  try {
+    console.log("=== getMachinesWithInspectionsAction ===");
+    console.log("Input parameters:", { bu, site, type });
+    console.log("Query will search for:", { 
+      bu, 
+      site, 
+      type: type.toLowerCase(),
+      collection: "machine"
+    });
+
+    // Get machines
+    const machineQuery = firestore
+      .collection("machine")
+      .where("bu", "==", bu)
+      .where("site", "==", site)
+      .where("type", "==", type.toLowerCase());
+
+    const machineSnapshot = await machineQuery.get();
+    
+    console.log("Machine query results:", {
+      empty: machineSnapshot.empty,
+      size: machineSnapshot.size,
+      docs: machineSnapshot.docs.length
+    });
+    
+    if (!machineSnapshot.empty) {
+      console.log("Sample machine data:", machineSnapshot.docs.slice(0, 2).map(doc => ({
+        id: doc.data().id,
+        site: doc.data().site,
+        type: doc.data().type,
+        bu: doc.data().bu
+      })));
+    }
+    
+    if (machineSnapshot.empty) {
+      console.log("=== No machines found - checking alternate queries ===");
+      
+      // Debug: Check for machines with this bu/type (any site)
+      const debugQuery1 = firestore
+        .collection("machine")
+        .where("bu", "==", bu)
+        .where("type", "==", type.toLowerCase());
+      const debugSnapshot1 = await debugQuery1.get();
+      console.log(`Machines with bu=${bu}, type=${type.toLowerCase()} (any site):`, debugSnapshot1.size);
+      
+      // Debug: Check for machines with this bu/site (any type)
+      const debugQuery2 = firestore
+        .collection("machine")
+        .where("bu", "==", bu)
+        .where("site", "==", site);
+      const debugSnapshot2 = await debugQuery2.get();
+      console.log(`Machines with bu=${bu}, site=${site} (any type):`, debugSnapshot2.size);
+      
+      if (!debugSnapshot2.empty) {
+        const siteTypes = debugSnapshot2.docs.map(doc => doc.data().type);
+        console.log(`Available types for bu=${bu}, site=${site}:`, [...new Set(siteTypes)]);
+      }
+      
+      return { success: true, machines: [] };
+    }
+
+    // Get all inspection records for this bu, site, and type
+    const inspectionQuery = firestore
+      .collection("machinetr")
+      .where("bu", "==", bu)
+      .where("type", "==", type.toLowerCase());
+
+    const inspectionSnapshot = await inspectionQuery.get();
+
+    // Group inspections by machine ID and get the latest for each
+    const latestInspections: Record<string, MachineInspectionRecord> = {};
+    
+    inspectionSnapshot.docs.forEach(doc => {
+      const recordData = doc.data();
+      
+      // Serialize the inspection record data
+      const serializedRecord = serializeFirestoreData(recordData);
+      const record = { ...serializedRecord, docId: doc.id } as MachineInspectionRecord;
+      
+      // Join with machine data to get site information
+      const correspondingMachine = machineSnapshot.docs.find(mDoc => 
+        mDoc.data().id === record.id && mDoc.data().site === site
+      );
+      
+      if (correspondingMachine) {
+        const machineKey = record.id;
+        const existingRecord = latestInspections[machineKey];
+        
+        if (!existingRecord) {
+          latestInspections[machineKey] = record;
+        } else {
+          // Compare timestamps (now as ISO strings)
+          const recordTime = record.timestamp ? new Date(record.timestamp).getTime() : 0;
+          const existingTime = existingRecord.timestamp ? new Date(existingRecord.timestamp).getTime() : 0;
+          
+          if (recordTime > existingTime) {
+            latestInspections[machineKey] = record;
+          }
+        }
+      }
+    });
+
+    // Create machines with inspection data
+    const machinesWithInspections: MachineWithInspection[] = machineSnapshot.docs.map(doc => {
+      const machineData = doc.data();
+      const inspection = latestInspections[machineData.id];
+      
+      let inspectionDate: string | undefined;
+      let daysSinceInspection: number | undefined;
+      
+      if (inspection?.timestamp) {
+        const date = inspection.timestamp.toDate ? inspection.timestamp.toDate() : new Date(inspection.timestamp);
+        inspectionDate = date.toISOString();
+        daysSinceInspection = Math.floor((Date.now() - date.getTime()) / (1000 * 60 * 60 * 24));
+      }
+
+      // Serialize Firestore data
+      const serializedData: any = {};
+      Object.keys(machineData).forEach(key => {
+        const value = machineData[key];
+        if (value && typeof value === 'object' && value.toDate) {
+          serializedData[key] = value.toDate().toISOString();
+        } else {
+          serializedData[key] = value;
+        }
+      });
+
+      return {
+        ...serializedData,
+        docId: doc.id,
+        lastInspection: inspection,
+        hasDefects: inspection ? hasDefects(inspection) : false,
+        inspectionDate,
+        daysSinceInspection,
+      } as MachineWithInspection;
+    });
+
+    // Sort: defects first, then by inspection date (newest first), then by machine ID
+    machinesWithInspections.sort((a, b) => {
+      // First priority: defects
+      if (a.hasDefects && !b.hasDefects) return -1;
+      if (!a.hasDefects && b.hasDefects) return 1;
+      
+      // Second priority: inspection date (newest first)
+      if (a.inspectionDate && b.inspectionDate) {
+        return new Date(b.inspectionDate).getTime() - new Date(a.inspectionDate).getTime();
+      }
+      if (a.inspectionDate && !b.inspectionDate) return -1;
+      if (!a.inspectionDate && b.inspectionDate) return 1;
+      
+      // Third priority: machine ID
+      return (a.id || "").localeCompare(b.id || "");
+    });
+
+    // Ensure all data is properly serialized before returning
+    const serializedMachines = machinesWithInspections.map(machine => serializeFirestoreData(machine));
+    
+    console.log("Returning machines with inspections:", serializedMachines.length);
+    return { success: true, machines: serializedMachines };
+    
+  } catch (error) {
+    console.error("Error fetching machines with inspections:", error);
+    return {
+      success: false,
+      error: `Failed to fetch machines with inspections: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    };
+  }
+}
+
+export async function getRecentInspectionsAction(
+  bu: string,
+  site: string,
+  type: string,
+  days: number = 15
+): Promise<{ success: boolean; machines?: MachineWithInspection[]; error?: string }> {
+  try {
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - days);
+
+    // Get all machines with inspections first
+    const result = await getMachinesWithInspectionsAction(bu, site, type);
+    
+    if (!result.success || !result.machines) {
+      return result;
+    }
+
+    // Filter to only machines inspected in the last X days
+    const recentMachines = result.machines.filter(machine => {
+      if (!machine.inspectionDate) return false;
+      const inspectionDate = new Date(machine.inspectionDate);
+      return inspectionDate >= cutoffDate;
+    });
+
+    // Ensure all data is properly serialized
+    const serializedMachines = recentMachines.map(machine => serializeFirestoreData(machine));
+
+    return { success: true, machines: serializedMachines };
+    
+  } catch (error) {
+    console.error("Error fetching recent inspections:", error);
+    return {
+      success: false,
+      error: `Failed to fetch recent inspections: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    };
+  }
+}
+
+export async function getInspectionLocationsAction(
+  bu: string,
+  site: string,
+  type: string
+): Promise<{ success: boolean; locations?: Array<{
+  id: string;
+  latitude: number;
+  longitude: number;
+  hasDefects: boolean;
+  inspectionDate: string;
+  inspector: string;
+}>; error?: string }> {
+  try {
+    const result = await getMachinesWithInspectionsAction(bu, site, type);
+    
+    if (!result.success || !result.machines) {
+      return { success: false, error: result.error };
+    }
+
+    // Extract location data from machines with valid coordinates
+    const locations = result.machines
+      .filter(machine => 
+        machine.lastInspection?.latitude != null && 
+        machine.lastInspection?.longitude != null &&
+        machine.inspectionDate
+      )
+      .map(machine => ({
+        id: machine.id,
+        latitude: machine.lastInspection!.latitude!,
+        longitude: machine.lastInspection!.longitude!,
+        hasDefects: machine.hasDefects || false,
+        inspectionDate: machine.inspectionDate!,
+        inspector: machine.lastInspection!.inspector || 'Unknown',
+      }));
+
+    // Ensure locations data is serialized
+    const serializedLocations = serializeFirestoreData(locations);
+
+    return { success: true, locations: serializedLocations };
+    
+  } catch (error) {
+    console.error("Error fetching inspection locations:", error);
+    return {
+      success: false,
+      error: `Failed to fetch inspection locations: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    };
+  }
+}
+
 export async function getMachinesAction(
   bu: string,
   site: string,
@@ -264,6 +574,112 @@ export async function getMachinesAction(
     return {
       success: false,
       error: `Failed to fetch machines: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    };
+  }
+}
+
+export async function getMachineByIdAction(
+  bu: string,
+  type: string,
+  id: string
+): Promise<{ success: boolean; machine?: Machine; error?: string }> {
+  try {
+    // Decode URL parameters to handle special characters (including Thai characters)
+    const decodedId = decodeURIComponent(id);
+    
+    // Query the machine collection with matching bu, type, and id
+    const machineQuery = firestore
+      .collection("machine")
+      .where("bu", "==", bu)
+      .where("type", "==", type.toLowerCase())
+      .where("id", "==", decodedId);
+
+    const machineSnapshot = await machineQuery.get();
+
+    if (machineSnapshot.empty) {
+      return {
+        success: false,
+        error: "Machine not found"
+      };
+    }
+
+    // Get the first matching document
+    const doc = machineSnapshot.docs[0];
+    const machineData = doc.data();
+
+    // Serialize the data for client-server boundary
+    const serializedMachine = serializeFirestoreData({
+      ...machineData,
+      docId: doc.id,
+    });
+
+    return {
+      success: true,
+      machine: serializedMachine as Machine,
+    };
+  } catch (error) {
+    console.error("Error fetching machine by ID:", error);
+    return {
+      success: false,
+      error: `Failed to fetch machine: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    };
+  }
+}
+
+export async function getMachineInspectionRecordsAction(
+  bu: string,
+  type: string,
+  id: string
+): Promise<{ success: boolean; records?: MachineInspectionRecord[]; error?: string }> {
+  try {
+    // Decode URL parameters to handle special characters (including Thai characters)
+    const decodedId = decodeURIComponent(id);
+    
+    // Query the machinetr collection with matching bu, type (lowercase), and id
+    const inspectionQuery = firestore
+      .collection("machinetr")
+      .where("bu", "==", bu)
+      .where("type", "==", type.toLowerCase())
+      .where("id", "==", decodedId)
+      .orderBy("timestamp", "desc"); // Latest first
+
+    const inspectionSnapshot = await inspectionQuery.get();
+
+    if (inspectionSnapshot.empty) {
+      return {
+        success: true,
+        records: [],
+      };
+    }
+
+    // Map all matching documents to MachineInspectionRecord objects
+    const records: MachineInspectionRecord[] = inspectionSnapshot.docs.map((doc) => {
+      const recordData = doc.data();
+      const serializedRecord = serializeFirestoreData({
+        id: recordData.id,
+        bu: recordData.bu,
+        type: recordData.type,
+        inspector: recordData.inspector,
+        timestamp: recordData.timestamp,
+        createdAt: recordData.createdAt,
+        remark: recordData.remark,
+        images: recordData.images,
+        docId: doc.id,
+        ...recordData,
+      });
+      
+      return serializedRecord as MachineInspectionRecord;
+    });
+
+    return {
+      success: true,
+      records,
+    };
+  } catch (error) {
+    console.error("Error fetching machine inspection records:", error);
+    return {
+      success: false,
+      error: `Failed to fetch inspection records: ${error instanceof Error ? error.message : 'Unknown error'}`,
     };
   }
 }

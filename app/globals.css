@@ -1,3 +1,19 @@
+/* Leaflet CSS - must be imported before other styles */
+@import 'leaflet/dist/leaflet.css';
+@import 'leaflet.markercluster/dist/MarkerCluster.css';
+@import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
+
+/* Custom marker styles */
+.custom-div-icon {
+  background: none !important;
+  border: none !important;
+}
+
+.leaflet-div-icon {
+  background: transparent;
+  border: none;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
