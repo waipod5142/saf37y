@@ -6,7 +6,7 @@ import { MachineItem } from "@/lib/machine-types";
 export async function getMachineQuestions(
   bu: string,
   type: string,
-): Promise<{ success: boolean; questions?: MachineItem[]; title?: string; image?: string; inspection?: string; error?: string }> {
+): Promise<{ success: boolean; questions?: MachineItem[]; title?: string; image?: string; inspection?: string; emoji?: string; error?: string }> {
   try {
     // Process parameters
     const processedType = type.toLowerCase();
@@ -26,7 +26,8 @@ export async function getMachineQuestions(
         questions: [],
         title: formData.title,
         image: formData.image,
-        inspection: formData.inspection
+        inspection: formData.inspection,
+        emoji: formData.emoji
       };
     }
     if (formData.questions.length === 0) {
@@ -35,7 +36,8 @@ export async function getMachineQuestions(
         questions: [],
         title: formData.title,
         image: formData.image,
-        inspection: formData.inspection
+        inspection: formData.inspection,
+        emoji: formData.emoji
       };
     }
 
@@ -52,7 +54,8 @@ export async function getMachineQuestions(
       questions: formattedQuestions,
       title: formData.title,
       image: formData.image,
-      inspection: formData.inspection
+      inspection: formData.inspection,
+      emoji: formData.emoji
     };
   } catch (error) {
     console.error("Error fetching machine questions:", error);

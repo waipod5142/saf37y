@@ -23,6 +23,7 @@ interface MachineFormProps {
   bu: string;
   type: string;
   id: string;
+  isInDialog?: boolean;
 }
 
 interface FormData extends FieldValues {
@@ -38,7 +39,7 @@ interface FormData extends FieldValues {
   [key: string]: any;
 }
 
-export default function MachineForm({ bu, type, id }: MachineFormProps) {
+export default function MachineForm({ bu, type, id, isInDialog = false }: MachineFormProps) {
   const {
     register,
     handleSubmit,
@@ -48,6 +49,7 @@ export default function MachineForm({ bu, type, id }: MachineFormProps) {
 
   const [questions, setQuestions] = useState<MachineItem[]>([]);
   const [formTitle, setFormTitle] = useState<string | null>(null);
+  const [formEmoji, setFormEmoji] = useState<string | null>(null);
   const [vocabulary, setVocabulary] = useState<Vocabulary | null>(null);
   const [isLoadingVocabulary, setIsLoadingVocabulary] = useState<boolean>(true);
   const [isLoadingQuestions, setIsLoadingQuestions] = useState<boolean>(true);
@@ -84,10 +86,12 @@ export default function MachineForm({ bu, type, id }: MachineFormProps) {
         if (questionsResult.success && questionsResult.questions) {
           setQuestions(questionsResult.questions);
           setFormTitle(questionsResult.title || null);
+          setFormEmoji(questionsResult.emoji || null);
         } else {
           console.warn("No questions found for machine:", { bu, type, id });
           setQuestions([]);
           setFormTitle(null);
+          setFormEmoji(null);
           if (questionsResult.error) {
             toast.error(questionsResult.error);
           }
@@ -179,7 +183,7 @@ export default function MachineForm({ bu, type, id }: MachineFormProps) {
       // Upload general images
       images.forEach((image, index) => {
         if (image.file) {
-          const path = `machines/${bu}/${type}/${id}/${Date.now()}-${index}-${image.file.name}`;
+          const path = `Machine/${bu}/${type}/${id}/${Date.now()}-${index}-${image.file.name}`;
           imagePaths.push(path);
           const storageRef = ref(storage, path);
           uploadTasks.push(uploadBytesResumable(storageRef, image.file));
@@ -193,7 +197,7 @@ export default function MachineForm({ bu, type, id }: MachineFormProps) {
         
         images.forEach((image, index) => {
           if (image.file) {
-            const path = `machines/${bu}/${type}/${id}/${questionName}/${Date.now()}-${index}-${image.file.name}`;
+            const path = `Machine/${bu}/${type}/${id}/${questionName}/${Date.now()}-${index}-${image.file.name}`;
             questionImagePaths[questionName].push(path);
             const storageRef = ref(storage, path);
             uploadTasks.push(uploadBytesResumable(storageRef, image.file));
@@ -280,10 +284,11 @@ export default function MachineForm({ bu, type, id }: MachineFormProps) {
   // Add loading state while data is being fetched
   if (isLoadingQuestions || isLoadingVocabulary) {
     return (
-      <div className="max-w-4xl mx-auto p-2">
+      <div className={isInDialog ? "" : "max-w-4xl mx-auto p-2"}>
         <Card className="mb-6">
           <CardHeader>
             <CardTitle className="text-center text-2xl font-bold">
+              {formEmoji && <span className="mr-2">{formEmoji}</span>}
               {getTitle()}
             </CardTitle>
           </CardHeader>
@@ -302,10 +307,11 @@ export default function MachineForm({ bu, type, id }: MachineFormProps) {
   // Show message if no questions are available
   if (questions.length === 0) {
     return (
-      <div className="max-w-4xl mx-auto p-2">
+      <div className={isInDialog ? "" : "max-w-4xl mx-auto p-2"}>
         <Card className="mb-6">
           <CardHeader>
             <CardTitle className="text-center text-2xl font-bold">
+              {formEmoji && <span className="mr-2">{formEmoji}</span>}
               {getTitle()}
             </CardTitle>
           </CardHeader>
@@ -326,6 +332,7 @@ export default function MachineForm({ bu, type, id }: MachineFormProps) {
       <Card className="mb-6">
         <CardHeader>
           <CardTitle className="text-center text-2xl font-bold">
+            {formEmoji && <span className="mr-2">{formEmoji}</span>}
             {getTitle()}
           </CardTitle>
           {/* Location status alert */}

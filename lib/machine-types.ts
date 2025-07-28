@@ -132,6 +132,92 @@ export const isValidDetailType = (id: string): id is DetailTypes => {
   ].includes(id);
 };
 
+export const machineEmojis: { [key: string]: string } = {
+  // General Equipment
+  forklift: "🚜",
+  lifting: "🏗️",
+  liftinggear: "⚙️",
+  crane: "🏗️",
+  overheadcrane: "🏗️",
+  hoist: "🔗",
+  mobile: "📱",
+  vehicle: "🚗",
+  car: "🚗",
+  truck: "🚛",
+  bulk: "🚛",
+  bag: "📦",
+  mixer: "🔄",
+  motorbike: "🏍️",
+  loader: "🚜",
+  excavator: "🚜",
+  dump: "🚛",
+  
+  // Fire Safety
+  extinguisher: "🧯",
+  hydrant: "🚰",
+  foam: "🧼",
+  pump: "⛽",
+  valve: "🔧",
+  firealarm: "🚨",
+  firepump: "💧",
+  fireexit: "🚪",
+  
+  // Safety Equipment
+  harness: "🦺",
+  fullbodyharness: "🦺",
+  fallarrest: "🦺",
+  portable: "📱",
+  lifeline: "🪢",
+  lifering: "🛟",
+  lifevest: "🦺",
+  ladder: "🪜",
+  
+  // Tools & Equipment
+  welding: "🔥",
+  cable: "🔌",
+  electrical: "⚡",
+  fan: "🌀",
+  light: "💡",
+  compressor: "🔧",
+  waterjet: "💧",
+  
+  // Medical & Emergency
+  aed: "🚑",
+  firstaid: "🏥",
+  firstaidbox: "🚑",
+  emergency: "🚨",
+  shower: "🚿",
+  
+  // Security & Monitoring
+  cctv: "📹",
+  
+  // Other Equipment
+  equipment: "🔧",
+  rescue: "🛟",
+  plant: "🏭",
+  waste: "♻️",
+  socket: "🔌",
+  stock: "📋",
+  thermal: "🌡️",
+  slope: "⛰️"
+};
+
+export const getMachineEmoji = (type: string): string | null => {
+  // First try to match the exact type
+  if (machineEmojis[type.toLowerCase()]) {
+    return machineEmojis[type.toLowerCase()];
+  }
+  
+  // Try to find a partial match for compound types (e.g., "vnforklift" -> "forklift")
+  for (const [key, emoji] of Object.entries(machineEmojis)) {
+    if (type.toLowerCase().includes(key)) {
+      return emoji;
+    }
+  }
+  
+  return null;
+};
+
 export const machineTitles: { [key: string]: string } = {
   jkcementforklift: "Forklift Inspection",
   vnlifting: "Kiểm định thiết bị nâng / Lifting Equipment",

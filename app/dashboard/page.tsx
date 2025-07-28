@@ -54,13 +54,13 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {COUNTRIES.map((country) => (
           <Link key={country.code} href={`/dashboard/${country.code}`}>
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer group">
-              <CardHeader className="text-center pb-4">
-                <div className="text-6xl mb-3 group-hover:scale-110 transition-transform">
-                  {country.flag}
-                </div>
-                <CardTitle className="text-xl font-bold group-hover:text-blue-600 transition-colors">
-                  {country.name}
+              <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer group hover:scale-105">
+                <CardHeader className="text-center pb-4">
+                  <div className="text-6xl mb-3 group-hover:scale-110 transition-transform duration-200">
+                    {country.flag}
+                  </div>
+                  <CardTitle className="text-xl font-bold group-hover:text-blue-600 transition-colors">
+                    {country.name}
                 </CardTitle>
               </CardHeader>
               <CardContent className="text-center">
@@ -70,7 +70,7 @@ export default function DashboardPage() {
                 <div className="text-xs text-gray-500">
                   {country.sites.join(", ").toUpperCase()}
                 </div>
-                <div className="mt-4 text-blue-600 text-sm font-medium group-hover:underline">
+                <div className="mt-4 text-blue-600 text-sm font-medium group-hover:underline transition-all duration-200">
                   View Dashboard →
                 </div>
               </CardContent>

@@ -4,6 +4,24 @@ import { MachineInspectionRecord } from "@/types/machineInspectionRecord";
 import { getFormInspectionPeriods, InspectionPeriod } from "./forms";
 import "server-only";
 
+// Utility function for Firebase timestamp conversion
+function convertFirebaseTimestamp(timestamp: any): Date | null {
+  if (!timestamp) return null;
+  
+  // If it has toDate method (actual Firebase Timestamp)
+  if (timestamp.toDate && typeof timestamp.toDate === 'function') {
+    return timestamp.toDate();
+  }
+  
+  // If it's a serialized timestamp with _seconds
+  if (timestamp._seconds !== undefined) {
+    return new Date(timestamp._seconds * 1000 + (timestamp._nanoseconds || 0) / 1000000);
+  }
+  
+  // Fallback to regular Date parsing
+  return new Date(timestamp);
+}
+
 export const getMachineById = async (
   bu: string,
   type: string,
@@ -90,24 +108,48 @@ export const getMachineInspectionCountry = async (
   bu: string,
 ): Promise<MachineInspectionRecord[]> => {
   try {
-    // Query the machinetr collection with matching bu
+    // Query both machines and inspection records for the business unit
+    const machineQuery = firestore
+      .collection("machine")
+      .where("bu", "==", bu);
+
     const inspectionQuery = firestore
       .collection("machinetr")
       .where("bu", "==", bu);
 
-    const inspectionSnapshot = await inspectionQuery.get();
+    const [machineSnapshot, inspectionSnapshot] = await Promise.all([
+      machineQuery.get(),
+      inspectionQuery.get()
+    ]);
 
     if (inspectionSnapshot.empty) {
       return [];
     }
 
-    // Map all matching documents to MachineInspectionRecord objects
+    // Create machine lookup map for site information
+    const machineLookup: Record<string, Machine> = {};
+    
+    machineSnapshot.docs.forEach(doc => {
+      const machine = { ...doc.data(), docId: doc.id } as Machine;
+      // Create lookup key: bu_type_id
+      const lookupKey = `${machine.bu}_${machine.type}_${machine.id}`;
+      machineLookup[lookupKey] = machine;
+    });
+
+    // Map all matching documents to MachineInspectionRecord objects with site information
     const records: MachineInspectionRecord[] = inspectionSnapshot.docs.map((doc) => {
       const recordData = doc.data();
+      
+      // Look up corresponding machine to get site information
+      const lookupKey = `${recordData.bu}_${recordData.type}_${recordData.id}`;
+      const correspondingMachine = machineLookup[lookupKey];
+      const site = correspondingMachine?.site || undefined;
+
       return {
         id: recordData.id,
         bu: recordData.bu,
         type: recordData.type,
+        site: site, // Site comes from joined machine data
         inspector: recordData.inspector,
         timestamp: recordData.timestamp,
         createdAt: recordData.createdAt,
@@ -120,10 +162,12 @@ export const getMachineInspectionCountry = async (
 
     // Sort by timestamp in descending order (latest first)
     records.sort((a, b) => {
-      if (!a.timestamp || !b.timestamp) return 0;
-      const aTime = a.timestamp?.toDate ? a.timestamp.toDate().getTime() : new Date(a.timestamp).getTime();
-      const bTime = b.timestamp?.toDate ? b.timestamp.toDate().getTime() : new Date(b.timestamp).getTime();
-      return bTime - aTime;
+      const aDate = convertFirebaseTimestamp(a.timestamp);
+      const bDate = convertFirebaseTimestamp(b.timestamp);
+      
+      if (!aDate || !bDate) return 0;
+      
+      return bDate.getTime() - aDate.getTime();
     });
 
     return records;
@@ -287,7 +331,8 @@ export const getDashboardMachineStats = async (period?: string): Promise<{
       filteredRecords = allRecords.filter(record => {
         if (!record.timestamp) return false;
         
-        const recordDate = record.timestamp.toDate ? record.timestamp.toDate() : new Date(record.timestamp);
+        const recordDate = convertFirebaseTimestamp(record.timestamp);
+        if (!recordDate) return false;
         
         switch (period) {
           case "daily":
@@ -321,8 +366,13 @@ export const getDashboardMachineStats = async (period?: string): Promise<{
         latestInspectionsByMachine[machineKey] = record;
       } else {
         // Compare timestamps to keep the latest
-        const recordTime = record.timestamp?.toDate ? record.timestamp.toDate().getTime() : new Date(record.timestamp).getTime();
-        const existingTime = existingRecord.timestamp?.toDate ? existingRecord.timestamp.toDate().getTime() : new Date(existingRecord.timestamp).getTime();
+        const recordDate = convertFirebaseTimestamp(record.timestamp);
+        const existingDate = convertFirebaseTimestamp(existingRecord.timestamp);
+        
+        if (!recordDate || !existingDate) return;
+        
+        const recordTime = recordDate.getTime();
+        const existingTime = existingDate.getTime();
         
         if (recordTime > existingTime) {
           latestInspectionsByMachine[machineKey] = record;
@@ -393,6 +443,8 @@ export const getDashboardMachineStatsByBU = async (period?: string, bu?: string)
   allRecords: MachineInspectionRecord[];
 }> => {
   try {
+    console.log(`=== getDashboardMachineStatsByBU called for bu: ${bu}, period: ${period} ===`);
+    
     const SITE_MAPPING: Record<string, string[]> = {
       "th": ["ho", "srb", "log"],
       "vn": ["honc", "thiv", "catl", "hiep", "nhon", "cant", "ho"],
@@ -504,10 +556,42 @@ export const getDashboardMachineStatsByBU = async (period?: string, bu?: string)
       });
     });
 
-    // Set total machine counts for filtered types only
+    // Debug logging 
+    if (bu === "lk") {
+      console.log("=== Sri Lanka Debug Info ===");
+      console.log("All machine types found:", Array.from(allMachineTypes));
+      console.log("Form inspection periods:", formInspectionPeriods);
+      console.log("Machines by site/type keys:", Object.keys(machinesBySiteType));
+      console.log("Machine counts by site:", Object.fromEntries(
+        Object.entries(machinesBySiteType).map(([site, types]) => [
+          site, 
+          Object.fromEntries(Object.entries(types).map(([type, machines]) => [type, machines.length]))
+        ])
+      ));
+      console.log("Period requested:", period);
+      console.log("Filtered machine types:", filteredMachineTypes);
+    }
+
+    // If no filtered types but we have machines, include all machine types found
+    if (filteredMachineTypes.length === 0 && allMachineTypes.size > 0) {
+      Array.from(allMachineTypes).forEach(type => {
+        stats[type] = {};
+        sites.forEach(site => {
+          stats[type][site] = {
+            inspected: 0,
+            total: 0,
+            percentage: 0,
+            defects: 0,
+            inspectionRecords: []
+          };
+        });
+      });
+    }
+
+    // Set total machine counts for all types in stats
     Object.keys(machinesBySiteType).forEach(site => {
       Object.keys(machinesBySiteType[site]).forEach(type => {
-        if (filteredMachineTypes.includes(type) && stats[type] && stats[type][site]) {
+        if (stats[type] && stats[type][site]) {
           stats[type][site].total = machinesBySiteType[site][type].length;
         }
       });
@@ -520,7 +604,8 @@ export const getDashboardMachineStatsByBU = async (period?: string, bu?: string)
       filteredRecords = allRecords.filter(record => {
         if (!record.timestamp) return false;
         
-        const recordDate = record.timestamp.toDate ? record.timestamp.toDate() : new Date(record.timestamp);
+        const recordDate = convertFirebaseTimestamp(record.timestamp);
+        if (!recordDate) return false;
         
         switch (period) {
           case "daily":
@@ -554,8 +639,13 @@ export const getDashboardMachineStatsByBU = async (period?: string, bu?: string)
         latestInspectionsByMachine[machineKey] = record;
       } else {
         // Compare timestamps to keep the latest
-        const recordTime = record.timestamp?.toDate ? record.timestamp.toDate().getTime() : new Date(record.timestamp).getTime();
-        const existingTime = existingRecord.timestamp?.toDate ? existingRecord.timestamp.toDate().getTime() : new Date(existingRecord.timestamp).getTime();
+        const recordDate = convertFirebaseTimestamp(record.timestamp);
+        const existingDate = convertFirebaseTimestamp(existingRecord.timestamp);
+        
+        if (!recordDate || !existingDate) return;
+        
+        const recordTime = recordDate.getTime();
+        const existingTime = existingDate.getTime();
         
         if (recordTime > existingTime) {
           latestInspectionsByMachine[machineKey] = record;
@@ -563,12 +653,12 @@ export const getDashboardMachineStatsByBU = async (period?: string, bu?: string)
       }
     });
 
-    // Process latest inspection records to calculate stats (only for filtered types)
+    // Process latest inspection records to calculate stats (for all types in stats)
     Object.values(latestInspectionsByMachine).forEach(record => {
       const site = record.site || "unknown";
       
-      // Only process records for filtered machine types and valid sites
-      if (filteredMachineTypes.includes(record.type) && stats[record.type] && stats[record.type][site] && site !== "unknown") {
+      // Only process records for machine types in stats and valid sites
+      if (stats[record.type] && stats[record.type][site] && site !== "unknown") {
         // Only count if this machine actually exists in the machine collection
         const machineExists = machinesBySiteType[site]?.[record.type]?.some(m => m.id === record.id);
         
@@ -605,6 +695,14 @@ export const getDashboardMachineStatsByBU = async (period?: string, bu?: string)
         }
       });
     });
+
+    // Final debug logging
+    if (bu === "lk") {
+      console.log("=== Final Sri Lanka Stats ===");
+      console.log("Stats object keys:", Object.keys(stats));
+      console.log("Stats structure:", JSON.stringify(stats, null, 2));
+      console.log("Total records found:", allRecords.length);
+    }
 
     return { stats, allRecords };
   } catch (error) {

@@ -14,6 +14,7 @@ interface MachineTitleProps {
 export default function MachineTitle({ bu, type, id }: MachineTitleProps) {
   const [formTitle, setFormTitle] = useState<string | null>(null);
   const [formImage, setFormImage] = useState<string | null>(null);
+  const [formEmoji, setFormEmoji] = useState<string | null>(null);
   const [isLoadingTitle, setIsLoadingTitle] = useState<boolean>(true);
   const [imageError, setImageError] = useState<boolean>(false);
   
@@ -30,6 +31,9 @@ export default function MachineTitle({ bu, type, id }: MachineTitleProps) {
         if (questionsResult.success) {
           if (questionsResult.title) {
             setFormTitle(questionsResult.title);
+          }
+          if (questionsResult.emoji) {
+            setFormEmoji(questionsResult.emoji);
           }
           if (questionsResult.image) {
             // Validate image URL before setting it
@@ -50,6 +54,7 @@ export default function MachineTitle({ bu, type, id }: MachineTitleProps) {
           console.warn("No form data found for machine:", { bu, type });
           setFormTitle(null);
           setFormImage(null);
+          setFormEmoji(null);
           if (questionsResult.error) {
             toast.error(questionsResult.error);
           }
@@ -59,6 +64,7 @@ export default function MachineTitle({ bu, type, id }: MachineTitleProps) {
         toast.error("Failed to load form data");
         setFormTitle(null);
         setFormImage(null);
+        setFormEmoji(null);
       } finally {
         setIsLoadingTitle(false);
       }
@@ -109,6 +115,7 @@ export default function MachineTitle({ bu, type, id }: MachineTitleProps) {
           </div>
         )}
         <h1 className="text-2xl font-bold text-gray-800 text-center">
+          {formEmoji && <span className="mr-2">{formEmoji}</span>}
           {getTitle()}
         </h1>
       </div>

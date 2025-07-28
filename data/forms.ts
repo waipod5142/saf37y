@@ -1,6 +1,7 @@
 import { firestore } from "@/firebase/server";
 import { Machine } from "@/types/machine";
 import { MachineInspectionRecord } from "@/types/machineInspectionRecord";
+import { getMachineEmoji } from "@/lib/machine-types";
 import "server-only";
 
 export const getFormQuestions = async (
@@ -46,7 +47,7 @@ export const getFormQuestions = async (
 export const getFormWithTitle = async (
   bu: string,
   type: string
-): Promise<{ questions: Array<{ question: string; name: string; howto: string; accept: string }>; title?: string; image?: string; inspection?: string } | null> => {
+): Promise<{ questions: Array<{ question: string; name: string; howto: string; accept: string }>; title?: string; image?: string; inspection?: string; emoji?: string } | null> => {
   try {
     // Query the forms collection with matching bu and type
     const formsQuery = firestore
@@ -75,12 +76,16 @@ export const getFormWithTitle = async (
       }
     }
     
-    // Return questions, title, image, and inspection period from the form document
+    // Get emoji for the machine type
+    const emoji = getMachineEmoji(type);
+    
+    // Return questions, title, image, inspection period, and emoji from the form document
     return {
       questions,
       title: formData.title,
       image: formData.image,
-      inspection: formData.inspection
+      inspection: formData.inspection,
+      emoji: emoji || undefined
     };
   } catch (error) {
     console.error("Error fetching form with title:", error);

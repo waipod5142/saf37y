@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -13,7 +13,7 @@ import { getMachineInspectionRecordsAction } from "@/lib/actions/machines";
 import { MachineInspectionRecord } from "@/types/machineInspectionRecord";
 import { MachineItem } from "@/lib/machine-types";
 import MachineTitle from "@/components/machine-title";
-import MachineHeaderClient from "@/components/machine-header-client";
+import MachineHeader from "@/components/machine-header";
 import MachineDetailClient from "@/components/machine-detail-client";
 import MachineForm from "@/components/machine-form";
 
@@ -35,6 +35,7 @@ export function MachineDetailDialog({
   const [loading, setLoading] = useState(false);
   const [records, setRecords] = useState<MachineInspectionRecord[]>([]);
   const [questions, setQuestions] = useState<MachineItem[]>([]);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Decode URL parameters to handle special characters (including Thai characters)
   const decodedBu = decodeURIComponent(bu);
@@ -44,6 +45,12 @@ export function MachineDetailDialog({
   useEffect(() => {
     if (isOpen && decodedId) {
       fetchMachineData();
+      // Reset scroll position when dialog opens
+      setTimeout(() => {
+        if (scrollContainerRef.current) {
+          scrollContainerRef.current.scrollTop = 0;
+        }
+      }, 100);
     }
   }, [isOpen, decodedBu, decodedType, decodedId]);
 
@@ -67,6 +74,12 @@ export function MachineDetailDialog({
       console.error("Error fetching machine data:", error);
     } finally {
       setLoading(false);
+      // Reset scroll position after content is loaded
+      setTimeout(() => {
+        if (scrollContainerRef.current) {
+          scrollContainerRef.current.scrollTop = 0;
+        }
+      }, 50);
     }
   };
 
@@ -84,12 +97,16 @@ export function MachineDetailDialog({
             <div className="text-gray-600">Loading machine details...</div>
           </div>
         ) : (
-          <div className="overflow-y-auto flex-1 px-1 min-h-0">
-            <div className="space-y-6 pb-4">
+          <div 
+            ref={scrollContainerRef}
+            className="overflow-y-auto flex-1 px-1 min-h-0" 
+            style={{ scrollBehavior: 'auto' }}
+          >
+            <div className="space-y-6 pb-4" style={{ position: 'relative', top: 0 }}>
               <MachineTitle bu={decodedBu} type={decodedType} id={decodedId} />
-              <MachineHeaderClient bu={decodedBu} type={decodedType} id={decodedId} />
+              <MachineHeader bu={decodedBu} type={decodedType} id={decodedId} />
               <MachineDetailClient records={records} questions={questions} />
-              <MachineForm bu={decodedBu} type={decodedType} id={decodedId} />
+              <MachineForm bu={decodedBu} type={decodedType} id={decodedId} isInDialog={true} />
             </div>
           </div>
         )}

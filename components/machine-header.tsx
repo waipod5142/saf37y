@@ -1,18 +1,63 @@
-import { getMachineById } from "@/data/machines";
+"use client";
+
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { getMachineByIdAction } from "@/lib/actions/machines";
+import { Machine } from "@/types/machine";
 import { AlertTriangleIcon } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import QRCodeComponent from "./qr-code";
 
-interface MachineHeaderProps {
+interface MachineHeaderClientProps {
   bu: string;
   type: string;
   id: string;
 }
 
-export default async function MachineHeader({ bu, type, id }: MachineHeaderProps) {
-  const machine = await getMachineById(bu, type, id);
+export default function MachineHeaderClient({ bu, type, id }: MachineHeaderClientProps) {
+  const [machine, setMachine] = useState<Machine | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
-  if (!machine) {
+  const handleMachineIdClick = () => {
+    // Capitalize first letter of type
+    const capitalizedType = type.charAt(0).toUpperCase() + type.slice(1);
+    // Navigate to machine detail page
+    router.push(`/Machine/${bu}/${capitalizedType}/${encodeURIComponent(id)}`);
+  };
+
+  useEffect(() => {
+    const fetchMachine = async () => {
+      try {
+        setLoading(true);
+        const result = await getMachineByIdAction(bu, type, id);
+        
+        if (result.success && result.machine) {
+          setMachine(result.machine);
+        } else {
+          setError(result.error || "Machine not found");
+        }
+      } catch (err) {
+        setError("Failed to fetch machine data");
+        console.error("Error fetching machine:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMachine();
+  }, [bu, type, id]);
+
+  if (loading) {
+    return (
+      <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 mb-6">
+        <div className="text-gray-600">Loading machine details...</div>
+      </div>
+    );
+  }
+
+  if (error || !machine) {
     return (
       <div className="bg-red-50 border border-red-200 rounded-lg p-6 mb-6">
         <div className="flex items-center gap-2 text-red-700">
@@ -20,7 +65,7 @@ export default async function MachineHeader({ bu, type, id }: MachineHeaderProps
           <h2 className="text-lg font-semibold">Machine Not Found</h2>
         </div>
         <p className="text-red-600 mt-2">
-          No machine data found for {bu}/{type}/{id}
+          {error || `No machine data found for ${bu}/${type}/${id}`}
         </p>
       </div>
     );
@@ -28,89 +73,103 @@ export default async function MachineHeader({ bu, type, id }: MachineHeaderProps
 
   return (
     <div className="bg-white border border-gray-200 rounded-lg shadow-sm mb-6">
-      {/* QR Code Section */}
-      <div className="bg-gray-50 p-4 rounded-lg mb-4 w-full flex justify-center items-center">
-          <QRCodeComponent 
-            value={`https://www.saf37y.com/Machine/${bu}/${type}/${id}`}
-            size={96}
-            className="flex-shrink-0"
-          />
-      </div>
       <div className="p-6">
-          <div className="flex items-start gap-4">
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex-1">
+            <button
+              onClick={handleMachineIdClick}
+              className="text-2xl font-bold text-blue-600 hover:text-blue-800 mb-2 cursor-pointer transition-colors duration-200 bg-transparent border-none p-0 text-left"
+              title="Click to open full machine page"
+            >
+              {machine.id}
+            </button>
             
-            <div className="flex-1">
-             
-              <h2 className="text-lg font-semibold text-gray-700 mb-4">
-                {machine.header}
-              </h2>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
-                <div className="bg-gray-50 p-3 rounded">
-                  <span className="text-sm font-medium text-gray-500">Machine ID</span>
-                  <p className="text-gray-900 font-semibold">{machine.id}</p>
-                </div>
-                <div className="bg-gray-50 p-3 rounded">
-                  <span className="text-sm font-medium text-gray-500">Business Unit</span>
-                  <p className="text-gray-900 font-semibold">{bu.toUpperCase()}</p>
-                </div>
-                <div className="bg-gray-50 p-3 rounded">
-                  <span className="text-sm font-medium text-gray-500">Type</span>
-                  <p className="text-gray-900 font-semibold">{type.charAt(0).toUpperCase() + type.slice(1)}</p>
-                </div>
-
-                {machine.country && (
-                  <div className="bg-gray-50 p-3 rounded">
-                    <span className="text-sm font-medium text-gray-500">Country</span>
-                    <p className="text-gray-900 font-semibold">{machine.country}</p>
-                  </div>
-                )}
-                {machine.site && (
-                  <div className="bg-gray-50 p-3 rounded">
-                    <span className="text-sm font-medium text-gray-500">Site</span>
-                    <p className="text-gray-900 font-semibold">{machine.site}</p>
-                  </div>
-                )}
-              </div>
-              
-              {machine.question && (
-                <div className="mb-4">
-                  <h3 className="text-md font-semibold text-gray-800 mb-2">Inspection Question</h3>
-                  <div className="bg-blue-50 p-3 rounded border-l-4 border-blue-400">
-                    <ReactMarkdown className="text-gray-700">{machine.question}</ReactMarkdown>
-                  </div>
+            {/* Dynamic machine information */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+              {machine.country && (
+                <div className="flex flex-col">
+                  <span className="text-gray-500 font-medium">Country</span>
+                  <span className="text-gray-900">{machine.country}</span>
                 </div>
               )}
               
-              {machine.howto && (
-                <div className="mb-4">
-                  <h3 className="text-md font-semibold text-gray-800 mb-2">How To Instructions</h3>
-                  <div className="bg-green-50 p-3 rounded border-l-4 border-green-400">
-                    <ReactMarkdown className="text-gray-700">{machine.howto}</ReactMarkdown>
-                  </div>
+              {machine.site && (
+                <div className="flex flex-col">
+                  <span className="text-gray-500 font-medium">Site</span>
+                  <span className="text-gray-900">{machine.site}</span>
                 </div>
               )}
               
-              {machine.accept && (
-                <div className="mb-4">
-                  <h3 className="text-md font-semibold text-gray-800 mb-2">Acceptance Criteria</h3>
-                  <div className="bg-yellow-50 p-3 rounded border-l-4 border-yellow-400">
-                    <ReactMarkdown className="text-gray-700">{machine.accept}</ReactMarkdown>
-                  </div>
+              {machine.area && (
+                <div className="flex flex-col">
+                  <span className="text-gray-500 font-medium">Area</span>
+                  <span className="text-gray-900">{machine.area}</span>
                 </div>
               )}
               
-              {machine.description && (
-                <div>
-                  <h3 className="text-md font-semibold text-gray-800 mb-2">Description</h3>
-                  <div className="prose prose-sm max-w-none">
-                    <ReactMarkdown>{machine.description}</ReactMarkdown>
-                  </div>
+              {machine.department && (
+                <div className="flex flex-col">
+                  <span className="text-gray-500 font-medium">Department</span>
+                  <span className="text-gray-900">{machine.department}</span>
+                </div>
+              )}
+              
+              {machine.holder && (
+                <div className="flex flex-col">
+                  <span className="text-gray-500 font-medium">Holder</span>
+                  <span className="text-gray-900">{machine.holder}</span>
+                </div>
+              )}
+              
+              {machine.kind && (
+                <div className="flex flex-col">
+                  <span className="text-gray-500 font-medium">Kind</span>
+                  <span className="text-gray-900">{machine.kind}</span>
+                </div>
+              )}
+              
+              {machine.status && (
+                <div className="flex flex-col">
+                  <span className="text-gray-500 font-medium">Status</span>
+                  <span className="text-gray-900">{machine.status}</span>
+                </div>
+              )}
+              
+              {machine.email && (
+                <div className="flex flex-col">
+                  <span className="text-gray-500 font-medium">Contact Email</span>
+                  <span className="text-gray-900">{machine.email}</span>
                 </div>
               )}
             </div>
+            
+            {/* Details section */}
+            {machine.details && (
+              <div className="mt-4">
+                <span className="text-gray-500 font-medium text-sm">Details</span>
+                <div className="mt-1 text-gray-900 prose prose-sm max-w-none">
+                  <ReactMarkdown>{machine.details}</ReactMarkdown>
+                </div>
+              </div>
+            )}
+            
+            {/* Remark section */}
+            {machine.remark && (
+              <div className="mt-4">
+                <span className="text-gray-500 font-medium text-sm">Remarks</span>
+                <div className="mt-1 text-gray-900 prose prose-sm max-w-none">
+                  <ReactMarkdown>{machine.remark}</ReactMarkdown>
+                </div>
+              </div>
+            )}
+          </div>
+          
+          {/* QR Code */}
+          <div className="ml-6 flex-shrink-0">
+            <QRCodeComponent value={`https://www.saf37y.com/Machine/${bu}/${type.charAt(0).toUpperCase() + type.slice(1)}/${encodeURIComponent(machine.id)}`} />
           </div>
         </div>
+      </div>
     </div>
   );
 }

@@ -17,6 +17,7 @@ import { auth, storage } from "@/firebase/client";
 import { signInAnonymously } from "firebase/auth";
 import { ref, uploadBytesResumable, UploadTask } from "firebase/storage";
 import { Certificate } from "crypto";
+import { convertFirebaseTimestamp, formatRelativeDateTime } from "@/components/ui/date-utils";
 
 interface MachineDetailClientProps {
   records: MachineInspectionRecord[];
@@ -92,15 +93,8 @@ export default function MachineDetailClient({ records, questions }: MachineDetai
   const formatLocationTimestamp = (timestamp: any) => {
     if (!timestamp) return "N/A";
     try {
-      let date: Date;
-      
-      if (timestamp.toDate) {
-        date = timestamp.toDate();
-      } else if (timestamp instanceof Date) {
-        date = timestamp;
-      } else {
-        date = new Date(timestamp);
-      }
+      const date = convertFirebaseTimestamp(timestamp);
+      if (!date) return "N/A";
       
       return `Captured: ${date.toLocaleDateString("en-US", { 
         month: "short", 
@@ -167,8 +161,8 @@ export default function MachineDetailClient({ records, questions }: MachineDetai
           
           images.forEach((image, index) => {
             if (image.file) {
-              // Create path for fix images: machines/{bu}/{type}/{id}/{questionName}/fix-{timestamp}-{index}-{filename}
-              const path = `machines/${record.bu}/${record.type.toLowerCase()}/${record.id}/${questionName}/fix-${Date.now()}-${index}-${image.file.name}`;
+              // Create path for fix images: Machine/{bu}/{type}/{id}/{questionName}/fix-{timestamp}-{index}-{filename}
+              const path = `Machine/${record.bu}/${record.type.toLowerCase()}/${record.id}/${questionName}/fix-${Date.now()}-${index}-${image.file.name}`;
               questionImagePaths[questionName].push(path);
               const storageRef = ref(storage, path);
               uploadTasks.push(uploadBytesResumable(storageRef, image.file));
@@ -257,52 +251,6 @@ export default function MachineDetailClient({ records, questions }: MachineDetai
     }
   };
 
-  const formatDate = (timestamp: any) => {
-    if (!timestamp) return "N/A";
-    try {
-      let date: Date;
-      
-      // Handle Firebase Timestamp
-      if (timestamp.toDate) {
-        date = timestamp.toDate();
-      }
-      // Handle regular Date object
-      else if (timestamp instanceof Date) {
-        date = timestamp;
-      }
-      // Handle string dates
-      else {
-        date = new Date(timestamp);
-      }
-      
-      // Calculate days difference
-      const now = new Date();
-      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      const inspectionDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-      
-      const diffTime = today.getTime() - inspectionDate.getTime();
-      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-      
-      const formattedDateTime = date.toLocaleString("en-GB", { hour12: false });
-      
-      if (diffDays === 0) {
-        // Today - show normal format
-        return formattedDateTime;
-      } else if (diffDays === 1) {
-        // Yesterday
-        return `1 day ago - ${formattedDateTime}`;
-      } else if (diffDays > 1) {
-        // Multiple days ago
-        return `${diffDays} days ago - ${formattedDateTime}`;
-      } else {
-        // Future date (shouldn't happen for inspection records, but handle gracefully)
-        return formattedDateTime;
-      }
-      
-    } catch (error) {
-      return "Invalid Date";
-    }
-  };
 
   const getQuestionGroups = (record: MachineInspectionRecord) => {
     const groups: { [questionName: string]: { status: any, remark?: string, images?: string[] } } = {};
@@ -367,7 +315,7 @@ export default function MachineDetailClient({ records, questions }: MachineDetai
               <div className="flex items-center gap-4 text-sm text-gray-600 mt-2">
                 <div className="flex items-center gap-1">
                   <CalendarIcon className="h-4 w-4" />
-                  {formatDate(record.timestamp || record.createdAt)}
+                  {formatRelativeDateTime(record.timestamp || record.createdAt)}
                 </div>
                 <div className="flex items-center gap-1">
                   <UserIcon className="h-4 w-4" />

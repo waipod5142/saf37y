@@ -9,66 +9,8 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useParams } from "next/navigation";
 import { MachineListModal } from "@/components/MachineListModal";
-
-const SITE_MAPPING: Record<string, string[]> = {
-  "th": ["ho", "srb", "log"],
-  "vn": ["honc", "thiv", "catl", "hiep", "nhon", "cant", "ho"],
-  "lk": ["pcw", "rcw", "elc", "hbp", "quarry"],
-  "bd": ["plant"],
-  "cmic": ["cmic"],
-};
-
-const BU_DISPLAY: Record<string, { name: string; flag: string }> = {
-  "th": { name: "Thailand", flag: "🇹🇭" },
-  "vn": { name: "Vietnam", flag: "🇻🇳" },
-  "lk": { name: "Sri Lanka", flag: "🇱🇰" },
-  "bd": { name: "Bangladesh", flag: "🇧🇩" },
-  "cmic": { name: "Cambodia", flag: "🇰🇭" }
-};
-
-const MACHINE_TYPE_DISPLAY: Record<string, string> = {
-  "car": "Vehicle",
-  "lifting": "Lifting Equipment",
-  "lifevest": "Life Vest"
-};
-
-const MACHINE_TYPE_ICONS: Record<string, string> = {
-  "bulk": "🚛",
-  "cable": "🔌",
-  "car": "🚗",
-  "cctv": "📹",
-  "crane": "🏗️",
-  "dump": "🚚",
-  "electrical": "⚡",
-  "equipment": "🔧",
-  "extinguisher": "🧯",
-  "fan": "🌀",
-  "firstaid": "🏥",
-  "firstaidbox": "🚑",
-  "foam": "🧼",
-  "forklift": "🚜",
-  "harness": "🔗",
-  "hydrant": "🚰",
-  "lifeline": "🪢",
-  "lifering": "🛟",
-  "lifevest": "🦺",
-  "lifting": "🏗️",
-  "liftinggear": "⚙️",
-  "light": "💡",
-  "loader": "🏗️",
-  "mobile": "📱",
-  "portable": "📦",
-  "pump": "⛽",
-  "rescue": "🚨",
-  "slope": "⛰️",
-  "socket": "🔌",
-  "stock": "📋",
-  "thermal": "🌡️",
-  "valve": "🔧",
-  "vehicle": "🚙",
-  "welding": "🔥"
-};
-
+import { getMachineEmoji } from "@/lib/machine-types";
+import { getAllVocabulariesAction } from "@/lib/actions/vocabulary";
 
 function getCompletionColor(percentage: number): string {
   if (percentage === 0) return "bg-gray-200 text-gray-600";
@@ -78,8 +20,7 @@ function getCompletionColor(percentage: number): string {
   return "bg-green-200 text-green-800";
 }
 
-
-function DashboardTable({ stats, title, showDefects, sites, bu }: { stats: DashboardMachineStatsByBU; title: string; showDefects: boolean; sites: string[]; bu: string }) {
+function DashboardTable({ stats, title, showDefects, sites, bu, machineTypeMapping }: { stats: DashboardMachineStatsByBU; title: string; showDefects: boolean; sites: string[]; bu: string; machineTypeMapping: Record<string, string> }) {
   const machineTypes = Object.keys(stats);
   const [modalState, setModalState] = useState<{
     isOpen: boolean;
@@ -147,8 +88,8 @@ function DashboardTable({ stats, title, showDefects, sites, bu }: { stats: Dashb
               </thead>
               <tbody>
               {machineTypes.map(type => {
-                const displayName = MACHINE_TYPE_DISPLAY[type] || type;
-                const icon = MACHINE_TYPE_ICONS[type] || "🔧";
+                const displayName = machineTypeMapping[type] || type;
+                const icon = getMachineEmoji(type) || "🔧";
                 
                 // Calculate totals for this machine type across all sites
                 const typeInspected = sites.reduce((sum, site) => 
@@ -319,7 +260,7 @@ function DashboardTable({ stats, title, showDefects, sites, bu }: { stats: Dashb
       site={modalState.site}
       type={modalState.type}
       siteName={modalState.site.toUpperCase()}
-      typeName={MACHINE_TYPE_DISPLAY[modalState.type] || modalState.type}
+      typeName={machineTypeMapping[modalState.type] || modalState.type}
     />
   </>
   );
@@ -342,9 +283,39 @@ export default function DashboardPage() {
   });
   const [loading, setLoading] = useState(true);
   const [showDefects, setShowDefects] = useState(false);
+  const [vocabularyLoading, setVocabularyLoading] = useState(true);
+  const [siteMapping, setSiteMapping] = useState<Record<string, string[]>>({});
+  const [buDisplay, setBuDisplay] = useState<Record<string, { name: string | null; flag: string | null }>>({});
+  const [machineTypeMapping, setMachineTypeMapping] = useState<Record<string, string>>({});
   
-  const sites = SITE_MAPPING[bu] || [];
-  const buInfo = BU_DISPLAY[bu] || { name: "Unknown", flag: "🏳️" };
+  const sites = siteMapping[bu] || [];
+  const buInfo = buDisplay[bu] || { name: null, flag: null };
+  
+  // Fetch vocabulary data on component mount
+  useEffect(() => {
+    async function fetchVocabularies() {
+      try {
+        setVocabularyLoading(true);
+        const result = await getAllVocabulariesAction();
+        
+        if (result.success && result.siteMapping && result.buDisplay) {
+          setSiteMapping(result.siteMapping);
+          setBuDisplay(result.buDisplay);
+          if (result.machineTypeMapping) {
+            setMachineTypeMapping(result.machineTypeMapping);
+          }
+        } else {
+          console.warn('Failed to load vocabularies, using fallback data:', result.error);
+        }
+      } catch (error) {
+        console.error('Error fetching vocabularies:', error);
+      } finally {
+        setVocabularyLoading(false);
+      }
+    }
+    
+    fetchVocabularies();
+  }, []);
   
   useEffect(() => {
     async function fetchData() {
@@ -386,14 +357,26 @@ export default function DashboardPage() {
       <Breadcrumbs
         items={[
           { label: "Dashboard", href: "/dashboard" },
-          { label: buInfo.name },
+          { label: vocabularyLoading ? "Loading..." : (buInfo.name || "Unknown") },
         ]}
       />
       
       <div className="mt-6 mb-8">
         <div className="flex items-center gap-3 mb-4">
-          <span className="text-3xl">{buInfo.flag}</span>
-          <h1 className="text-3xl font-bold">{buInfo.name} - Combined daily, monthly, quarterly, annual</h1>
+          <span className="text-3xl">
+            {vocabularyLoading ? (
+              <div className="w-8 h-8 bg-gray-200 rounded animate-pulse"></div>
+            ) : (
+              buInfo.flag || "🏳️"
+            )}
+          </span>
+          <h1 className="text-3xl font-bold">
+            {vocabularyLoading ? (
+              <div className="w-64 h-8 bg-gray-200 rounded animate-pulse"></div>
+            ) : (
+              `${buInfo.name || "Unknown"} - Combined daily, monthly, quarterly, annual`
+            )}
+          </h1>
         </div>
         
         <div className="flex items-center gap-6 mb-4">
@@ -434,11 +417,18 @@ export default function DashboardPage() {
         <div className="flex justify-center items-center h-64">
           <div className="text-lg text-gray-600">Loading dashboard data...</div>
         </div>
+      ) : sites.length === 0 ? (
+        <div className="flex justify-center items-center h-64">
+          <div className="text-center">
+            <div className="text-lg text-gray-600 mb-2">No site data available</div>
+            <div className="text-sm text-gray-500">Unable to load site configuration for this business unit.</div>
+          </div>
+        </div>
       ) : Object.keys(dashboardStats.annual).length === 0 ? (
         <div className="flex justify-center items-center h-64">
           <div className="text-center">
-            <div className="text-lg text-gray-600 mb-2">No inspection data available</div>
-            <div className="text-sm text-gray-500">Please check if there are any inspection records in the database.</div>
+            <div className="text-lg text-gray-600 mb-2">No machine data available</div>
+            <div className="text-sm text-gray-500">Please check if there are any machines registered for this business unit.</div>
           </div>
         </div>
       ) : (
@@ -457,6 +447,7 @@ export default function DashboardPage() {
               showDefects={showDefects}
               sites={sites}
               bu={bu}
+              machineTypeMapping={machineTypeMapping}
             />
           </TabsContent>
           
@@ -467,6 +458,7 @@ export default function DashboardPage() {
               showDefects={showDefects}
               sites={sites}
               bu={bu}
+              machineTypeMapping={machineTypeMapping}
             />
           </TabsContent>
           
@@ -477,6 +469,7 @@ export default function DashboardPage() {
               showDefects={showDefects}
               sites={sites}
               bu={bu}
+              machineTypeMapping={machineTypeMapping}
             />
           </TabsContent>
           
@@ -487,6 +480,7 @@ export default function DashboardPage() {
               showDefects={showDefects}
               sites={sites}
               bu={bu}
+              machineTypeMapping={machineTypeMapping}
             />
           </TabsContent>
         </Tabs>

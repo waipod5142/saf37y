@@ -42,10 +42,19 @@ export function MachineListModal({
   const [showRecentInspections, setShowRecentInspections] = useState(false);
   const [showMachineDetail, setShowMachineDetail] = useState(false);
   const [selectedMachineId, setSelectedMachineId] = useState("");
+  const [isMainModalVisible, setIsMainModalVisible] = useState(true);
 
   useEffect(() => {
     if (isOpen && bu && site && type) {
       fetchMachines();
+    }
+    // Reset visibility when modal opens
+    if (isOpen) {
+      setIsMainModalVisible(true);
+    } else {
+      // Close detail dialog when main modal is closed
+      setShowMachineDetail(false);
+      setSelectedMachineId("");
     }
   }, [isOpen, bu, site, type]);
 
@@ -90,6 +99,15 @@ export function MachineListModal({
   const handleMachineClick = (machineId: string) => {
     setSelectedMachineId(machineId);
     setShowMachineDetail(true);
+    // Hide main modal to prevent overlay conflicts
+    setIsMainModalVisible(false);
+  };
+
+  const handleMachineDetailClose = () => {
+    setShowMachineDetail(false);
+    setSelectedMachineId("");
+    // Show main modal again
+    setIsMainModalVisible(true);
   };
 
   const getDaysLabel = (days: number) => {
@@ -111,7 +129,7 @@ export function MachineListModal({
 
   return (
     <>
-      <Dialog open={isOpen} onOpenChange={onClose}>
+      <Dialog open={isOpen && isMainModalVisible} onOpenChange={onClose}>
         <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden">
           <DialogHeader>
             <DialogTitle className="text-lg font-semibold">
@@ -247,7 +265,7 @@ export function MachineListModal({
           
           <div className="mt-6 flex justify-end">
             <Button variant="outline" onClick={onClose}>
-              Close
+              Closet
             </Button>
           </div>
         </DialogContent>
@@ -276,7 +294,7 @@ export function MachineListModal({
 
       <MachineDetailDialog
         isOpen={showMachineDetail}
-        onClose={() => setShowMachineDetail(false)}
+        onClose={handleMachineDetailClose}
         bu={bu}
         type={type.charAt(0).toUpperCase() + type.slice(1)}
         id={selectedMachineId}

@@ -14,4 +14,9 @@ export interface Vocabulary {
   remark: string;
   remarkr: string;
   submit: string;
+  flag: string;
+  name: string;
+  sites: string[];
+  // Support legacy field name from some entries
+  site?: string | string[];
 }
