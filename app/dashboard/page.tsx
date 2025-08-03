@@ -9,7 +9,7 @@ const COUNTRIES = [
     code: "th",
     name: "Thailand",
     flag: "🇹🇭",
-    sites: ["ho", "srb", "log"]
+    sites: ["srb", "log", "office", "support", "driver", "sccc", "isup", "cwt", "mortar", "isubs", "ray", "cho", "quarry", "plant3", "skl", "plant2", "ebkk", "isubr", "icho"]
   },
   {
     code: "vn", 

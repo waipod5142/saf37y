@@ -86,20 +86,27 @@ export default function MachineHeaderClient({ bu, type, id }: MachineHeaderClien
             
             {/* Dynamic machine information */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
-              {machine.country && (
+              {machine.bu && (
                 <div className="flex flex-col">
-                  <span className="text-gray-500 font-medium">Country</span>
-                  <span className="text-gray-900">{machine.country}</span>
+                  <span className="text-gray-500 font-medium">BU</span>
+                  <span className="text-gray-900">{machine.bu}</span>
                 </div>
               )}
-              
+
+              {machine.type && (
+                <div className="flex flex-col">
+                  <span className="text-gray-500 font-medium">Type</span>
+                  <span className="text-gray-900">{machine.type}</span>
+                </div>
+              )}
+            
               {machine.site && (
                 <div className="flex flex-col">
                   <span className="text-gray-500 font-medium">Site</span>
                   <span className="text-gray-900">{machine.site}</span>
                 </div>
               )}
-              
+
               {machine.area && (
                 <div className="flex flex-col">
                   <span className="text-gray-500 font-medium">Area</span>

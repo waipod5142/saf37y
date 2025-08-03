@@ -450,7 +450,7 @@ export default function DashboardPage() {
               machineTypeMapping={machineTypeMapping}
             />
           </TabsContent>
-          
+
           <TabsContent value="monthly">
             <DashboardTable 
               stats={dashboardStats.monthly} 

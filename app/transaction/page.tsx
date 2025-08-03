@@ -7,13 +7,14 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { Clock, FileText, TrendingUp, AlertCircle, RefreshCw } from "lucide-react";
+import { formatRelativeDateTime } from "@/components/ui/date-utils";
 
 const COUNTRIES = [
   {
     code: "th",
     name: "Thailand",
     flag: "🇹🇭",
-    sites: ["ho", "srb", "log"]
+    sites: ["srb", "log", "office", "support", "driver", "sccc", "isup", "cwt", "mortar", "isubs", "ray", "cho", "quarry", "plant3", "skl", "plant2", "ebkk", "isubr", "icho"]
   },
   {
     code: "vn", 
@@ -312,7 +313,7 @@ export default function TransactionPage() {
                   
                   {summary.lastInspection && (
                     <div className="text-xs text-gray-500 mb-4">
-                      Last: {new Date(summary.lastInspection).toLocaleDateString()}
+                      Inspected: {formatRelativeDateTime(summary.lastInspection)}
                     </div>
                   )}
                   
