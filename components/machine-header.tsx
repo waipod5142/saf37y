@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { getMachineByIdAction } from "@/lib/actions/machines";
 import { Machine } from "@/types/machine";
+import { normalizeTypeForDisplay } from "@/lib/machine-types";
 import { AlertTriangleIcon } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import QRCodeComponent from "./qr-code";
@@ -31,7 +32,7 @@ export default function MachineHeaderClient({ bu, type, id }: MachineHeaderClien
     const fetchMachine = async () => {
       try {
         setLoading(true);
-        const result = await getMachineByIdAction(bu, type, id);
+        const result = await getMachineByIdAction(bu, normalizeTypeForDisplay(type), id);
         
         if (result.success && result.machine) {
           setMachine(result.machine);
@@ -96,7 +97,7 @@ export default function MachineHeaderClient({ bu, type, id }: MachineHeaderClien
               {machine.type && (
                 <div className="flex flex-col">
                   <span className="text-gray-500 font-medium">Type</span>
-                  <span className="text-gray-900">{machine.type}</span>
+                  <span className="text-gray-900">{normalizeTypeForDisplay(machine.type)}</span>
                 </div>
               )}
             
@@ -104,6 +105,13 @@ export default function MachineHeaderClient({ bu, type, id }: MachineHeaderClien
                 <div className="flex flex-col">
                   <span className="text-gray-500 font-medium">Site</span>
                   <span className="text-gray-900">{machine.site}</span>
+                </div>
+              )}
+
+              {machine.owner && (
+                <div className="flex flex-col">
+                  <span className="text-gray-500 font-medium">Owner</span>
+                  <span className="text-gray-900">{machine.owner}</span>
                 </div>
               )}
 

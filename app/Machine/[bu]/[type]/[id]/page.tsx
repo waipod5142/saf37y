@@ -17,7 +17,7 @@ export default async function MachinePage({
   const decodedBu = decodeURIComponent(bu);
   const decodedType = decodeURIComponent(type);
   const decodedId = decodeURIComponent(id);
-  
+
   return (
     <div className="max-w-4xl mx-auto p-2">     
       <MachineTitle bu={decodedBu} type={decodedType} id={decodedId} />

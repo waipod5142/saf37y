@@ -10,6 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { formatRelativeDateTime } from "@/components/ui/date-utils";
 import { getMachinesWithInspectionsAction, MachineWithInspection } from "@/lib/actions/machines";
 import { LocationMapDialog } from "./LocationMapDialog";
 import { RecentInspectionsDialog } from "./RecentInspectionsDialog";
@@ -236,7 +237,7 @@ export function MachineListModal({
                           </div>
                           <div className="text-sm text-gray-600">
                             {machine.inspectionDate && (
-                              <div>📅 Last Inspection: {new Date(machine.inspectionDate).toLocaleDateString()}</div>
+                              <div>📅 Last Inspected: {formatRelativeDateTime(machine.inspectionDate)}</div>
                             )}
                             {machine.lastInspection?.inspector && (
                               <div>👤 Inspector: {machine.lastInspection.inspector}</div>

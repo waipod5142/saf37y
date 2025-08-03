@@ -218,6 +218,14 @@ export const getMachineEmoji = (type: string): string | null => {
   return null;
 };
 
+export const normalizeTypeForDisplay = (type: string): string => {
+  const lowerType = type.toLowerCase();
+  if (['mixer', 'mixerweek', 'mixertrainer', 'mixertsm'].includes(lowerType)) {
+    return 'Mixer';
+  }
+  return type;
+};
+
 export const machineTitles: { [key: string]: string } = {
   jkcementforklift: "Forklift Inspection",
   vnlifting: "Kiểm định thiết bị nâng / Lifting Equipment",

@@ -374,7 +374,7 @@ export default function DashboardPage() {
             {vocabularyLoading ? (
               <div className="w-64 h-8 bg-gray-200 rounded animate-pulse"></div>
             ) : (
-              `${buInfo.name || "Unknown"} - Combined daily, monthly, quarterly, annual`
+              `${buInfo.name || "Unknown"} - Click each tab to view daily, monthly, quarterly, annual`
             )}
           </h1>
         </div>

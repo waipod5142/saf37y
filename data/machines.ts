@@ -4,6 +4,14 @@ import { MachineInspectionRecord } from "@/types/machineInspectionRecord";
 import { getFormInspectionPeriods, InspectionPeriod } from "./forms";
 import "server-only";
 
+// Helper function to check if a machine type is a mixer type
+export const isMixerType = (type: string): boolean => {
+  return type.toLowerCase().startsWith('mixer');
+};
+
+// Define all mixer type variants
+export const MIXER_TYPES = ['mixer', 'mixertsm', 'mixertrainer', 'mixerweek'];
+
 // Utility function for Firebase timestamp conversion
 function convertFirebaseTimestamp(timestamp: any): Date | null {
   if (!timestamp) return null;
@@ -100,6 +108,68 @@ export const getMachineInspectionRecords = async (
     return records;
   } catch (error) {
     console.error("Error fetching machine inspection records:", error);
+    return [];
+  }
+};
+
+export const getMachineInspectionRecordsForMixers = async (
+  bu: string,
+  id: string
+): Promise<MachineInspectionRecord[]> => {
+  try {
+    // Decode URL parameters to handle special characters (including Thai characters)
+    const decodedId = decodeURIComponent(id);
+    
+    // Create queries for all mixer types
+    const queryPromises = MIXER_TYPES.map(mixerType => {
+      return firestore
+        .collection("machinetr")
+        .where("bu", "==", bu)
+        .where("type", "==", mixerType.toLowerCase())
+        .where("id", "==", decodedId)
+        .get();
+    });
+
+    // Execute all queries in parallel
+    const snapshots = await Promise.all(queryPromises);
+
+    // Collect all records from all mixer types
+    const allRecords: MachineInspectionRecord[] = [];
+    
+    snapshots.forEach((snapshot) => {
+      if (!snapshot.empty) {
+        const records = snapshot.docs.map((doc) => {
+          const recordData = doc.data();
+          return {
+            id: recordData.id,
+            bu: recordData.bu,
+            type: recordData.type,
+            inspector: recordData.inspector,
+            timestamp: recordData.timestamp,
+            createdAt: recordData.createdAt,
+            remark: recordData.remark,
+            images: recordData.images,
+            docId: doc.id,
+            ...recordData,
+          } as MachineInspectionRecord;
+        });
+        allRecords.push(...records);
+      }
+    });
+
+    // Sort by timestamp in descending order (latest first)
+    allRecords.sort((a, b) => {
+      const aDate = convertFirebaseTimestamp(a.timestamp);
+      const bDate = convertFirebaseTimestamp(b.timestamp);
+      
+      if (!aDate || !bDate) return 0;
+      
+      return bDate.getTime() - aDate.getTime();
+    });
+
+    return allRecords;
+  } catch (error) {
+    console.error("Error fetching machine inspection records for mixers:", error);
     return [];
   }
 };

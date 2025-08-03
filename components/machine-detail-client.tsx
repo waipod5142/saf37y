@@ -217,6 +217,12 @@ export default function MachineDetailClient({ records, questions }: MachineDetai
   };
 
   const formatImageUrl = (image: string) => {
+    // If it's already a full Firebase Storage URL, return as-is
+    if (image.startsWith('https://firebasestorage.googleapis.com')) {
+      return image;
+    }
+    
+    // Otherwise, format it as a Firebase Storage URL
     return `https://firebasestorage.googleapis.com/v0/b/sccc-inseesafety-prod.firebasestorage.app/o/${encodeURIComponent(image)}?alt=media`;
   };
 
@@ -310,6 +316,11 @@ export default function MachineDetailClient({ records, questions }: MachineDetai
             <div>
               <CardTitle className="text-lg">
                 {isLatest && <Badge variant="default" className="mr-2 mb-2">Latest</Badge>}
+                {record.type && (
+                  <Badge variant="outline" className="mr-2 mb-2 capitalize">
+                    {record.type}
+                  </Badge>
+                )}
                 Inspection Record
               </CardTitle>
               <div className="flex items-center gap-4 text-sm text-gray-600 mt-2">
