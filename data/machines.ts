@@ -2,6 +2,7 @@ import { firestore } from "@/firebase/server";
 import { Machine } from "@/types/machine";
 import { MachineInspectionRecord } from "@/types/machineInspectionRecord";
 import { getFormInspectionPeriods, InspectionPeriod } from "./forms";
+import { getSiteMapping } from "@/lib/constants/countries";
 import "server-only";
 
 // Helper function to check if a machine type is a mixer type
@@ -515,15 +516,9 @@ export const getDashboardMachineStatsByBU = async (period?: string, bu?: string)
   try {
     console.log(`=== getDashboardMachineStatsByBU called for bu: ${bu}, period: ${period} ===`);
     
-    const SITE_MAPPING: Record<string, string[]> = {
-      "th": ["ho", "srb", "log"],
-      "vn": ["honc", "thiv", "catl", "hiep", "nhon", "cant", "ho"],
-      "lk": ["pcw", "rcw", "elc", "hbp", "quarry"],
-      "bd": ["plant"],
-      "cmic": ["cmic"]
-    };
-    
-    const sites = SITE_MAPPING[bu || ""] || [];
+    // Get site mapping from vocabulary system with fallback
+    const siteMapping = await getSiteMapping();
+    const sites = siteMapping[bu || ""] || [];
     
     // Get form inspection periods for filtering
     const formInspectionPeriods = await getFormInspectionPeriods(bu);

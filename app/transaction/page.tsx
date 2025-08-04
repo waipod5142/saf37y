@@ -5,42 +5,10 @@ import { Breadcrumbs } from "@/components/ui/breadcrumb";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Clock, FileText, TrendingUp, AlertCircle, RefreshCw } from "lucide-react";
 import { formatRelativeDateTime } from "@/components/ui/date-utils";
-
-const COUNTRIES = [
-  {
-    code: "th",
-    name: "Thailand",
-    flag: "🇹🇭",
-    sites: ["srb", "log", "office", "support", "driver", "sccc", "isup", "cwt", "mortar", "isubs", "ray", "cho", "quarry", "plant3", "skl", "plant2", "ebkk", "isubr", "icho"]
-  },
-  {
-    code: "vn", 
-    name: "Vietnam",
-    flag: "🇻🇳",
-    sites: ["honc", "thiv", "catl", "hiep", "nhon", "cant", "ho"]
-  },
-  {
-    code: "lk",
-    name: "Sri Lanka", 
-    flag: "🇱🇰",
-    sites: ["pcw", "rcw", "elc", "hbp", "quarry"]
-  },
-  {
-    code: "bd",
-    name: "Bangladesh",
-    flag: "🇧🇩", 
-    sites: ["plant"]
-  },
-  {
-    code: "cmic",
-    name: "Cambodia",
-    flag: "🇰🇭",
-    sites: ["cmic"]
-  }
-];
+import { getCountries, Country } from "@/lib/constants/countries";
 
 interface TransactionSummary {
   [countryCode: string]: {
@@ -52,6 +20,8 @@ interface TransactionSummary {
 }
 
 export default function TransactionPage() {
+  const [countries, setCountries] = useState<Country[]>([]);
+  const [countriesLoading, setCountriesLoading] = useState(true);
   const [transactionSummary, setTransactionSummary] = useState<TransactionSummary>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -62,7 +32,24 @@ export default function TransactionPage() {
     totalMonth: 0
   });
 
-  const fetchTransactionSummary = async () => {
+  // Fetch countries data
+  useEffect(() => {
+    async function fetchCountries() {
+      try {
+        setCountriesLoading(true);
+        const countriesData = await getCountries();
+        setCountries(countriesData);
+      } catch (err) {
+        console.error("Error fetching countries:", err);
+      } finally {
+        setCountriesLoading(false);
+      }
+    }
+
+    fetchCountries();
+  }, []);
+
+  const fetchTransactionSummary = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -71,7 +58,7 @@ export default function TransactionPage() {
       await new Promise(resolve => setTimeout(resolve, 100));
       
       // Fetch summary data for all countries with timeout
-      const summaryPromises = COUNTRIES.map(async (country) => {
+      const summaryPromises = countries.map(async (country) => {
         try {
           const controller = new AbortController();
           const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
@@ -134,14 +121,14 @@ export default function TransactionPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [countries]);
 
   useEffect(() => {
-    // Only fetch on client side to avoid SSR issues
-    if (typeof window !== 'undefined') {
+    // Only fetch on client side to avoid SSR issues and wait for countries to load
+    if (typeof window !== 'undefined' && countries.length > 0) {
       fetchTransactionSummary();
     }
-  }, [retryCount]);
+  }, [retryCount, countries, fetchTransactionSummary]);
 
   const handleRetry = () => {
     setRetryCount(prev => prev + 1);
@@ -257,75 +244,96 @@ export default function TransactionPage() {
         <h2 className="text-xl font-semibold mb-4">Select Country to View Latest Transactions</h2>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {COUNTRIES.map((country) => {
-          const summary = transactionSummary[country.code] || { totalToday: 0, totalWeek: 0, totalMonth: 0 };
-          
-          return (
-            <Link key={country.code} href={`/transaction/${country.code}`}>
-              <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer group hover:scale-105">
-                <CardHeader className="text-center pb-4">
-                  <div className="text-6xl mb-3 group-hover:scale-110 transition-transform duration-200">
-                    {country.flag}
-                  </div>
-                  <CardTitle className="text-xl font-bold group-hover:text-blue-600 transition-colors">
-                    {country.name}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="text-center">
-                  <div className="text-sm text-gray-600 mb-4">
-                    {country.sites.length} site{country.sites.length !== 1 ? 's' : ''}: {country.sites.join(", ").toUpperCase()}
-                  </div>
-                  
-                  {/* Transaction Statistics */}
-                  <div className="space-y-2 mb-4">
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="text-gray-500">Today:</span>
-                      {loading ? (
-                        <div className="w-8 h-4 bg-gray-200 rounded animate-pulse"></div>
-                      ) : (
-                        <Badge variant="secondary" className="text-xs">
-                          {summary.totalToday}
-                        </Badge>
-                      )}
+      {countriesLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <Card key={i} className="animate-pulse">
+              <CardHeader className="text-center pb-4">
+                <div className="w-16 h-16 bg-gray-200 rounded mx-auto mb-3"></div>
+                <div className="w-32 h-6 bg-gray-200 rounded mx-auto"></div>
+              </CardHeader>
+              <CardContent className="text-center">
+                <div className="w-40 h-4 bg-gray-200 rounded mx-auto mb-4"></div>
+                <div className="space-y-2 mb-4">
+                  <div className="w-full h-4 bg-gray-200 rounded"></div>
+                  <div className="w-full h-4 bg-gray-200 rounded"></div>
+                  <div className="w-full h-4 bg-gray-200 rounded"></div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {countries.map((country) => {
+            const summary = transactionSummary[country.code] || { totalToday: 0, totalWeek: 0, totalMonth: 0 };
+            
+            return (
+              <Link key={country.code} href={`/transaction/${country.code}`}>
+                <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer group hover:scale-105">
+                  <CardHeader className="text-center pb-4">
+                    <div className="text-6xl mb-3 group-hover:scale-110 transition-transform duration-200">
+                      {country.flag}
                     </div>
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="text-gray-500">This Week:</span>
-                      {loading ? (
-                        <div className="w-8 h-4 bg-gray-200 rounded animate-pulse"></div>
-                      ) : (
-                        <Badge variant="outline" className="text-xs">
-                          {summary.totalWeek}
-                        </Badge>
-                      )}
+                    <CardTitle className="text-xl font-bold group-hover:text-blue-600 transition-colors">
+                      {country.name}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="text-center">
+                    <div className="text-sm text-gray-600 mb-4">
+                      {country.sites.length} site{country.sites.length !== 1 ? 's' : ''}: {country.sites.join(", ").toUpperCase()}
                     </div>
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="text-gray-500">This Month:</span>
-                      {loading ? (
-                        <div className="w-8 h-4 bg-gray-200 rounded animate-pulse"></div>
-                      ) : (
-                        <Badge variant="outline" className="text-xs">
-                          {summary.totalMonth}
-                        </Badge>
-                      )}
+                    
+                    {/* Transaction Statistics */}
+                    <div className="space-y-2 mb-4">
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="text-gray-500">Today:</span>
+                        {loading ? (
+                          <div className="w-8 h-4 bg-gray-200 rounded animate-pulse"></div>
+                        ) : (
+                          <Badge variant="secondary" className="text-xs">
+                            {summary.totalToday}
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="text-gray-500">This Week:</span>
+                        {loading ? (
+                          <div className="w-8 h-4 bg-gray-200 rounded animate-pulse"></div>
+                        ) : (
+                          <Badge variant="outline" className="text-xs">
+                            {summary.totalWeek}
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="text-gray-500">This Month:</span>
+                        {loading ? (
+                          <div className="w-8 h-4 bg-gray-200 rounded animate-pulse"></div>
+                        ) : (
+                          <Badge variant="outline" className="text-xs">
+                            {summary.totalMonth}
+                          </Badge>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                  
-                  {summary.lastInspection && (
-                    <div className="text-xs text-gray-500 mb-4">
-                      Inspected: {formatRelativeDateTime(summary.lastInspection)}
+                    
+                    {summary.lastInspection && (
+                      <div className="text-xs text-gray-500 mb-4">
+                        Inspected: {formatRelativeDateTime(summary.lastInspection)}
+                      </div>
+                    )}
+                    
+                    <div className="mt-4 text-blue-600 text-sm font-medium group-hover:underline transition-all duration-200">
+                      View Latest Transactions →
                     </div>
-                  )}
-                  
-                  <div className="mt-4 text-blue-600 text-sm font-medium group-hover:underline transition-all duration-200">
-                    View Latest Transactions →
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-          );
-        })}
-      </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
