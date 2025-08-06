@@ -14,7 +14,6 @@ interface TransactionSummary {
   [countryCode: string]: {
     totalToday: number;
     totalWeek: number;
-    totalMonth: number;
     lastInspection?: string;
   };
 }
@@ -28,8 +27,7 @@ export default function TransactionPage() {
   const [retryCount, setRetryCount] = useState(0);
   const [globalStats, setGlobalStats] = useState({
     totalToday: 0,
-    totalWeek: 0,
-    totalMonth: 0
+    totalWeek: 0
   });
 
   // Fetch countries data
@@ -61,7 +59,7 @@ export default function TransactionPage() {
       const summaryPromises = countries.map(async (country) => {
         try {
           const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+          const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
           
           const response = await fetch(`/api/transaction-summary?bu=${country.code}`, {
             signal: controller.signal,
@@ -83,8 +81,7 @@ export default function TransactionPage() {
           return { 
             countryCode: country.code, 
             totalToday: 0, 
-            totalWeek: 0, 
-            totalMonth: 0,
+            totalWeek: 0,
             error: true
           };
         }
@@ -93,25 +90,23 @@ export default function TransactionPage() {
       const results = await Promise.all(summaryPromises);
       
       const summary: TransactionSummary = {};
-      let globalToday = 0, globalWeek = 0, globalMonth = 0;
+      let globalToday = 0, globalWeek = 0;
       let hasErrors = false;
       
-      results.forEach(({ countryCode, totalToday, totalWeek, totalMonth, lastInspection, error: countryError }) => {
-        summary[countryCode] = { totalToday, totalWeek, totalMonth, lastInspection };
+      results.forEach(({ countryCode, totalToday, totalWeek, lastInspection, error: countryError }) => {
+        summary[countryCode] = { totalToday, totalWeek, lastInspection };
         globalToday += totalToday;
         globalWeek += totalWeek;
-        globalMonth += totalMonth;
         if (countryError) hasErrors = true;
       });
       
       setTransactionSummary(summary);
       setGlobalStats({
         totalToday: globalToday,
-        totalWeek: globalWeek,
-        totalMonth: globalMonth
+        totalWeek: globalWeek
       });
       
-      if (hasErrors && globalToday === 0 && globalWeek === 0 && globalMonth === 0) {
+      if (hasErrors && globalToday === 0 && globalWeek === 0) {
         setError('Failed to load transaction data. Some services may be unavailable.');
       }
       
@@ -183,7 +178,7 @@ export default function TransactionPage() {
       </div>
 
       {/* Global Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
         <Card className="bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -219,24 +214,6 @@ export default function TransactionPage() {
             </div>
           </CardContent>
         </Card>
-        
-        <Card className="bg-gradient-to-r from-purple-50 to-purple-100 border-purple-200">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-purple-600">This Month</p>
-                <p className="text-2xl font-bold text-purple-800">
-                  {loading ? (
-                    <div className="w-12 h-8 bg-purple-200 rounded animate-pulse"></div>
-                  ) : (
-                    globalStats.totalMonth
-                  )}
-                </p>
-              </div>
-              <FileText className="h-8 w-8 text-purple-500" />
-            </div>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Country Selection */}
@@ -266,7 +243,7 @@ export default function TransactionPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {countries.map((country) => {
-            const summary = transactionSummary[country.code] || { totalToday: 0, totalWeek: 0, totalMonth: 0 };
+            const summary = transactionSummary[country.code] || { totalToday: 0, totalWeek: 0 };
             
             return (
               <Link key={country.code} href={`/transaction/${country.code}`}>
@@ -303,16 +280,6 @@ export default function TransactionPage() {
                         ) : (
                           <Badge variant="outline" className="text-xs">
                             {summary.totalWeek}
-                          </Badge>
-                        )}
-                      </div>
-                      <div className="flex justify-between items-center text-xs">
-                        <span className="text-gray-500">This Month:</span>
-                        {loading ? (
-                          <div className="w-8 h-4 bg-gray-200 rounded animate-pulse"></div>
-                        ) : (
-                          <Badge variant="outline" className="text-xs">
-                            {summary.totalMonth}
                           </Badge>
                         )}
                       </div>
