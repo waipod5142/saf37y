@@ -621,21 +621,6 @@ export const getDashboardMachineStatsByBU = async (period?: string, bu?: string)
       });
     });
 
-    // Debug logging 
-    if (bu === "lk") {
-      console.log("=== Sri Lanka Debug Info ===");
-      console.log("All machine types found:", Array.from(allMachineTypes));
-      console.log("Form inspection periods:", formInspectionPeriods);
-      console.log("Machines by site/type keys:", Object.keys(machinesBySiteType));
-      console.log("Machine counts by site:", Object.fromEntries(
-        Object.entries(machinesBySiteType).map(([site, types]) => [
-          site, 
-          Object.fromEntries(Object.entries(types).map(([type, machines]) => [type, machines.length]))
-        ])
-      ));
-      console.log("Period requested:", period);
-      console.log("Filtered machine types:", filteredMachineTypes);
-    }
 
     // If no filtered types but we have machines, include all machine types found
     if (filteredMachineTypes.length === 0 && allMachineTypes.size > 0) {

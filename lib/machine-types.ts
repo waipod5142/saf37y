@@ -151,6 +151,7 @@ export const machineEmojis: { [key: string]: string } = {
   loader: "🚜",
   excavator: "🚜",
   dump: "🚛",
+  frontend: "🚜",
   
   // Fire Safety
   extinguisher: "🧯",

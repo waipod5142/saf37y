@@ -40,7 +40,11 @@ This is a Next.js 15 property management application with Firebase authenticatio
 - `app/account/` - User account management with favorites and password updates
 - `app/Machine/[bu]/[type]/[id]/` - Machine inspection pages with business unit, type, and ID parameters
 - `app/Man/` - Man-related functionality pages
-- `app/api/` - API routes for machine records and token refresh
+- `app/dashboard/` - Country selection for safety inspection dashboards
+- `app/dashboard/[bu]/` - Country-specific dashboard with interactive maps and machine data visualization
+- `app/transaction/` - Transaction summary page showing inspection statistics by country
+- `app/transaction/[bu]/` - Country-specific transaction history and detailed inspection records
+- `app/api/` - API routes for machine records, token refresh, dashboard data, and transaction summaries
 
 **Data Layer:**
 - `data/` - Data access functions for properties, favorites, machines, and vocabulary
@@ -65,8 +69,11 @@ This is a Next.js 15 property management application with Firebase authenticatio
     - `lib/actions/forms.ts` - Form questions and title fetching with dynamic title support
     - `lib/actions/machines.ts` - Machine inspection form submission and records management
     - `lib/actions/vocabulary.ts` - Vocabulary management actions
+  - `lib/constants/` - Application constants and configuration
+    - `lib/constants/countries.ts` - Dynamic country and site management with vocabulary system integration
   - `lib/machine-types.ts` - Machine type utilities
   - `lib/imageUrlFormatter.ts` - Image URL formatting utilities
+  - `lib/imageCompression.ts` - Image compression utilities with presets for different use cases (defects, general, thumbnails)
   - `lib/utils.ts` - General utility functions
 
 **Components:**
@@ -83,6 +90,11 @@ This is a Next.js 15 property management application with Firebase authenticatio
   - `components/auth-buttons.tsx` - Authentication UI components
   - `components/login-form.tsx` - Login form component
   - `components/qr-code.tsx` - QR code generation component
+  - `components/ClusteredMarkers.tsx` - Map clustering component for machine location visualization
+  - `components/LocationMapDialog.tsx` - Interactive location map modal for machine positioning
+  - `components/MachineDetailDialog.tsx` - Machine detail modal dialog for inspection data
+  - `components/MachineListModal.tsx` - Machine list modal interface for dashboard views
+  - `components/RecentInspectionsDialog.tsx` - Recent inspections modal for displaying latest records
 - Uses Radix UI primitives with custom styling
 
 ### Configuration Notes
@@ -103,7 +115,13 @@ This is a Next.js 15 property management application with Firebase authenticatio
 - Production environment: `sccc-inseesafety-prod`
 - Supports Google Auth and file storage
 - Firebase Admin SDK for server-side operations
-- Collections: `properties`, `favourites`, `machine` (basic machine metadata), `machinetr` (machine inspection records), `forms` (inspection questions and titles)
+- Collections: 
+  - `properties` - Property listings and management data
+  - `favourites` - User favorite properties
+  - `machine` - Basic machine metadata including country and site information
+  - `machinetr` - Machine inspection records and transaction history
+  - `forms` - Inspection questions and titles for dynamic form generation
+  - `vocabularies` - Dynamic country, site, and business unit configuration data
 
 ### Key Patterns
 
@@ -141,6 +159,30 @@ This is a Next.js 15 property management application with Firebase authenticatio
 - **Fallback title logic** - Components fall back to hardcoded titles from `machineTitles` when Firebase title is unavailable
 - **Loading states** - Proper loading indicators while fetching titles from Firebase
 - **Error handling** - Toast notifications for title fetching failures with graceful degradation
+
+**Dashboard and Analytics:**
+- Country-specific dashboard views with interactive maps and machine clustering
+- Real-time statistics and inspection data visualization
+- Dynamic machine location mapping with clustered markers
+- Interactive modals for detailed machine information and recent inspections
+- Dashboard data API with caching and error handling for performance
+- Visual country selection interface with flag icons and site information
+
+**Transaction Tracking:**
+- Comprehensive transaction history by country and business unit
+- Daily and weekly inspection statistics with global aggregation
+- Real-time transaction summaries with automated data refresh
+- Country-specific transaction views with detailed inspection records
+- Error handling and retry mechanisms for reliable data fetching
+- Performance optimization with parallel API calls and timeouts
+
+**Dynamic Country/Site Management:**
+- Vocabulary-driven country and site configuration
+- Fallback data system for reliability when vocabulary service is unavailable
+- Dynamic loading of country flags, names, and site mappings
+- Centralized country constants with Firebase integration
+- Flexible business unit and site relationship management
+- Support for adding new countries without code changes
 
 **Security:**
 - Middleware-based route protection

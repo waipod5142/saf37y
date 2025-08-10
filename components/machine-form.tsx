@@ -406,7 +406,7 @@ export default function MachineForm({ bu, type, id, isInDialog = false }: Machin
         </Card>
 
         {/* Mileage Field for Thai cars */}
-        {["srb", "mkt", "office", "lbm", "rmx", "iagg", "ieco"].includes(bu) && type.toLowerCase() === "car" && (
+        {(["srb", "mkt", "office", "lbm", "rmx", "iagg", "ieco", "th"].includes(bu)) && type.toLowerCase() === "car" && (
           <Card>
             <CardContent className="pt-6">
               <div className="space-y-2">

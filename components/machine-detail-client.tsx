@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "./ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { CalendarIcon, UserIcon, FileTextIcon, ToggleLeftIcon, ToggleRightIcon, Trash2Icon, MapPinIcon, WrenchIcon, CheckIcon, AwardIcon } from "lucide-react";
+import { CalendarIcon, UserIcon, FileTextIcon, ToggleLeftIcon, ToggleRightIcon, Trash2Icon, MapPinIcon, WrenchIcon, CheckIcon, AwardIcon, GaugeIcon } from "lucide-react";
 import { deleteMachineInspectionRecord, updateMachineInspectionRecord } from "@/lib/actions/machines";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -348,6 +348,21 @@ export default function MachineDetailClient({ records, questions }: MachineDetai
                   </div>
                 </div>
               )}
+
+              {/* Certificate Section */}
+              {record.mileage && (
+                <div className="mt-3">
+                  <div className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200 px-3 py-2 rounded-lg shadow-sm">
+                    <div className="flex items-center justify-center w-8 h-8 bg-gradient-to-br from-amber-400 to-yellow-500 rounded-full shadow-sm">
+                      <GaugeIcon className="h-4 w-4 text-white" />
+                    </div>
+                    <div>
+                      <div className="text-xs font-medium text-amber-800 uppercase tracking-wide">Mileage</div>
+                      <div className="text-sm font-semibold text-amber-900">{record.mileage}</div>
+                    </div>
+                  </div>
+                </div>
+              )}
               
               {/* Location Information Section */}
               {record.latitude && record.longitude && (
@@ -479,7 +494,7 @@ export default function MachineDetailClient({ records, questions }: MachineDetai
               <div className="grid gap-2">
                 {Object.keys(record)
                   .filter(key => 
-                    key !== 'id' && key !== 'bu' && key !== 'type' && key !== 'inspector' && key !== 'certificate' && 
+                    key !== 'id' && key !== 'bu' && key !== 'type' && key !== 'inspector' && key !== 'certificate' && key !== 'mileage' && 
                     key !== 'timestamp' && key !== 'createdAt' && key !== 'remark' && 
                     key !== 'images' && key !== 'docId' &&
                     key !== 'latitude' && key !== 'longitude' && key !== 'locationTimestamp' && key !== 'locationAccuracy' &&

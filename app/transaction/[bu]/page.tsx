@@ -11,9 +11,10 @@ import { getAllVocabulariesAction } from "@/lib/actions/vocabulary";
 import { MachineInspectionRecord } from "@/types/machineInspectionRecord";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar, MapPin, User, Clock, CheckCircle, XCircle, Filter, Download, Search } from "lucide-react";
+import { Calendar, MapPin, User, Clock, CheckCircle, XCircle, Filter, Download, Search, Loader2 } from "lucide-react";
 import { MachineDetailDialog } from "@/components/MachineDetailDialog";
 import { convertFirebaseTimestamp, formatDateTime, formatRelativeDateTime } from "@/components/ui/date-utils";
+import { Skeleton } from "@/components/ui/skeleton";
 
 function getInspectionStatus(record: MachineInspectionRecord): { status: 'pass' | 'fail' | 'na'; failedItems: string[] } {
   const failedItems: string[] = [];
@@ -36,6 +37,55 @@ function getInspectionStatus(record: MachineInspectionRecord): { status: 'pass' 
   if (failedItems.length === 0) return { status: 'pass', failedItems: [] };
   if (passCount === 0) return { status: 'fail', failedItems };
   return { status: 'na', failedItems };
+}
+
+function TransactionSkeleton() {
+  return (
+    <Card className="mb-4 bg-gray-50 border-gray-200">
+      <CardContent className="p-4">
+        <div className="flex items-start justify-between">
+          <div className="flex items-start space-x-3">
+            <Skeleton className="w-8 h-8 rounded" />
+            <div className="flex-1">
+              <div className="flex items-center space-x-2 mb-1">
+                <Skeleton className="h-6 w-24" />
+                <Skeleton className="h-5 w-16" />
+                <Skeleton className="h-5 w-5 rounded-full" />
+              </div>
+              
+              <div className="flex items-center space-x-4 text-sm mb-2">
+                <div className="flex items-center space-x-1">
+                  <User className="h-4 w-4 text-gray-300" />
+                  <Skeleton className="h-4 w-20" />
+                </div>
+                <div className="flex items-center space-x-1">
+                  <MapPin className="h-4 w-4 text-gray-300" />
+                  <Skeleton className="h-4 w-16" />
+                </div>
+                <div className="flex items-center space-x-1">
+                  <Calendar className="h-4 w-4 text-gray-300" />
+                  <Skeleton className="h-4 w-24" />
+                </div>
+              </div>
+              
+              <div className="mt-2">
+                <Skeleton className="h-4 w-32 mb-1" />
+                <div className="flex flex-wrap gap-1">
+                  <Skeleton className="h-5 w-16" />
+                  <Skeleton className="h-5 w-20" />
+                  <Skeleton className="h-5 w-14" />
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="text-right">
+            <Skeleton className="h-5 w-12" />
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
 }
 
 interface TransactionItemProps {
@@ -137,6 +187,7 @@ export default function TransactionPage() {
   const [transactions, setTransactions] = useState<MachineInspectionRecord[]>([]);
   const [filteredTransactions, setFilteredTransactions] = useState<MachineInspectionRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedType, setSelectedType] = useState<string>("all");
   const [selectedSite, setSelectedSite] = useState<string>("all");
@@ -192,6 +243,13 @@ export default function TransactionPage() {
   useEffect(() => {
     async function fetchTransactions() {
       try {
+        // Set appropriate loading state
+        if (page === 1) {
+          setLoading(true);
+        } else {
+          setLoadingMore(true);
+        }
+
         const response = await fetch(`/api/transactions?bu=${bu}&page=${page}&limit=20`);
         const data = await response.json();
         
@@ -205,7 +263,11 @@ export default function TransactionPage() {
       } catch (error) {
         console.error('Error fetching transactions:', error);
       } finally {
-        setLoading(false);
+        if (page === 1) {
+          setLoading(false);
+        } else {
+          setLoadingMore(false);
+        }
       }
     }
     
@@ -242,7 +304,7 @@ export default function TransactionPage() {
   }, [transactions, searchTerm, selectedType, selectedSite, selectedStatus]);
 
   const handleLoadMore = () => {
-    if (!loading && hasMore) {
+    if (!loading && !loadingMore && hasMore) {
       setPage(prev => prev + 1);
     }
   };
@@ -446,15 +508,30 @@ export default function TransactionPage() {
               />
             ))}
             
+            {/* Show skeleton placeholders while loading more */}
+            {loadingMore && (
+              <>
+                <TransactionSkeleton />
+                <TransactionSkeleton />
+                <TransactionSkeleton />
+              </>
+            )}
+            
             {hasMore && (
               <div className="text-center pt-6">
                 <Button 
                   onClick={handleLoadMore} 
-                  disabled={loading}
-                  className="px-8"
+                  disabled={loading || loadingMore}
+                  className="px-8 flex items-center gap-2"
                 >
-                  {loading ? "Loading..." : "Load More Transactions"}
+                  {loadingMore && <Loader2 className="h-4 w-4 animate-spin" />}
+                  {loadingMore ? "Loading more transactions..." : "Load More Transactions"}
                 </Button>
+                {loadingMore && (
+                  <p className="text-sm text-gray-500 mt-2">
+                    Fetching additional inspection records...
+                  </p>
+                )}
               </div>
             )}
           </>

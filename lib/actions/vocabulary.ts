@@ -77,6 +77,7 @@ export async function getAllVocabulariesAction(): Promise<{
       "mixer": "Mixer Truck",
       "motorbike": "Motorbike",
       "bag": "Bag Truck",
+      "frontend": "Frontend Loader",
       
       // Fire Safety Equipment
       "hydrant": "Fire Hydrant",

@@ -1,0 +1,65 @@
+
+> fire-homes-course@0.1.0 dev
+> next dev --turbopack
+
+ ⚠ Port 3000 is in use, trying 3001 instead.
+   ▲ Next.js 15.2.3 (Turbopack)
+   - Local:        http://localhost:3001
+   - Network:      http://192.168.1.124:3001
+   - Environments: .env.local
+
+ ✓ Starting...
+ ✓ Compiled in 105ms
+ ✓ Ready in 671ms
+ ⚠ Webpack is configured while Turbopack is not, which may cause problems.
+ ⚠ See instructions if you need to configure Turbopack:
+  https://nextjs.org/docs/app/api-reference/next-config-js/turbo
+
+ ✓ Compiled /api/transaction-summary in 320ms
+file:///Users/waipod/saf37y_copy/node_modules/@google-cloud/firestore/build/src/v1/firestore_client.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: TypeError [ERR_INVALID_ARG_TYPE]: The "payload" argument must be of type object. Received null
+file:///Users/waipod/saf37y_copy/node_modules/@google-cloud/firestore/build/src/reference/query-util.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: TypeError [ERR_INVALID_ARG_TYPE]: The "payload" argument must be of type object. Received null
+file:///Users/waipod/saf37y_copy/node_modules/@google-cloud/firestore/build/src/reference/query.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: TypeError [ERR_INVALID_ARG_TYPE]: The "payload" argument must be of type object. Received null
+file:///Users/waipod/saf37y_copy/node_modules/@google-cloud/firestore/build/src/reference/query.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: TypeError [ERR_INVALID_ARG_TYPE]: The "payload" argument must be of type object. Received null
+file:///Users/waipod/saf37y_copy/node_modules/@google-cloud/firestore/build/src/reference/query.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: TypeError [ERR_INVALID_ARG_TYPE]: The "payload" argument must be of type object. Received null
+file:///Users/waipod/saf37y_copy/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: TypeError [ERR_INVALID_ARG_TYPE]: The "payload" argument must be of type object. Received null
+file:///Users/waipod/saf37y_copy/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: TypeError [ERR_INVALID_ARG_TYPE]: The "payload" argument must be of type object. Received null
+file:///Users/waipod/saf37y_copy/node_modules/@google-cloud/firestore/build/src/reference/query.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: TypeError [ERR_INVALID_ARG_TYPE]: The "payload" argument must be of type object. Received null
+Aggregation query failed, falling back to batch processing: Error: 9 FAILED_PRECONDITION: The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/sccc-inseesafety-prod/firestore/indexes?create_composite=Cldwcm9qZWN0cy9zY2NjLWluc2Vlc2FmZXR5LXByb2QvZGF0YWJhc2VzLyhkZWZhdWx0KS9jb2xsZWN0aW9uR3JvdXBzL21hY2hpbmV0ci9pbmRleGVzL18QARoGCgJidRABGg0KCXRpbWVzdGFtcBABGgwKCF9fbmFtZV9fEAE
+    at GET (app/api/transaction-summary/route.ts:67:24)
+  65 |       // Execute queries in parallel for better performance
+  66 |       const [todaySnapshot, weekSnapshot, lastInspectionSnapshot] = await Promise.all([
+> 67 |         todayCountQuery.get(),
+     |                        ^
+  68 |         weekCountQuery.get(),
+  69 |         lastInspectionQuery.get()
+  70 |       ]); {
+  code: 9,
+  details: 'The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/sccc-inseesafety-prod/firestore/indexes?create_composite=Cldwcm9qZWN0cy9zY2NjLWluc2Vlc2FmZXR5LXByb2QvZGF0YWJhc2VzLyhkZWZhdWx0KS9jb2xsZWN0aW9uR3JvdXBzL21hY2hpbmV0ci9pbmRleGVzL18QARoGCgJidRABGg0KCXRpbWVzdGFtcBABGgwKCF9fbmFtZV9fEAE',
+  metadata: [Metadata]
+}
+Transaction summary for th completed in 6882ms
+ GET /api/transaction-summary?bu=th 200 in 7447ms
+file:///Users/waipod/saf37y_copy/node_modules/@google-cloud/firestore/build/src/v1/firestore_client.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: TypeError [ERR_INVALID_ARG_TYPE]: The "payload" argument must be of type object. Received null
+file:///Users/waipod/saf37y_copy/node_modules/@google-cloud/firestore/build/src/reference/query-util.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: TypeError [ERR_INVALID_ARG_TYPE]: The "payload" argument must be of type object. Received null
+file:///Users/waipod/saf37y_copy/node_modules/@google-cloud/firestore/build/src/reference/query.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: TypeError [ERR_INVALID_ARG_TYPE]: The "payload" argument must be of type object. Received null
+file:///Users/waipod/saf37y_copy/node_modules/@google-cloud/firestore/build/src/reference/query.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: TypeError [ERR_INVALID_ARG_TYPE]: The "payload" argument must be of type object. Received null
+file:///Users/waipod/saf37y_copy/node_modules/@google-cloud/firestore/build/src/reference/query.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: TypeError [ERR_INVALID_ARG_TYPE]: The "payload" argument must be of type object. Received null
+file:///Users/waipod/saf37y_copy/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: TypeError [ERR_INVALID_ARG_TYPE]: The "payload" argument must be of type object. Received null
+file:///Users/waipod/saf37y_copy/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: TypeError [ERR_INVALID_ARG_TYPE]: The "payload" argument must be of type object. Received null
+file:///Users/waipod/saf37y_copy/node_modules/@google-cloud/firestore/build/src/reference/query.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: TypeError [ERR_INVALID_ARG_TYPE]: The "payload" argument must be of type object. Received null
+Aggregation query failed, falling back to batch processing: Error: 9 FAILED_PRECONDITION: The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/sccc-inseesafety-prod/firestore/indexes?create_composite=Cldwcm9qZWN0cy9zY2NjLWluc2Vlc2FmZXR5LXByb2QvZGF0YWJhc2VzLyhkZWZhdWx0KS9jb2xsZWN0aW9uR3JvdXBzL21hY2hpbmV0ci9pbmRleGVzL18QARoGCgJidRABGg0KCXRpbWVzdGFtcBABGgwKCF9fbmFtZV9fEAE
+    at GET (app/api/transaction-summary/route.ts:68:23)
+  66 |       const [todaySnapshot, weekSnapshot, lastInspectionSnapshot] = await Promise.all([
+  67 |         todayCountQuery.get(),
+> 68 |         weekCountQuery.get(),
+     |                       ^
+  69 |         lastInspectionQuery.get()
+  70 |       ]);
+  71 |        {
+  code: 9,
+  details: 'The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/sccc-inseesafety-prod/firestore/indexes?create_composite=Cldwcm9qZWN0cy9zY2NjLWluc2Vlc2FmZXR5LXByb2QvZGF0YWJhc2VzLyhkZWZhdWx0KS9jb2xsZWN0aW9uR3JvdXBzL21hY2hpbmV0ci9pbmRleGVzL18QARoGCgJidRABGg0KCXRpbWVzdGFtcBABGgwKCF9fbmFtZV9fEAE',
+  metadata: [Metadata]
+}
+Transaction summary for lk completed in 141ms
+ GET /api/transaction-summary?bu=lk 200 in 160ms
+[?25h

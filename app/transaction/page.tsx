@@ -1,10 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Breadcrumbs } from "@/components/ui/breadcrumb";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
 import { useState, useEffect, useCallback } from "react";
 import { Clock, FileText, TrendingUp, AlertCircle, RefreshCw } from "lucide-react";
 import { formatRelativeDateTime } from "@/components/ui/date-utils";
@@ -55,11 +55,13 @@ export default function TransactionPage() {
       // Add a small delay to avoid overwhelming the server
       await new Promise(resolve => setTimeout(resolve, 100));
       
-      // Fetch summary data for all countries with timeout
+      // Fetch summary data for all countries with adaptive timeout
       const summaryPromises = countries.map(async (country) => {
         try {
           const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+          // Use longer timeout for Thailand (th) which has more data
+          const timeoutMs = country.code === 'th' ? 60000 : 30000; // 60s for Thailand, 30s for others
+          const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
           
           const response = await fetch(`/api/transaction-summary?bu=${country.code}`, {
             signal: controller.signal,
@@ -78,11 +80,18 @@ export default function TransactionPage() {
           return { countryCode: country.code, ...data };
         } catch (error) {
           console.error(`Error fetching summary for ${country.code}:`, error);
+          
+          // Provide more specific error information
+          const isTimeout = error instanceof Error && error.name === 'AbortError';
+          const errorMessage = isTimeout ? 'Request timeout' : (error instanceof Error ? error.message : 'Unknown error');
+          
           return { 
             countryCode: country.code, 
             totalToday: 0, 
             totalWeek: 0,
-            error: true
+            error: true,
+            errorMessage: errorMessage,
+            isTimeout: isTimeout
           };
         }
       });

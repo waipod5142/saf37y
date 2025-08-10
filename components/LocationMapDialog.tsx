@@ -102,14 +102,14 @@ export function LocationMapDialog({
   // Fix Leaflet default markers
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const L = require('leaflet');
-      
-      // Fix default marker icons
-      delete (L.Icon.Default.prototype as any)._getIconUrl;
-      L.Icon.Default.mergeOptions({
-        iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
-        iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
-        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+      import('leaflet').then(L => {
+        // Fix default marker icons
+        delete (L.Icon.Default.prototype as any)._getIconUrl;
+        L.Icon.Default.mergeOptions({
+          iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
+          iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
+          shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+        });
       });
     }
   }, []);
@@ -117,7 +117,8 @@ export function LocationMapDialog({
   const createCustomIcon = (hasDefects: boolean) => {
     if (typeof window === 'undefined') return null;
     
-    const L = require('leaflet');
+    // Dynamic import to avoid require()
+    const L = (window as any).L;
     
     // Create colored markers using divIcon
     const color = hasDefects ? '#ef4444' : '#22c55e';
