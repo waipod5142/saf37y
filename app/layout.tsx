@@ -6,6 +6,7 @@ import AuthButtons from "@/components/auth-buttons";
 import { Poppins } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import Image from "next/image";
+import { MobileNav } from "@/components/mobile-nav";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -40,7 +41,9 @@ export default function RootLayout({
               />
               <span className="text-xl tracking-widest uppercase font-semibold">INSEE Safety</span>
             </Link>
-            <ul className="flex gap-6 items-center">
+            
+            {/* Desktop Navigation */}
+            <ul className="hidden md:flex gap-6 items-center">
               <li>
                 <Link
                   href="/dashboard"
@@ -61,6 +64,9 @@ export default function RootLayout({
                 <AuthButtons />
               </li>
             </ul>
+
+            {/* Mobile Navigation */}
+            <MobileNav />
           </nav>
           {children}
           <Toaster richColors closeButton />

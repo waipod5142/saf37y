@@ -34,9 +34,9 @@ function getInspectionStatus(record: MachineInspectionRecord): { status: 'pass' 
     }
   });
 
-  if (failedItems.length === 0) return { status: 'pass', failedItems: [] };
-  if (passCount === 0) return { status: 'fail', failedItems };
-  return { status: 'na', failedItems };
+  if (failedItems.length > 0) return { status: 'fail', failedItems }; // Any failure = overall fail
+  if (passCount > 0) return { status: 'pass', failedItems: [] };     // All pass = overall pass  
+  return { status: 'na', failedItems: [] };                         // No evaluable items = N/A
 }
 
 function TransactionSkeleton() {
