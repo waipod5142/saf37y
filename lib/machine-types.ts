@@ -200,7 +200,8 @@ export const machineEmojis: { [key: string]: string } = {
   socket: "🔌",
   stock: "📋",
   thermal: "🌡️",
-  slope: "⛰️"
+  slope: "⛰️",
+  quarry: "⛏️"
 };
 
 export const getMachineEmoji = (type: string): string | null => {

@@ -8,6 +8,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `npm run build` - Build for production
 - `npm run start` - Start production server
 - `npm run lint` - Run ESLint
+- `npm run deploy` - Deploy to Firebase App Hosting (main branch)
+- `npm run deploy:old` - Legacy Firebase deployment command
 
 ## Architecture Overview
 
@@ -15,12 +17,22 @@ This is a Next.js 15 property management application with Firebase authenticatio
 
 ### Key Technologies
 - **Next.js 15** with App Router
+- **React 19** with modern features
 - **Firebase** (Authentication, Storage, Admin SDK)
 - **TypeScript** with strict configuration
 - **Tailwind CSS** with custom design system
 - **Radix UI** components with shadcn/ui
+- **Leaflet** and **React Leaflet** for interactive mapping
+- **Leaflet.markercluster** for map marker clustering
 - **Zod** for schema validation
 - **React Hook Form** for form management
+- **@hello-pangea/dnd** for drag-and-drop functionality
+- **browser-image-compression** for client-side image optimization
+- **QRCode** library for QR code generation
+- **numeral** for number formatting
+- **React Markdown** for markdown rendering
+- **next-themes** for theme management
+- **Sonner** for toast notifications
 
 ### Application Structure
 
@@ -75,24 +87,33 @@ This is a Next.js 15 property management application with Firebase authenticatio
   - `lib/imageUrlFormatter.ts` - Image URL formatting utilities
   - `lib/imageCompression.ts` - Image compression utilities with presets for different use cases (defects, general, thumbnails)
   - `lib/utils.ts` - General utility functions
+- `hooks/` - Custom React hooks
+  - `hooks/useGeolocation.ts` - Geolocation functionality for machine positioning
 
 **Components:**
 - `components/ui/` - Reusable UI components (shadcn/ui)
   - Form components, buttons, dialogs, tables, and other primitive UI elements
+  - `components/ui/date-utils.tsx` - Date formatting utilities and timestamp conversion
+  - `components/ui/skeleton.tsx` - Loading skeleton components for better UX
+  - `components/ui/breadcrumb.tsx` - Navigation breadcrumb component
+  - `components/ui/carousel.tsx` - Image carousel component with Embla Carousel
 - `components/` - Application-specific components
   - `components/machine-form.tsx` - Full machine inspection form with Firebase integration, geolocation, form submission, and image uploads
   - `components/machine-title.tsx` - Simplified component displaying only machine title fetched from Firebase forms collection
   - `components/machine-detail.tsx` - Machine inspection records display
   - `components/machine-detail-client.tsx` - Client-side machine detail functionality with defect response system
-  - `components/machine-header.tsx` - Machine information header
-  - `components/multi-image-uploader.tsx` - Multi-image upload component
+  - `components/machine-header.tsx` - Machine information header with dynamic field display
+  - `components/multi-image-uploader.tsx` - Multi-image upload component with compression
   - `components/property-form.tsx` - Property management form
   - `components/auth-buttons.tsx` - Authentication UI components
+  - `components/continue-with-google-button.tsx` - Google OAuth authentication button
   - `components/login-form.tsx` - Login form component
-  - `components/qr-code.tsx` - QR code generation component
-  - `components/ClusteredMarkers.tsx` - Map clustering component for machine location visualization
+  - `components/mobile-nav.tsx` - Mobile navigation component with responsive design
+  - `components/property-status-badge.tsx` - Property status display component with color coding
+  - `components/qr-code.tsx` - QR code generation component for machine identification
+  - `components/ClusteredMarkers.tsx` - Map clustering component for machine location visualization using Leaflet
   - `components/LocationMapDialog.tsx` - Interactive location map modal for machine positioning
-  - `components/MachineDetailDialog.tsx` - Machine detail modal dialog for inspection data
+  - `components/MachineDetailDialog.tsx` - Machine detail modal dialog for inspection data display
   - `components/MachineListModal.tsx` - Machine list modal interface for dashboard views
   - `components/RecentInspectionsDialog.tsx` - Recent inspections modal for displaying latest records
 - Uses Radix UI primitives with custom styling
@@ -115,6 +136,7 @@ This is a Next.js 15 property management application with Firebase authenticatio
 - Production environment: `sccc-inseesafety-prod`
 - Supports Google Auth and file storage
 - Firebase Admin SDK for server-side operations
+- Firebase App Hosting configuration via `apphosting.yaml`
 - Collections: 
   - `properties` - Property listings and management data
   - `favourites` - User favorite properties
@@ -122,6 +144,12 @@ This is a Next.js 15 property management application with Firebase authenticatio
   - `machinetr` - Machine inspection records and transaction history
   - `forms` - Inspection questions and titles for dynamic form generation
   - `vocabularies` - Dynamic country, site, and business unit configuration data
+
+**Deployment Configuration:**
+- `apphosting.yaml` - Firebase App Hosting configuration for modern deployment
+- `firebase.json` - Legacy Firebase hosting configuration
+- Automated deployment via `npm run deploy` for main branch
+- Node.js version requirements: `>=18.17.0 <21.0.0`
 
 ### Key Patterns
 
@@ -173,8 +201,20 @@ This is a Next.js 15 property management application with Firebase authenticatio
 - Daily and weekly inspection statistics with global aggregation
 - Real-time transaction summaries with automated data refresh
 - Country-specific transaction views with detailed inspection records
+- Advanced filtering and search capabilities:
+  - Text-based search across machine records
+  - Site and inspector filtering with Select components
+  - Date range filtering for targeted analysis
+  - Real-time filtering with debounced input
+- Inspection status calculation with sophisticated logic:
+  - Automated pass/fail determination from inspection fields
+  - Failed items tracking for detailed reporting
+  - Status badges with color-coded visual indicators
+  - Support for N/A status when no evaluable items present
+- Loading states and skeleton components for better UX
 - Error handling and retry mechanisms for reliable data fetching
 - Performance optimization with parallel API calls and timeouts
+- Responsive design with mobile-optimized transaction cards
 
 **Dynamic Country/Site Management:**
 - Vocabulary-driven country and site configuration
