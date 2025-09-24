@@ -164,6 +164,32 @@ export async function updateMachineInspectionRecord(
   }
 }
 
+// Helper function to extract storage path from Firebase Storage URL
+function extractStoragePathFromUrl(url: string): string | null {
+  try {
+    // Handle full Firebase Storage URLs
+    if (url.includes('firebasestorage.googleapis.com')) {
+      // Extract path between '/o/' and '?alt=media' or '?alt=...'
+      const match = url.match(/\/o\/([^?]+)/);
+      if (match) {
+        // Decode the URL-encoded path
+        return decodeURIComponent(match[1]);
+      }
+    }
+
+    // If it's already a storage path (not a full URL), return as-is
+    if (!url.startsWith('http')) {
+      return url;
+    }
+
+    console.warn(`Could not extract storage path from URL: ${url}`);
+    return null;
+  } catch (error) {
+    console.error(`Error extracting storage path from URL: ${url}`, error);
+    return null;
+  }
+}
+
 export async function deleteMachineInspectionRecord(
   docId: string
 ): Promise<{ success: boolean; error?: string }> {
@@ -171,7 +197,7 @@ export async function deleteMachineInspectionRecord(
     // First, fetch the inspection record to get the images array
     const docRef = firestore.collection("machinetr").doc(docId);
     const docSnapshot = await docRef.get();
-    
+
     if (!docSnapshot.exists) {
       return {
         success: false,
@@ -180,49 +206,56 @@ export async function deleteMachineInspectionRecord(
     }
 
     const recordData = docSnapshot.data() as MachineInspectionRecord;
-    
-    // Collect all image paths from the record
-    const allImagePaths: string[] = [];
-    
+
+    // Collect all image URLs from the record
+    const allImageUrls: string[] = [];
+
     // Add general images
     if (recordData.images && recordData.images.length > 0) {
-      allImagePaths.push(...recordData.images);
+      allImageUrls.push(...recordData.images);
     }
-    
+
     // Find and add question-specific images (fields ending with 'P' or 'F')
     Object.keys(recordData).forEach(key => {
       if ((key.endsWith('P') || key.endsWith('F')) && recordData[key]) {
         const value = recordData[key];
         if (Array.isArray(value)) {
           // Handle array of images (new format)
-          allImagePaths.push(...value);
+          allImageUrls.push(...value);
         } else if (typeof value === 'string') {
           // Handle single image (backward compatibility)
-          allImagePaths.push(value);
+          allImageUrls.push(value);
         }
       }
     });
-    
+
     // Delete all collected images from Firebase Storage
-    if (allImagePaths.length > 0) {
+    if (allImageUrls.length > 0) {
       try {
         const bucket = admin.storage().bucket("sccc-inseesafety-prod.firebasestorage.app");
-        
+
         // Delete all images in parallel
-        const deletePromises = allImagePaths.map(async (imagePath: string) => {
+        const deletePromises = allImageUrls.map(async (imageUrl: string) => {
           try {
-            const file = bucket.file(imagePath);
+            // Extract storage path from the URL
+            const storagePath = extractStoragePathFromUrl(imageUrl);
+            if (!storagePath) {
+              console.warn(`Skipping deletion - could not extract storage path from: ${imageUrl}`);
+              return;
+            }
+
+            const file = bucket.file(storagePath);
             await file.delete();
-            console.log(`Successfully deleted image: ${imagePath}`);
+            console.log(`Successfully deleted image: ${storagePath}`);
           } catch (imageError) {
-            console.error(`Failed to delete image ${imagePath}:`, imageError);
+            console.error(`Failed to delete image ${imageUrl}:`, imageError);
             // Don't throw here - we want to continue deleting other images
           }
         });
 
         await Promise.allSettled(deletePromises);
-        console.log(`Attempted to delete ${allImagePaths.length} total images from Storage (including question-specific images)`);
-        
+        console.log(`Attempted to delete ${allImageUrls.length} total images from Storage (including question-specific images)`);
+
       } catch (storageError) {
         console.error("Error during image deletion:", storageError);
         // Continue with document deletion even if image deletion fails

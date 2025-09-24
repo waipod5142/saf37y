@@ -134,7 +134,7 @@ export function MachineListModal({
         <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden">
           <DialogHeader>
             <DialogTitle className="text-lg font-semibold">
-              {displayTypeName} Machines - {displaySiteName} Site
+              {displayTypeName} - {displaySiteName} Site
             </DialogTitle>
           </DialogHeader>
           

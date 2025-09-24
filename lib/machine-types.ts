@@ -222,7 +222,7 @@ export const getMachineEmoji = (type: string): string | null => {
 
 export const normalizeTypeForDisplay = (type: string): string => {
   const lowerType = type.toLowerCase();
-  if (['mixer', 'mixerweek', 'mixertrainer', 'mixertsm'].includes(lowerType)) {
+  if (['mixer', 'mixerweek', 'mixertrainer', 'mixertsm', 'mixerphoto'].includes(lowerType)) {
     return 'Mixer';
   }
   return type;

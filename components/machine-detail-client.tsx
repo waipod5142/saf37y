@@ -96,7 +96,7 @@ export default function MachineDetailClient({ records, questions }: MachineDetai
       
       const now = new Date();
       const timeDifference = now.getTime() - recordDate.getTime();
-      const fiveMinutesInMs = 5 * 60 * 1000; // 5 minutes in milliseconds
+      const fiveMinutesInMs = 50 * 60 * 1000; // 5 minutes in milliseconds
       
       return timeDifference <= fiveMinutesInMs;
     } catch (error) {
@@ -481,7 +481,7 @@ export default function MachineDetailClient({ records, questions }: MachineDetai
               <p className="text-sm bg-gray-50 p-3 rounded border">{record.remark}</p>
             </div>
           )}
-{JSON.stringify(record, null, 2)   }
+
           {/* Images */}
           {record.images && record.images.length > 0 && (
             <div className="mb-4">
@@ -489,7 +489,7 @@ export default function MachineDetailClient({ records, questions }: MachineDetai
               <div className="flex gap-2 flex-wrap">
                 {record.images.map((image, index) => (
                   <div key={index} className="w-20 h-20 rounded border overflow-hidden hover:shadow-lg transition-shadow cursor-pointer">
-                    <img 
+                    <img
                       src={formatImageUrl(image)}
                       alt={`Inspection image ${index + 1}`}
                       className="w-full h-full object-cover hover:scale-105 transition-transform"
@@ -501,6 +501,49 @@ export default function MachineDetailClient({ records, questions }: MachineDetai
               </div>
             </div>
           )}
+
+          {/* Photo Gallery - Display specific photo fields */}
+          {(() => {
+            const allowedPhotoFields = ['frontP', 'backP', 'leftP', 'rightP'];
+            const photoFields = Object.keys(record)
+              .filter(key => allowedPhotoFields.includes(key) && record[key] && Array.isArray(record[key]) && record[key].length > 0)
+              .sort(); // Sort for consistent ordering
+
+            if (photoFields.length === 0) return null;
+
+            return (
+              <div className="mb-4">
+                <h4 className="font-semibold text-sm text-gray-700 mb-3">Machine Photos</h4>
+                <div className="grid gap-4">
+                  {photoFields.map(field => {
+                    const photoType = field.slice(0, -1); // Remove 'P' suffix
+                    const photos = record[field] as string[];
+
+                    return (
+                      <div key={field} className="bg-gray-50 p-3 rounded-lg">
+                        <h5 className="text-xs font-medium text-gray-600 mb-2 capitalize">
+                          {photoType} View ({photos.length} photo{photos.length > 1 ? 's' : ''})
+                        </h5>
+                        <div className="flex gap-2 flex-wrap">
+                          {photos.map((image, index) => (
+                            <div key={index} className="w-20 h-20 rounded border overflow-hidden hover:shadow-lg transition-shadow cursor-pointer">
+                              <img
+                                src={formatImageUrl(image)}
+                                alt={`${photoType} view ${index + 1}`}
+                                className="w-full h-full object-cover hover:scale-105 transition-transform"
+                                onError={handleImageError}
+                                onClick={() => handleImageClick(image)}
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })()}
 
           {/* Defect Details Section */}
           {result.status === 'Failed' && (

@@ -327,7 +327,7 @@ export default function MachineForm({ bu, type, id, isInDialog = false }: Machin
     );
   }
 
-  const formContent = (
+  return (
     <div>
       <Card className="mb-6">
         <CardHeader>
@@ -352,15 +352,33 @@ export default function MachineForm({ bu, type, id, isInDialog = false }: Machin
               </div>
             )}
             {locationError && !locationLoading && (
-              <div className="text-orange-600 bg-orange-50 px-3 py-1 rounded-md inline-block">
-                ⚠️ Location unavailable - form can still be submitted
+              <div className="text-red-600 bg-red-50 px-3 py-2 rounded-md">
+                <div className="flex items-center justify-between">
+                  <div>
+                    ❌ Location sharing is required for machine inspections
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={getCurrentLocation}
+                    className="ml-3 text-blue-600 border-blue-600 hover:bg-blue-50"
+                  >
+                    Try Again
+                  </Button>
+                </div>
+                <p className="text-xs text-red-500 mt-1">
+                  Please enable location services in your browser and click "Try Again"
+                </p>
               </div>
             )}
           </div>
         </CardHeader>
       </Card>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      {/* Show form only when location is available */}
+      {hasLocation ? (
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         {/* Inspector Field */}
         <Card>
           <CardContent className="pt-6">
@@ -373,7 +391,7 @@ export default function MachineForm({ bu, type, id, isInDialog = false }: Machin
                   {...register("inspector", { required: "Inspector is required" })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
                 >
-                  <option value="">Select Inspector</option>
+                  <option value="">กรอกชื่อ Trainer / TSM</option>
                   <option value="CAEC">CAEC MACHINERY CO.,LTD</option>
                   <option value="CC">Chatchaiphuket Transport (2006) Co.,Ltd.</option>
                   <option value="DO">D.O.K Co.,Ltd.</option>
@@ -407,7 +425,7 @@ export default function MachineForm({ bu, type, id, isInDialog = false }: Machin
         </Card>
 
         {/* Mileage Field for Thai cars */}
-        {(["srb", "mkt", "office", "lbm", "rmx", "iagg", "ieco", "th"].includes(bu)) && type.toLowerCase() === "car" && (
+        {(["th"].includes(bu)) && type.toLowerCase() === "car" && (
           <Card>
             <CardContent className="pt-6">
               <div className="space-y-2">
@@ -585,9 +603,44 @@ export default function MachineForm({ bu, type, id, isInDialog = false }: Machin
         >
           {isSubmitting ? "Submitting..." : getTranslation('submit', 'Submit')}
         </Button>
-      </form>
+        </form>
+      ) : (
+        /* Show location requirement when form is hidden */
+        <Card className="border-red-200 bg-red-50">
+          <CardContent className="pt-6">
+            <div className="text-center py-8">
+              <div className="text-6xl mb-4">📍</div>
+              <h3 className="text-xl font-semibold text-red-800 mb-2">
+                Location Required for Machine Inspection
+              </h3>
+              <p className="text-red-700 mb-6 max-w-md mx-auto">
+                Machine inspection requires your current location for accurate record keeping.
+                Please enable location sharing to continue with the inspection form.
+              </p>
+              <div className="space-y-3">
+                <Button
+                  type="button"
+                  onClick={getCurrentLocation}
+                  disabled={locationLoading}
+                  className="bg-red-600 hover:bg-red-700 text-white font-semibold px-6 py-3 rounded-full"
+                >
+                  {locationLoading ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Getting Location...
+                    </>
+                  ) : (
+                    <>📍 Enable Location Sharing</>
+                  )}
+                </Button>
+                <p className="text-sm text-red-600">
+                  Make sure location services are enabled in your browser settings
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
-
-  return formContent;
 }

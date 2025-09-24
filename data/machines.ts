@@ -11,7 +11,7 @@ export const isMixerType = (type: string): boolean => {
 };
 
 // Define all mixer type variants
-export const MIXER_TYPES = ['mixer', 'mixertsm', 'mixertrainer', 'mixerweek'];
+export const MIXER_TYPES = ['mixer', 'mixertsm', 'mixertrainer', 'mixerweek', 'mixerphoto'];
 
 // Utility function for Firebase timestamp conversion
 function convertFirebaseTimestamp(timestamp: any): Date | null {
