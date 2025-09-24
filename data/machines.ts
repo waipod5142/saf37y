@@ -80,8 +80,7 @@ export const getMachineInspectionRecords = async (
       .collection("machinetr")
       .where("bu", "==", bu)
       .where("type", "==", type.toLowerCase())
-      .where("id", "==", decodedId)
-      .orderBy("timestamp", "desc"); // Latest first
+      .where("id", "==", decodedId);
 
     const inspectionSnapshot = await inspectionQuery.get();
 
@@ -97,13 +96,25 @@ export const getMachineInspectionRecords = async (
         bu: recordData.bu,
         type: recordData.type,
         inspector: recordData.inspector,
-        timestamp: recordData.timestamp,
-        createdAt: recordData.createdAt,
+        timestamp: convertFirebaseTimestamp(recordData.timestamp),
+        createdAt: convertFirebaseTimestamp(recordData.createdAt),
         remark: recordData.remark,
         images: recordData.images,
         docId: doc.id,
         ...recordData,
+        // Explicitly convert timestamp fields that might exist in ...recordData
+        locationTimestamp: convertFirebaseTimestamp(recordData.locationTimestamp),
       } as MachineInspectionRecord;
+    });
+
+    // Sort by timestamp in descending order (latest first)
+    records.sort((a, b) => {
+      const aDate = convertFirebaseTimestamp(a.timestamp);
+      const bDate = convertFirebaseTimestamp(b.timestamp);
+
+      if (!aDate || !bDate) return 0;
+
+      return bDate.getTime() - aDate.getTime();
     });
 
     return records;
@@ -146,12 +157,14 @@ export const getMachineInspectionRecordsForMixers = async (
             bu: recordData.bu,
             type: recordData.type,
             inspector: recordData.inspector,
-            timestamp: recordData.timestamp,
-            createdAt: recordData.createdAt,
+            timestamp: convertFirebaseTimestamp(recordData.timestamp),
+            createdAt: convertFirebaseTimestamp(recordData.createdAt),
             remark: recordData.remark,
             images: recordData.images,
             docId: doc.id,
             ...recordData,
+            // Explicitly convert timestamp fields that might exist in ...recordData
+            locationTimestamp: convertFirebaseTimestamp(recordData.locationTimestamp),
           } as MachineInspectionRecord;
         });
         allRecords.push(...records);

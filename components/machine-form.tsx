@@ -368,7 +368,7 @@ export default function MachineForm({ bu, type, id, isInDialog = false }: Machin
               <Label htmlFor="inspector" className="text-lg font-semibold">
                 {getTranslation('inspector', 'Inspector')}
               </Label>
-              {bu === "rmx" && type.toLowerCase() === "mixertsm" ? (
+              {type.toLowerCase() === "mixertsm" ? (
                 <select
                   {...register("inspector", { required: "Inspector is required" })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
@@ -390,6 +390,7 @@ export default function MachineForm({ bu, type, id, isInDialog = false }: Machin
                   <option value="SH">Sahathanaseth Engineering Co.,Ltd.</option>
                   <option value="SS">Sermsinpaiboon Co.,Ltd.</option>
                   <option value="TR">TR.9 Ltd.,Part</option>
+                  <option value="TP">บริษัท ไทยภักดี การโยธา จำกัด (THAIPHAKDEE KAN YOTHA)</option>
                 </select>
               ) : (
                 <Input

@@ -98,8 +98,47 @@ export async function updateMachineInspectionRecord(
   updateData: Record<string, any>
 ): Promise<{ success: boolean; error?: string }> {
   try {
+    // Debug logging
+    console.log("updateMachineInspectionRecord called with:", { docId, updateData });
+
+    // Validate input parameters
+    if (!docId || typeof docId !== 'string' || docId.trim() === '') {
+      return {
+        success: false,
+        error: "Invalid document ID provided",
+      };
+    }
+
+    if (!updateData || typeof updateData !== 'object' || updateData === null) {
+      return {
+        success: false,
+        error: "Invalid update data provided",
+      };
+    }
+
     // Remove undefined values before saving to Firestore
     const cleanedData = removeUndefinedValues(updateData);
+    console.log("Cleaned data:", cleanedData);
+
+    // Check if cleaned data is empty
+    if (Object.keys(cleanedData).length === 0) {
+      return {
+        success: false,
+        error: "No valid data to update after cleaning",
+      };
+    }
+
+    // Validate data types for common fields
+    for (const [key, value] of Object.entries(cleanedData)) {
+      if (value !== null && value !== undefined) {
+        // Ensure arrays are actually arrays
+        if (key.endsWith('F') || key.endsWith('P') || key === 'images') {
+          if (value !== null && !Array.isArray(value) && typeof value !== 'string') {
+            console.warn(`Field ${key} should be array or string, got:`, typeof value, value);
+          }
+        }
+      }
+    }
 
     // Update the inspection record in the machinetr collection
     const docRef = firestore.collection("machinetr").doc(docId);
@@ -112,9 +151,15 @@ export async function updateMachineInspectionRecord(
     };
   } catch (error) {
     console.error("Error updating machine inspection record:", error);
+    console.error("Error details:", {
+      docId,
+      updateDataKeys: updateData ? Object.keys(updateData) : 'null/undefined',
+      errorMessage: error instanceof Error ? error.message : 'Unknown error',
+      errorStack: error instanceof Error ? error.stack : 'No stack trace'
+    });
     return {
       success: false,
-      error: "Failed to update machine inspection record",
+      error: `Failed to update machine inspection record: ${error instanceof Error ? error.message : 'Unknown error'}`,
     };
   }
 }
@@ -640,8 +685,7 @@ export async function getMachineInspectionRecordsAction(
       .collection("machinetr")
       .where("bu", "==", bu)
       .where("type", "==", type.toLowerCase())
-      .where("id", "==", decodedId)
-      .orderBy("timestamp", "desc"); // Latest first
+      .where("id", "==", decodedId);
 
     const inspectionSnapshot = await inspectionQuery.get();
 
@@ -667,8 +711,18 @@ export async function getMachineInspectionRecordsAction(
         docId: doc.id,
         ...recordData,
       });
-      
+
       return serializedRecord as MachineInspectionRecord;
+    });
+
+    // Sort by timestamp in descending order (latest first)
+    records.sort((a, b) => {
+      if (!a.timestamp || !b.timestamp) return 0;
+
+      const aDate = new Date(a.timestamp);
+      const bDate = new Date(b.timestamp);
+
+      return bDate.getTime() - aDate.getTime();
     });
 
     return {

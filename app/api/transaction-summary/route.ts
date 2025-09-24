@@ -36,114 +36,58 @@ export async function GET(request: Request) {
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const weekStart = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     
-    // Use aggregation queries for better performance with large datasets
+    // Fetch all records for the business unit and process in memory to avoid composite index requirements
     let totalToday = 0;
     let totalWeek = 0;
     let lastInspectionDate: Date | undefined;
-    
+
     try {
-      // Count today's records using aggregation
-      const todayCountQuery = firestore
+      // Single query to get all records for the business unit (with reasonable limit)
+      const allRecordsQuery = firestore
         .collection("machinetr")
         .where("bu", "==", bu)
-        .where("timestamp", ">=", todayStart)
-        .where("timestamp", "<", new Date(todayStart.getTime() + 24 * 60 * 60 * 1000));
-      
-      // Count week's records using aggregation  
-      const weekCountQuery = firestore
-        .collection("machinetr")
-        .where("bu", "==", bu)
-        .where("timestamp", ">=", weekStart);
-      
-      // Get most recent record for last inspection date (limit to 1 for efficiency)
-      const lastInspectionQuery = firestore
-        .collection("machinetr")
-        .where("bu", "==", bu)
-        .orderBy("timestamp", "desc")
-        .limit(1);
-      
-      // Execute queries in parallel for better performance
-      const [todaySnapshot, weekSnapshot, lastInspectionSnapshot] = await Promise.all([
-        todayCountQuery.get(),
-        weekCountQuery.get(),
-        lastInspectionQuery.get()
-      ]);
-      
-      // Count records efficiently
-      totalToday = todaySnapshot.size;
-      totalWeek = weekSnapshot.size;
-      
-      // Get last inspection date from the most recent record
-      if (!lastInspectionSnapshot.empty) {
-        const lastRecord = lastInspectionSnapshot.docs[0].data();
-        if (lastRecord.timestamp) {
-          const convertedDate = convertFirebaseTimestamp(lastRecord.timestamp);
-          if (convertedDate) {
-            lastInspectionDate = convertedDate;
-          }
-        }
-      }
-      
-    } catch (aggregationError) {
-      console.warn("Aggregation query failed, falling back to batch processing:", aggregationError);
-      
-      // Fallback: Use batch processing to get all records without timeout
-      let hasMoreRecords = true;
-      let lastDoc: any = null;
-      const batchSize = 500; // Process in smaller batches to avoid memory issues
-      
-      while (hasMoreRecords) {
-        let batchQuery = firestore
-          .collection("machinetr")
-          .where("bu", "==", bu)
-          .where("timestamp", ">=", weekStart)
-          .orderBy("timestamp", "desc")
-          .limit(batchSize);
-        
-        // Add pagination cursor if we have processed previous batch
-        if (lastDoc) {
-          batchQuery = batchQuery.startAfter(lastDoc);
-        }
-        
-        const batchSnapshot = await batchQuery.get();
-        
-        // If we got fewer records than batch size, this is the last batch
-        if (batchSnapshot.size < batchSize) {
-          hasMoreRecords = false;
-        }
-        
-        // Process current batch
-        batchSnapshot.docs.forEach(doc => {
+        .limit(10000); // Reasonable limit to prevent memory issues while capturing most data
+
+      const allRecordsSnapshot = await allRecordsQuery.get();
+
+      // Process all records in memory for counting and finding max timestamp
+      if (!allRecordsSnapshot.empty) {
+        let maxDate: Date | null = null;
+
+        allRecordsSnapshot.docs.forEach(doc => {
           const recordData = doc.data();
           if (!recordData.timestamp) return;
-          
+
           const recordDate = convertFirebaseTimestamp(recordData.timestamp);
           if (!recordDate) return;
-          
+
           // Update last inspection date
-          if (!lastInspectionDate || recordDate > lastInspectionDate) {
-            lastInspectionDate = recordDate;
+          if (!maxDate || recordDate > maxDate) {
+            maxDate = recordDate;
           }
-          
+
           // Count by time periods
-          totalWeek++;
-          
-          if (recordDate >= todayStart) {
-            totalToday++;
+          if (recordDate >= weekStart) {
+            totalWeek++;
+
+            if (recordDate >= todayStart) {
+              totalToday++;
+            }
           }
         });
-        
-        // Set cursor for next batch
-        if (batchSnapshot.size > 0) {
-          lastDoc = batchSnapshot.docs[batchSnapshot.size - 1];
-        }
-        
-        // Safety break if we've processed too many batches (prevent infinite loops)
-        if (totalWeek > 50000) { // Reasonable upper limit
-          console.warn(`Processed over 50,000 records for bu=${bu}, stopping to prevent timeout`);
-          break;
+
+        if (maxDate) {
+          lastInspectionDate = maxDate;
         }
       }
+      
+    } catch (queryError) {
+      console.error("Error fetching records for transaction summary:", queryError);
+
+      // Return zero counts if query fails
+      totalToday = 0;
+      totalWeek = 0;
+      lastInspectionDate = undefined;
     }
     
     const processingTime = Date.now() - startTime;

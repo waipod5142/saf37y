@@ -85,6 +85,26 @@ export default function MachineDetailClient({ records, questions }: MachineDetai
     }
   }, [showDefectResponseModal, records]);
 
+  // Helper function to check if record is within 5-minute delete window
+  const isWithinDeleteTimeWindow = (record: MachineInspectionRecord) => {
+    const recordTimestamp = record.timestamp || record.createdAt;
+    if (!recordTimestamp) return false;
+    
+    try {
+      const recordDate = convertFirebaseTimestamp(recordTimestamp);
+      if (!recordDate) return false;
+      
+      const now = new Date();
+      const timeDifference = now.getTime() - recordDate.getTime();
+      const fiveMinutesInMs = 5 * 60 * 1000; // 5 minutes in milliseconds
+      
+      return timeDifference <= fiveMinutesInMs;
+    } catch (error) {
+      console.error("Error checking delete time window:", error);
+      return false;
+    }
+  };
+
   // Helper functions for location formatting
   const formatCoordinates = (lat: number, lng: number) => {
     return `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
@@ -257,7 +277,6 @@ export default function MachineDetailClient({ records, questions }: MachineDetai
     }
   };
 
-
   const getQuestionGroups = (record: MachineInspectionRecord) => {
     const groups: { [questionName: string]: { status: any, remark?: string, images?: string[] } } = {};
     
@@ -366,90 +385,13 @@ export default function MachineDetailClient({ records, questions }: MachineDetai
               
               {/* Location Information Section */}
               {record.latitude && record.longitude && (
-                <div className="mt-3 relative">
-                  {/* Map-Centric Location Explorer */}
-                  <div 
-                    className="group relative bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-200 rounded-xl p-4 cursor-pointer transition-all duration-300 hover:shadow-lg hover:border-blue-300 hover:from-blue-100 hover:to-blue-150"
-                    onClick={() => handleMapClick(record.latitude!, record.longitude!)}
-                  >
-                    {/* Background Map Pattern */}
-                    <div className="absolute inset-0 opacity-5 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSIjMDAwIiBmaWxsLW9wYWNpdHk9Ii4xIj48cGF0aCBkPSJNMjAgMjBjMC0xMS04LTE4LTE4LTE4UzIgOSAyIDIwIDEwIDM4IDIwIDM4czE4LTcgMTgtMTgtOC0xOC0xOC0xOHptMCAxNmMtNy43IDAtMTQtNi4zLTE0LTE0UzEyLjMgNiAyMCA2czE0IDYuMyAxNCAxNC02LjMgMTQtMTQgMTR6Ii8+PC9nPjwvc3ZnPg==')] rounded-xl"></div>
-                    
-                    {/* Header with Large Map Icon */}
-                    <div className="relative flex items-center justify-between mb-4">
-                      <div className="flex items-center gap-3">
-                        <div className="relative">
-                          <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center shadow-lg group-hover:bg-blue-600 transition-colors">
-                            <MapPinIcon className="h-6 w-6 text-white" />
-                          </div>
-                          {/* Pulsing Animation */}
-                          <div className="absolute inset-0 w-12 h-12 bg-blue-400 rounded-full animate-ping opacity-20"></div>
-                        </div>
-                        <div>
-                          <h5 className="font-bold text-lg text-blue-900 group-hover:text-blue-800 transition-colors">
-                            📍 Inspection Location
-                          </h5>
-                          <p className="text-sm text-blue-700 opacity-80">
-                            Click to explore on map
-                          </p>
-                        </div>
-                      </div>
-                      
-                      {/* Accuracy Visual Indicator */}
-                      {record.locationAccuracy && (
-                        <div className="text-right">
-                          <div className="flex items-center gap-2 mb-1">
-                            <div className={`w-3 h-3 rounded-full ${record.locationAccuracy <= 10 ? 'bg-green-500' : record.locationAccuracy <= 50 ? 'bg-yellow-500' : 'bg-red-500'}`}></div>
-                            <span className="text-xs font-medium text-gray-600">
-                              {record.locationAccuracy <= 10 ? 'High' : record.locationAccuracy <= 50 ? 'Medium' : 'Low'} Accuracy
-                            </span>
-                          </div>
-                          <div className="text-xs text-gray-500">±{Math.round(record.locationAccuracy)}m</div>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Prominent View Map Button */}
-                    <div className="relative bg-white bg-opacity-70 rounded-lg p-3 mb-3 group-hover:bg-opacity-90 transition-all">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="font-semibold text-gray-800 text-sm mb-1">🗺️ View on Interactive Map</div>
-                          <div className="font-mono text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded inline-block">
-                            {formatCoordinates(record.latitude, record.longitude)}
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              navigator.clipboard.writeText(`${record.latitude},${record.longitude}`);
-                            }}
-                            className="h-8 px-2 text-xs hover:bg-blue-100"
-                            title="Copy coordinates"
-                          >
-                            📋
-                          </Button>
-                          <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center text-white group-hover:bg-blue-600 transition-colors">
-                            <span className="text-sm">→</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Location Metadata */}
-                    {record.locationTimestamp && (
-                      <div className="text-xs text-blue-800 opacity-75 flex items-center gap-2">
-                        <span>🕒</span>
-                        <span>{formatLocationTimestamp(record.locationTimestamp)}</span>
-                      </div>
-                    )}
-
-                    {/* Hover Overlay */}
-                    <div className="absolute inset-0 bg-blue-500 bg-opacity-0 group-hover:bg-opacity-5 rounded-xl transition-all duration-300 pointer-events-none"></div>
-                  </div>
-                </div>
+                <button
+                  onClick={() => handleMapClick(record.latitude!, record.longitude!)}
+                  className="mt-3 p-2 text-gray-800 hover:text-black hover:bg-gray-100 rounded-lg transition-colors"
+                  title="View location on map"
+                >
+                  <MapPinIcon className="h-5 w-5" />
+                </button>
               )}
             </div>
             <div className="flex items-center gap-2">
@@ -459,7 +401,7 @@ export default function MachineDetailClient({ records, questions }: MachineDetai
               >
                 {result.status}
               </Badge>
-              {record.docId && (
+              {record.docId && isWithinDeleteTimeWindow(record) && (
                 <Button
                   variant="outline"
                   size="sm"
@@ -480,7 +422,6 @@ export default function MachineDetailClient({ records, questions }: MachineDetai
         <CardContent>
           {/* Inspection Results Summary */}
           <div className="mb-4">
-            <h4 className="font-semibold text-sm text-gray-700 mb-2">Inspection Results</h4>
             <div className="text-sm text-gray-600 mb-3">
               {result.status === 'Passed' 
                 ? `All ${result.total} items passed inspection`
@@ -540,7 +481,7 @@ export default function MachineDetailClient({ records, questions }: MachineDetai
               <p className="text-sm bg-gray-50 p-3 rounded border">{record.remark}</p>
             </div>
           )}
-
+{JSON.stringify(record, null, 2)   }
           {/* Images */}
           {record.images && record.images.length > 0 && (
             <div className="mb-4">

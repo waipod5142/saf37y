@@ -266,7 +266,7 @@ export function MachineListModal({
           
           <div className="mt-6 flex justify-end">
             <Button variant="outline" onClick={onClose}>
-              Closet
+              Close
             </Button>
           </div>
         </DialogContent>

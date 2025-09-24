@@ -77,7 +77,6 @@ export default async function MachineDetail({ bu, type, id }: MachineDetailProps
   
   // Serialize the records to ensure they can be passed to client component
   const serializedRecords = records.map(serializeRecord);
-  
   return (
     <MachineDetailClient records={serializedRecords} questions={questions} />
   );
