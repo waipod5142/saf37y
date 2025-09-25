@@ -522,27 +522,34 @@ export interface DashboardMachineStatsByBU {
   };
 }
 
-export const getDashboardMachineStatsByBU = async (period?: string, bu?: string): Promise<{
+export const getDashboardMachineStatsByBU = async (period?: string, bu?: string, site?: string): Promise<{
   stats: DashboardMachineStatsByBU;
   allRecords: MachineInspectionRecord[];
 }> => {
   try {
-    console.log(`=== getDashboardMachineStatsByBU called for bu: ${bu}, period: ${period} ===`);
+    console.log(`=== getDashboardMachineStatsByBU called for bu: ${bu}, site: ${site}, period: ${period} ===`);
     
     // Get site mapping from vocabulary system with fallback
     const siteMapping = await getSiteMapping();
-    const sites = siteMapping[bu || ""] || [];
+    const allSites = siteMapping[bu || ""] || [];
+    // Filter to specific site if provided
+    const sites = site ? [site] : allSites;
     
     // Get form inspection periods for filtering
     const formInspectionPeriods = await getFormInspectionPeriods(bu);
     
-    // Get all machines filtered by business unit
-    const machineQuery = bu 
-      ? firestore.collection("machine").where("bu", "==", bu)
-      : firestore.collection("machine");
+    // Get all machines filtered by business unit and optionally by site
+    let machineQuery = firestore.collection("machine") as any;
+    if (bu) {
+      machineQuery = machineQuery.where("bu", "==", bu);
+    }
+    if (site) {
+      machineQuery = machineQuery.where("site", "==", site);
+    }
     const machineSnapshot = await machineQuery.get();
-    
+
     // Get all inspection records filtered by business unit
+    // Note: inspection records don't have site field, so we'll filter them later after joining with machine data
     const inspectionQuery = bu
       ? firestore.collection("machinetr").where("bu", "==", bu)
       : firestore.collection("machinetr");
@@ -552,7 +559,7 @@ export const getDashboardMachineStatsByBU = async (period?: string, bu?: string)
     const machineLookup: Record<string, Machine> = {};
     const machinesBySiteType: Record<string, Record<string, Machine[]>> = {};
     
-    machineSnapshot.docs.forEach(doc => {
+    machineSnapshot.docs.forEach((doc: any) => {
       const machine = { ...doc.data(), docId: doc.id } as Machine;
       const site = machine.site || "unknown";
       
@@ -571,28 +578,36 @@ export const getDashboardMachineStatsByBU = async (period?: string, bu?: string)
     });
 
     // Process inspection records and join with machine data for site information
-    const allRecords: MachineInspectionRecord[] = inspectionSnapshot.docs.map(doc => {
-      const recordData = doc.data();
-      
-      // Look up corresponding machine to get site information
-      const lookupKey = `${recordData.bu}_${recordData.type}_${recordData.id}`;
-      const correspondingMachine = machineLookup[lookupKey];
-      const site = correspondingMachine?.site || "unknown";
-      
-      return {
-        id: recordData.id,
-        bu: recordData.bu,
-        type: recordData.type,
-        site: site, // Site comes from joined machine data
-        inspector: recordData.inspector,
-        timestamp: recordData.timestamp,
-        createdAt: recordData.createdAt,
-        remark: recordData.remark,
-        images: recordData.images,
-        docId: doc.id,
-        ...recordData,
-      } as MachineInspectionRecord;
-    });
+    const allRecords: MachineInspectionRecord[] = inspectionSnapshot.docs
+      .map((doc: any) => {
+        const recordData = doc.data();
+
+        // Look up corresponding machine to get site information
+        const lookupKey = `${recordData.bu}_${recordData.type}_${recordData.id}`;
+        const correspondingMachine = machineLookup[lookupKey];
+        const recordSite = correspondingMachine?.site || "unknown";
+
+        return {
+          id: recordData.id,
+          bu: recordData.bu,
+          type: recordData.type,
+          site: recordSite, // Site comes from joined machine data
+          inspector: recordData.inspector,
+          timestamp: recordData.timestamp,
+          createdAt: recordData.createdAt,
+          remark: recordData.remark,
+          images: recordData.images,
+          docId: doc.id,
+          ...recordData,
+        } as MachineInspectionRecord;
+      })
+      // Filter by site if specified
+      .filter(record => {
+        if (site) {
+          return record.site === site;
+        }
+        return true;
+      });
 
     // Initialize stats structure
     const stats: DashboardMachineStatsByBU = {};

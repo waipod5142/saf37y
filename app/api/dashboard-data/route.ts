@@ -6,20 +6,21 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const period = searchParams.get('period');
     const bu = searchParams.get('bu');
-    
+    const site = searchParams.get('site');
+
     // If bu parameter is provided, use the filtered function
     if (bu) {
-      const { stats, allRecords } = await getDashboardMachineStatsByBU(period || undefined, bu);
-      return NextResponse.json({ 
+      const { stats, allRecords } = await getDashboardMachineStatsByBU(period || undefined, bu, site || undefined);
+      return NextResponse.json({
         stats,
-        records: allRecords 
+        records: allRecords
       });
     } else {
       // Use the original function for overall dashboard
       const { stats, allRecords } = await getDashboardMachineStats(period || undefined);
-      return NextResponse.json({ 
+      return NextResponse.json({
         stats,
-        records: allRecords 
+        records: allRecords
       });
     }
   } catch (error) {

@@ -78,35 +78,30 @@ function DashboardTable({ stats, title, showDefects, sites, bu, machineTypeMappi
             <table className="w-full border-collapse border border-gray-300 bg-white rounded-lg">
               <thead>
                 <tr className="bg-gradient-to-r from-gray-50 to-gray-100">
-                  <th className="border border-gray-300 p-3 text-left font-semibold text-gray-800 min-w-[200px]">Type</th>
-                  {sites.map(site => (
-                    <th key={site} className="border border-gray-300 p-3 text-center font-semibold text-gray-800 min-w-[120px]">{site.toUpperCase()}</th>
-                  ))}
-                  <th className="border border-gray-300 p-3 text-center font-semibold text-gray-800 min-w-[80px]">Total</th>
+                  <th className="border border-gray-300 p-3 text-left font-semibold text-gray-800 min-w-[200px]">Machine Type</th>
+                  <th className="border border-gray-300 p-3 text-center font-semibold text-gray-800 min-w-[120px]">Inspection Status</th>
                 </tr>
               </thead>
               <tbody>
               {machineTypes.map(type => {
                 const displayName = machineTypeMapping[type] || type;
                 const icon = getMachineEmoji(type) || "🔧";
-                
-                // Calculate totals for this machine type across all sites
-                const typeInspected = sites.reduce((sum, site) => 
-                  sum + (stats[type][site]?.inspected || 0), 0
-                );
-                const typeDefects = sites.reduce((sum, site) => 
-                  sum + (stats[type][site]?.defects || 0), 0
-                );
-                const typeTotal = sites.reduce((sum, site) => 
-                  sum + (stats[type][site]?.total || 0), 0
-                );
-                
-                const typeDisplayValue = showDefects ? typeDefects : typeInspected;
-                const typeDisplayTotal = showDefects ? typeInspected : typeTotal;
-                const typeDisplayPercentage = showDefects ? 
-                  (typeInspected > 0 ? Math.round((typeDefects / typeInspected) * 100) : 0) : 
-                  (typeTotal > 0 ? Math.round((typeInspected / typeTotal) * 100) : 0);
-                
+
+                // Get data for the single site (sites array now contains only one site)
+                const siteData = stats[type][sites[0]] || { inspected: 0, total: 0, percentage: 0, defects: 0, inspectionRecords: [] };
+
+                const displayValue = showDefects ? siteData.defects : siteData.inspected;
+                const displayTotal = showDefects ? siteData.inspected : siteData.total;
+                const displayPercentage = showDefects ?
+                  (siteData.inspected > 0 ? Math.round((siteData.defects / siteData.inspected) * 100) : 0) :
+                  siteData.percentage;
+
+                const colorClass = showDefects ?
+                  (displayValue > 0 ? "bg-red-500 text-white shadow-sm" : "bg-green-200 text-green-800") :
+                  getCompletionColor(displayPercentage);
+
+                const hasData = displayTotal > 0;
+
                 return (
                   <tr key={type} className="hover:bg-gray-50 transition-colors">
                     <td className="border border-gray-300 p-3">
@@ -115,52 +110,17 @@ function DashboardTable({ stats, title, showDefects, sites, bu, machineTypeMappi
                         <span className="font-medium text-gray-800">{displayName}</span>
                       </div>
                     </td>
-                    {sites.map(site => {
-                      const data = stats[type][site] || { inspected: 0, total: 0, percentage: 0, defects: 0, inspectionRecords: [] };
-                      
-                      const displayValue = showDefects ? data.defects : data.inspected;
-                      const displayTotal = showDefects ? data.inspected : data.total;
-                      const displayPercentage = showDefects ? 
-                        (data.inspected > 0 ? Math.round((data.defects / data.inspected) * 100) : 0) : 
-                        data.percentage;
-                      
-                      if (displayValue === 0 && displayTotal === 0) {
-                        return (
-                          <td key={site} className="border border-gray-300 p-3 text-center">
-                            <span className="text-gray-400 font-medium">0</span>
-                          </td>
-                        );
-                      }
-                      
-                      const colorClass = showDefects ? 
-                        (displayValue > 0 ? "bg-red-500 text-white shadow-sm" : "bg-green-200 text-green-800") :
-                        getCompletionColor(displayPercentage);
-                      
-                      const hasData = displayTotal > 0;
-                      
-                      return (
-                        <td key={site} className="border border-gray-300 p-2 text-center">
-                          <div 
-                            className={`px-3 py-2 rounded-md text-sm font-semibold ${colorClass} inline-block min-w-[100px] ${
-                              hasData ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''
-                            }`}
-                            onClick={() => handleCellClick(bu, site, type, hasData)}
-                          >
-                            {displayValue} / {displayTotal} ({displayPercentage}%)
-                          </div>
-                        </td>
-                      );
-                    })}
-                    <td className="border border-gray-300 p-2 text-center">
-                      {typeDisplayValue === 0 && typeDisplayTotal === 0 ? (
-                        <span className="text-gray-400 font-bold">0</span>
+                    <td className="border border-gray-300 p-3 text-center">
+                      {displayValue === 0 && displayTotal === 0 ? (
+                        <span className="text-gray-400 font-medium">No data</span>
                       ) : (
-                        <div className={`px-3 py-2 rounded-md text-sm font-bold ${
-                          showDefects ? 
-                            (typeDisplayValue > 0 ? "bg-red-500 text-white shadow-sm" : "bg-green-200 text-green-800") :
-                            getCompletionColor(typeDisplayPercentage)
-                        } inline-block min-w-[100px]`}>
-                          {typeDisplayValue} / {typeDisplayTotal} ({typeDisplayPercentage}%)
+                        <div
+                          className={`px-4 py-2 rounded-md text-sm font-semibold ${colorClass} inline-block ${
+                            hasData ? 'cursor-pointer hover:opacity-80 hover:scale-105 transition-all duration-200' : ''
+                          }`}
+                          onClick={hasData ? () => handleCellClick(bu, sites[0], type, hasData) : undefined}
+                        >
+                          {displayValue} / {displayTotal} ({displayPercentage}%)
                         </div>
                       )}
                     </td>
@@ -168,78 +128,35 @@ function DashboardTable({ stats, title, showDefects, sites, bu, machineTypeMappi
                 );
               })}
               <tr className="bg-gradient-to-r from-gray-100 to-gray-50 font-bold border-t-2 border-gray-400">
-                <td className="border border-gray-300 p-3 text-gray-800">Total</td>
-                {sites.map(site => {
-                  const siteInspected = machineTypes.reduce((sum, type) => 
-                    sum + (stats[type][site]?.inspected || 0), 0
-                  );
-                  const siteDefects = machineTypes.reduce((sum, type) => 
-                    sum + (stats[type][site]?.defects || 0), 0
-                  );
-                  const siteTotal = machineTypes.reduce((sum, type) => 
-                    sum + (stats[type][site]?.total || 0), 0
-                  );
-                  
-                  const displayValue = showDefects ? siteDefects : siteInspected;
-                  const displayTotal = showDefects ? siteInspected : siteTotal;
-                  const displayPercentage = showDefects ? 
-                    (siteInspected > 0 ? Math.round((siteDefects / siteInspected) * 100) : 0) : 
-                    (siteTotal > 0 ? Math.round((siteInspected / siteTotal) * 100) : 0);
-                  
-                  if (displayValue === 0 && displayTotal === 0) {
-                    return (
-                      <td key={site} className="border border-gray-300 p-3 text-center">
-                        <span className="text-gray-400 font-bold">0</span>
-                      </td>
-                    );
-                  }
-                  
-                  const colorClass = showDefects ? 
-                    (displayValue > 0 ? "bg-red-500 text-white shadow-sm" : "bg-green-200 text-green-800") :
-                    getCompletionColor(displayPercentage);
-                  
-                  return (
-                    <td key={site} className="border border-gray-300 p-2 text-center">
-                      <div className={`px-3 py-2 rounded-md text-sm font-bold ${colorClass} inline-block min-w-[100px]`}>
-                        {displayValue} / {displayTotal} ({displayPercentage}%)
-                      </div>
-                    </td>
-                  );
-                })}
-                <td className="border border-gray-300 p-2 text-center">
+                <td className="border border-gray-300 p-3 text-gray-800">Overall Total</td>
+                <td className="border border-gray-300 p-3 text-center">
                   {(() => {
-                    const totalInspected = machineTypes.reduce((sum, type) => 
-                      sum + sites.reduce((siteSum, site) => 
-                        siteSum + (stats[type][site]?.inspected || 0), 0
-                      ), 0
+                    const totalInspected = machineTypes.reduce((sum, type) =>
+                      sum + (stats[type][sites[0]]?.inspected || 0), 0
                     );
-                    const totalDefects = machineTypes.reduce((sum, type) => 
-                      sum + sites.reduce((siteSum, site) => 
-                        siteSum + (stats[type][site]?.defects || 0), 0
-                      ), 0
+                    const totalDefects = machineTypes.reduce((sum, type) =>
+                      sum + (stats[type][sites[0]]?.defects || 0), 0
                     );
-                    const totalMachines = machineTypes.reduce((sum, type) => 
-                      sum + sites.reduce((siteSum, site) => 
-                        siteSum + (stats[type][site]?.total || 0), 0
-                      ), 0
+                    const totalMachines = machineTypes.reduce((sum, type) =>
+                      sum + (stats[type][sites[0]]?.total || 0), 0
                     );
-                    
+
                     const displayValue = showDefects ? totalDefects : totalInspected;
                     const displayTotal = showDefects ? totalInspected : totalMachines;
-                    const displayPercentage = showDefects ? 
-                      (totalInspected > 0 ? Math.round((totalDefects / totalInspected) * 100) : 0) : 
+                    const displayPercentage = showDefects ?
+                      (totalInspected > 0 ? Math.round((totalDefects / totalInspected) * 100) : 0) :
                       (totalMachines > 0 ? Math.round((totalInspected / totalMachines) * 100) : 0);
-                    
+
                     if (displayValue === 0 && displayTotal === 0) {
-                      return <span className="text-gray-400 font-bold">0</span>;
+                      return <span className="text-gray-400 font-bold">No data</span>;
                     }
-                    
-                    const colorClass = showDefects ? 
+
+                    const colorClass = showDefects ?
                       (displayValue > 0 ? "bg-red-500 text-white shadow-sm" : "bg-green-200 text-green-800") :
                       getCompletionColor(displayPercentage);
-                    
+
                     return (
-                      <div className={`px-3 py-2 rounded-md text-sm font-bold ${colorClass} inline-block min-w-[100px]`}>
+                      <div className={`px-4 py-2 rounded-md text-sm font-bold ${colorClass} inline-block`}>
                         {displayValue} / {displayTotal} ({displayPercentage}%)
                       </div>
                     );
@@ -267,7 +184,10 @@ function DashboardTable({ stats, title, showDefects, sites, bu, machineTypeMappi
 
 export default function DashboardPage() {
   const params = useParams();
-  const bu = params.bu as string;
+  const site = params.site as string;
+
+  // State to store the determined BU for this site
+  const [bu, setBu] = useState<string>("");
   
   const [dashboardStats, setDashboardStats] = useState<{
     daily: DashboardMachineStatsByBU;
@@ -287,7 +207,8 @@ export default function DashboardPage() {
   const [buDisplay, setBuDisplay] = useState<Record<string, { name: string | null; flag: string | null }>>({});
   const [machineTypeMapping, setMachineTypeMapping] = useState<Record<string, string>>({});
   
-  const sites = siteMapping[bu] || [];
+  // For single site view, we only need the current site
+  const sites = [site];
   const buInfo = buDisplay[bu] || { name: null, flag: null };
   
   // Fetch vocabulary data on component mount
@@ -303,6 +224,15 @@ export default function DashboardPage() {
           if (result.machineTypeMapping) {
             setMachineTypeMapping(result.machineTypeMapping);
           }
+
+          // Determine which BU this site belongs to
+          let foundBu = "";
+          Object.entries(result.siteMapping).forEach(([buCode, sitesList]) => {
+            if (sitesList.includes(site)) {
+              foundBu = buCode;
+            }
+          });
+          setBu(foundBu);
         } else {
           console.warn('Failed to load vocabularies, using fallback data:', result.error);
         }
@@ -322,7 +252,7 @@ export default function DashboardPage() {
         // Fetch stats for all periods
         const periods = ['daily', 'monthly', 'quarterly', 'annual'];
         const statsPromises = periods.map(async (period) => {
-          const response = await fetch(`/api/dashboard-data?period=${period}&bu=${bu}`);
+          const response = await fetch(`/api/dashboard-data?period=${period}&bu=${bu}&site=${site}`);
           const data = await response.json();
           return { period, stats: data.stats, records: data.records };
         });
@@ -348,15 +278,19 @@ export default function DashboardPage() {
       }
     }
     
-    fetchData();
-  }, []);
+    // Only fetch data once we have determined the BU
+    if (bu) {
+      fetchData();
+    }
+  }, [bu, site]);
 
   return (
     <div className="container mx-auto p-6">
       <Breadcrumbs
         items={[
-          { label: "Dashboard", href: "/dashboard" },
-          { label: vocabularyLoading ? "Loading..." : (buInfo.name || "Unknown") },
+          { label: "Dashboard", href: "/dashboardbysite" },
+          { label: vocabularyLoading ? "Loading..." : (buInfo.name || "Unknown"), href: `/dashboard/${bu}` },
+          { label: site.toUpperCase() },
         ]}
       />
       
@@ -373,7 +307,7 @@ export default function DashboardPage() {
             {vocabularyLoading ? (
               <div className="w-64 h-8 bg-gray-200 rounded animate-pulse"></div>
             ) : (
-              `${buInfo.name || "Unknown"} - Click each tab to view daily, monthly, quarterly, annual`
+              `${buInfo.name || "Unknown"} - ${site.toUpperCase()} Site Dashboard`
             )}
           </h1>
         </div>

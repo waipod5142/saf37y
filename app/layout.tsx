@@ -49,7 +49,15 @@ export default function RootLayout({
                   href="/dashboard"
                   className="uppercase tracking-widest hover:underline"
                 >
-                  Machine Dashboard
+                  Dashboard by country
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/dashboardbysite"
+                  className="uppercase tracking-widest hover:underline"
+                >
+                  Dashboard by Site
                 </Link>
               </li>
               <li>

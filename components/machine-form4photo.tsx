@@ -389,17 +389,7 @@ export default function MachineForm4photo({ bu, type, id }: MachineForm4photoPro
                       >
                         {/* Direction Header */}
                         <div
-                          className={`flex items-center justify-center mb-4 mx-2 bg-gradient-to-r from-white ${
-                            side === 'front'
-                              ? 'to-blue-600'
-                              : side === 'right'
-                              ? 'to-green-600'
-                              : side === 'back'
-                              ? 'to-purple-600'
-                              : side === 'left'
-                              ? 'to-rose-600'
-                              : ''
-                          } font-bold py-3 px-4 rounded shadow-lg`}
+                          className="flex items-center justify-center mb-4 mx-2 bg-purple-200 font-bold py-3 px-4 rounded shadow-lg"
                         >
                           <span
                             className="mx-2 text-4xl"

@@ -388,8 +388,11 @@ export default function TransactionPage() {
     return (
       <div className="container mx-auto p-6">
         <div className="flex justify-center items-center h-64">
-          <div className="text-lg text-gray-600">
-            {vocabularyLoading ? "Loading configuration..." : "Loading transactions..."}
+          <div className="flex items-center gap-3">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-600"></div>
+            <div className="text-lg text-gray-600">
+              {vocabularyLoading ? "Loading configuration..." : "Loading transactions..."}
+            </div>
           </div>
         </div>
       </div>
