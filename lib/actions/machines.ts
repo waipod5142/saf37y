@@ -93,6 +93,7 @@ export async function submitMachineForm(
   }
 }
 
+
 export async function updateMachineInspectionRecord(
   docId: string,
   updateData: Record<string, any>

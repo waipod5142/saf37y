@@ -33,7 +33,14 @@ export function MobileNav() {
             className="text-lg uppercase tracking-widest hover:underline"
             onClick={() => setOpen(false)}
           >
-            Machine Dashboard
+            Dashboard by country
+          </Link>
+          <Link
+            href="/dashboardbysite"
+            className="text-lg uppercase tracking-widest hover:underline"
+            onClick={() => setOpen(false)}
+          >
+            Dashboard by Site
           </Link>
           <Link
             href="/transaction"
