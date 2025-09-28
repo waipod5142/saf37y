@@ -177,3 +177,96 @@ export const getManRecordById = async (
   }
 };
 
+export interface TokenData {
+  _id: string;
+  id: string;
+  name: string;
+  position: string;
+  department: string;
+  site: string;
+  type: string;
+  eSite: string;
+  status: string;
+  company: string;
+  trans: TokenTransaction[];
+}
+
+export interface TokenTransaction {
+  _id: string;
+  id: string;
+  date: string;
+  token: string;
+}
+
+export const getTokenData = async (
+  bu: string,
+  id: string
+): Promise<TokenData | null> => {
+  try {
+    // Decode URL parameters to handle special characters (including Thai characters)
+    const decodedId = decodeURIComponent(id);
+
+    console.log(`Fetching token data for bu: ${bu}, id: ${decodedId}`);
+
+    // First try to get from vehicleTr collection (if it exists in Firestore)
+    let tokenQuery = firestore
+      .collection("vehicleTr")
+      .where("bu", "==", bu)
+      .where("id", "==", decodedId)
+      .where("type", "==", "token");
+
+    let tokenSnapshot = await tokenQuery.get();
+
+    // If no results, try just with id and type
+    if (tokenSnapshot.empty) {
+      console.log(`No token records found with bu filter. Trying with just id and type...`);
+      tokenQuery = firestore
+        .collection("vehicleTr")
+        .where("id", "==", decodedId)
+        .where("type", "==", "token");
+
+      tokenSnapshot = await tokenQuery.get();
+    }
+
+    // If still no results, try just with id
+    if (tokenSnapshot.empty) {
+      console.log(`No token records found with type filter. Trying with just id...`);
+      tokenQuery = firestore
+        .collection("vehicleTr")
+        .where("id", "==", decodedId);
+
+      tokenSnapshot = await tokenQuery.get();
+    }
+
+    if (tokenSnapshot.empty) {
+      console.log(`No token data found for id: ${decodedId}`);
+      return null;
+    }
+
+    // Get the first matching document
+    const doc = tokenSnapshot.docs[0];
+    const data = doc.data();
+
+    // Transform the data to match the expected TokenData interface
+    const tokenData: TokenData = {
+      _id: doc.id,
+      id: data.id || decodedId,
+      name: data.name || '',
+      position: data.position || '',
+      department: data.department || '',
+      site: data.site || '',
+      type: data.type || 'token',
+      eSite: data.eSite || '',
+      status: data.status || '',
+      company: data.company || '',
+      trans: data.trans || [],
+    };
+
+    console.log(`Found token data for id: ${decodedId}`, tokenData);
+    return tokenData;
+  } catch (error) {
+    console.error("Error fetching token data:", error);
+    return null;
+  }
+};
+

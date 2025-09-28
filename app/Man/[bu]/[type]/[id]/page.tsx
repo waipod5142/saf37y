@@ -5,6 +5,8 @@ import ManFormSOT from "@/components/man-form-sot";
 import { normalizeBuCode } from "@/lib/utils";
 import ManFormTalk from "@/components/man-form-talk";
 import ManFormToolbox from "@/components/man-form-toolbox";
+import ManFormToken from "@/components/man-form-token";
+import ManTypeBadge from "@/components/man-type-badge";
 
 export default async function MachinePage({ 
   params 
@@ -24,6 +26,10 @@ export default async function MachinePage({
   return (
     <div className="max-w-4xl mx-auto p-2">
       <ManOption bu={normalizedBu} type={decodedType} id={decodedId} />
+      <div className="mb-4">
+        <ManTypeBadge type={decodedType} className="text-sm" />
+      </div>
+      {type === 'Coupon' && <ManFormToken bu={normalizedBu} type={decodedType} id={decodedId} />}
       <ManHeader bu={normalizedBu} type={decodedType} id={decodedId} />
       <ManDetail bu={normalizedBu} type={decodedType} id={decodedId} />
       

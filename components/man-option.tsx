@@ -17,7 +17,7 @@ export default function ManOption({ bu, type, id }: ManOptionProps) {
   };
 
   return (
-    <div className="px-4 py-4 bg-white rounded-md mb-4">
+    <div className="py-4 bg-white rounded-md mb-4">
       <label
         htmlFor="man-select"
         className="block text-lg font-semibold text-gray-700 mb-2"
@@ -37,7 +37,7 @@ export default function ManOption({ bu, type, id }: ManOptionProps) {
           value={`/Man/${bu}/Sot/${id}`}
           className="odd:bg-gray-100 even:bg-gray-200"
         >
-          กิจกรรม SOT and VFL
+          กิจกรรมความปลอดภัย SOT and VFL
         </option>
         <option
           value={`/Man/${bu}/Talk/${id}`}
@@ -55,19 +55,19 @@ export default function ManOption({ bu, type, id }: ManOptionProps) {
           value={`/Man/${bu}/Coupon/${id}`}
           className="odd:bg-gray-100 even:bg-gray-200"
         >
-          คูปองอาหาร / Food Coupon
+          โทเคนสำหรับร้านอาหาร / Food Token
         </option>
         <option
           value={`/Man/${bu}/Meeting/${id}`}
           className="odd:bg-gray-100 even:bg-gray-200"
         >
-          เซฟตี้มีตติ้ง / Safety Meeting
+          การมีส่วนร่วมในเซฟตี้มีทติ้ง / Safety Meeting
         </option>
         <option
           value={`/Man/${bu}/Alert/${id}`}
           className="odd:bg-gray-100 even:bg-gray-200"
         >
-          การแจ้งเตือนประกาศด้านความปลอดภัย / Safety Alert
+          ยืนยันการเข้าใจ Safety Alert / Safety Alert Acknowledgement
         </option>
         <option
           value={`/Man/${bu}/Training/${id}`}
