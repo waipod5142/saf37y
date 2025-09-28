@@ -26,6 +26,10 @@ const serializeManRecord = (record: any): ManRecord => {
     ...record,
     timestamp: convertFirebaseTimestamp(record.timestamp),
     createdAt: convertFirebaseTimestamp(record.createdAt),
+    // Handle training-specific date fields
+    trainingDate: convertFirebaseTimestamp(record.trainingDate),
+    expiryDate: convertFirebaseTimestamp(record.expiryDate),
+    updateAt: convertFirebaseTimestamp(record.updateAt),
   };
 };
 
@@ -40,6 +44,49 @@ export const getManRecords = async (
 
     console.log(`Searching for man records with bu: ${bu}, type: ${type}, id: ${decodedId}`);
 
+    // Handle training records differently - fetch from trainings collection where empId equals id
+    if (type.toLowerCase() === "training") {
+      console.log(`Fetching training records from trainings collection where empId: ${decodedId}`);
+
+      let trainingQuery = firestore
+        .collection("trainings")
+        .where("empId", "==", decodedId);
+
+      // Add bu filter if provided
+      if (bu) {
+        trainingQuery = trainingQuery.where("bu", "==", bu);
+      }
+
+      const trainingSnapshot = await trainingQuery.get();
+
+      if (trainingSnapshot.empty) {
+        console.log(`No training records found for empId: ${decodedId}`);
+        return [];
+      }
+
+      const records: ManRecord[] = [];
+      trainingSnapshot.forEach((doc) => {
+        const data = doc.data();
+        console.log(`Found training record:`, data);
+        const serializedRecord = serializeManRecord({
+          ...data,
+          docId: doc.id, // Include Firestore document ID
+        });
+        records.push(serializedRecord);
+      });
+
+      // Sort by timestamp client-side
+      records.sort((a, b) => {
+        const dateA = new Date(a.timestamp || a.createdAt);
+        const dateB = new Date(b.timestamp || b.createdAt);
+        return dateB.getTime() - dateA.getTime();
+      });
+
+      console.log(`Found ${records.length} training records for empId: ${decodedId}`);
+      return records;
+    }
+
+    // For all other types, use the existing mantr collection logic
     // First, try with the exact parameters but without orderBy to avoid index issues
     let manQuery = firestore
       .collection("mantr")

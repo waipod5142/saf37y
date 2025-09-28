@@ -1,9 +1,6 @@
-import ManOption from "@/components/man-option";
-import ManHeader from "@/components/man-header";
-import ManDetail from "@/components/man-detail";
-import ManFormSOT from "@/components/man-form-sot";
+import ManFormAlert from "@/components/man-form-alert";
 import { normalizeBuCode } from "@/lib/utils";
-import ManFormTalk from "@/components/man-form-talk";
+import ManFormMeeting from "@/components/man-form-meeting";
 import ManFormToolbox from "@/components/man-form-toolbox";
 
 export default async function MachinePage({ 
@@ -23,16 +20,13 @@ export default async function MachinePage({
 
   return (
     <div className="max-w-4xl mx-auto p-2">
-      <ManOption bu={normalizedBu} type={decodedType} id={decodedId} />
-      <ManHeader bu={normalizedBu} type={decodedType} id={decodedId} />
-      <ManDetail bu={normalizedBu} type={decodedType} id={decodedId} />
       
       {(() => {
         const lowerType = decodedType.toLowerCase();
-        if (lowerType === "sot") {
-          return <ManFormSOT bu={normalizedBu} type={decodedType} id={decodedId} />;
-        } else if (lowerType === "talk") {
-          return <ManFormTalk bu={normalizedBu} type={decodedType} id={decodedId} />;
+        if (lowerType === "alertform") {
+          return <ManFormAlert bu={normalizedBu} type={decodedType} id={decodedId} />;
+        } else if (lowerType === "meetingform") {
+          return <ManFormMeeting bu={normalizedBu} type={decodedType} id={decodedId} />;
         } else if (lowerType === "toolbox") {
           return <ManFormToolbox bu={normalizedBu} type={decodedType} id={decodedId} />;
         }

@@ -1,6 +1,11 @@
 import { getManRecords } from "@/data/man";
-import { ManRecord } from "@/types/man";
-import ManDetailClient from "./man-detail-client";
+import { ManRecord, SotManRecord, TalkManRecord, ToolboxManRecord, AlertManRecord, MeetingManRecord, TrainingManRecord } from "@/types/man";
+import SotManDetailClient from "./man-detail-sot-client";
+import TalkManDetailClient from "./man-detail-talk-client";
+import ToolboxManDetailClient from "./man-detail-toolbox-client";
+import AlertManDetailClient from "./man-detail-alert-client";
+import MeetingManDetailClient from "./man-detail-meeting-client";
+import TrainingManDetailClient from "./man-detail-training-client";
 
 interface ManDetailProps {
   bu: string;
@@ -29,14 +34,98 @@ const serializeRecord = (record: ManRecord): ManRecord => {
   };
 };
 
+// Type guard functions
+const isSotRecord = (record: ManRecord): record is SotManRecord => {
+  return 'report' in record && (record as any).report === 'sot';
+};
+
+const isVflRecord = (record: ManRecord): record is SotManRecord => {
+  return 'report' in record && (record as any).report === 'vfl';
+};
+
+const isTalkRecord = (record: ManRecord): record is TalkManRecord => {
+  return 'selectedTopic' in record;
+};
+
+const isToolboxRecord = (record: ManRecord): record is ToolboxManRecord => {
+  return 'presenter' in record && 'subject' in record && 'learn' in record;
+};
+
+const isAlertRecord = (record: ManRecord): record is AlertManRecord => {
+  return 'alertNo' in record && 'typeAccident' in record && 'acknowledge' in record;
+};
+
+const isMeetingRecord = (record: ManRecord): record is MeetingManRecord => {
+  return 'alertNo' in record && 'feedback' in record && 'acknowledge' in record && !('typeAccident' in record);
+};
+
+const isTrainingRecord = (record: ManRecord): record is TrainingManRecord => {
+  return 'empId' in record && 'courseId' in record && 'courseName' in record && 'trainingDate' in record;
+};
+
+const isSotOrVflRecord = (record: ManRecord): record is SotManRecord => {
+  return isSotRecord(record) || isVflRecord(record) || ('riskLevel' in record);
+};
+
 export default async function ManDetail({ bu, type, id }: ManDetailProps) {
   // Fetch man records from the mantr collection
   const records = await getManRecords(bu, type, id);
 
+  // Normalize type to lowercase for proper matching
+  const normalizedType = type.toLowerCase();
+
   // Serialize the records to ensure they can be passed to client component
   const serializedRecords = records.map(serializeRecord);
 
-  return (
-    <ManDetailClient records={serializedRecords} />
-  );
+  if (!serializedRecords || serializedRecords.length === 0) {
+    return null;
+  }
+
+  // Separate records by type
+  const sotRecords = serializedRecords.filter(isSotOrVflRecord);
+  const talkRecords = serializedRecords.filter(isTalkRecord);
+  const toolboxRecords = serializedRecords.filter(isToolboxRecord);
+  const alertRecords = serializedRecords.filter(isAlertRecord);
+  const meetingRecords = serializedRecords.filter(isMeetingRecord);
+  const trainingRecords = serializedRecords.filter(isTrainingRecord);
+
+  // Render only the specific type based on the normalized type parameter
+  if (normalizedType === "talk") {
+    return talkRecords.length > 0 ? (
+      <TalkManDetailClient records={talkRecords} />
+    ) : null;
+  }
+
+  if (normalizedType === "sot") {
+    return sotRecords.length > 0 ? (
+      <SotManDetailClient records={sotRecords} />
+    ) : null;
+  }
+
+  if (normalizedType === "toolbox") {
+    return toolboxRecords.length > 0 ? (
+      <ToolboxManDetailClient records={toolboxRecords} />
+    ) : null;
+  }
+
+  if (normalizedType === "alert") {
+    return alertRecords.length > 0 ? (
+      <AlertManDetailClient records={alertRecords} />
+    ) : null;
+  }
+
+  if (normalizedType === "meeting") {
+    return meetingRecords.length > 0 ? (
+      <MeetingManDetailClient records={meetingRecords} />
+    ) : null;
+  }
+
+  if (normalizedType === "training") {
+    return trainingRecords.length > 0 ? (
+      <TrainingManDetailClient records={trainingRecords} />
+    ) : null;
+  }
+
+  // Fallback: if type doesn't match, return null
+  return null;
 }

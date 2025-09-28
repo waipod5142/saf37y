@@ -161,6 +161,7 @@ export default function ManFormSOT({ bu, type, id, isInDialog = false }: ManForm
 
           // Scroll to top and optionally reload
           window.scrollTo(0, 0);
+          window.location.reload();
         } else {
           toast.error(result.error || "Failed to submit SOT/VFL report");
         }

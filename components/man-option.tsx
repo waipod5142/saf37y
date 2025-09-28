@@ -34,18 +34,6 @@ export default function ManOption({ bu, type, id }: ManOptionProps) {
           -- ตัวเลือกทั้งหมด --
         </option>
         <option
-          value={`/Man/${bu}/Coupon/${id}`}
-          className="odd:bg-gray-100 even:bg-gray-200"
-        >
-          คูปองอาหาร / Food Coupon
-        </option>
-        <option
-          value={`/Man/${bu}/Meeting/${id}`}
-          className="odd:bg-gray-100 even:bg-gray-200"
-        >
-          เซฟตี้มีตติ้ง / Safety Meeting
-        </option>
-        <option
           value={`/Man/${bu}/Sot/${id}`}
           className="odd:bg-gray-100 even:bg-gray-200"
         >
@@ -58,22 +46,34 @@ export default function ManOption({ bu, type, id }: ManOptionProps) {
           การพูดคุยกับพนักงาน / Talk
         </option>
         <option
-          value={`/Man/${bu}/Training/${id}`}
-          className="odd:bg-gray-100 even:bg-gray-200"
-        >
-          ประวัติการฝึกอบรม Training Course
-        </option>
-        <option
           value={`/Man/${bu}/Toolbox/${id}`}
           className="odd:bg-gray-100 even:bg-gray-200"
         >
           การพูดคุยด้านความปลอดภัย Safety / Toolbox Talk
         </option>
         <option
+          value={`/Man/${bu}/Coupon/${id}`}
+          className="odd:bg-gray-100 even:bg-gray-200"
+        >
+          คูปองอาหาร / Food Coupon
+        </option>
+        <option
+          value={`/Man/${bu}/Meeting/${id}`}
+          className="odd:bg-gray-100 even:bg-gray-200"
+        >
+          เซฟตี้มีตติ้ง / Safety Meeting
+        </option>
+        <option
           value={`/Man/${bu}/Alert/${id}`}
           className="odd:bg-gray-100 even:bg-gray-200"
         >
           การแจ้งเตือนประกาศด้านความปลอดภัย / Safety Alert
+        </option>
+        <option
+          value={`/Man/${bu}/Training/${id}`}
+          className="odd:bg-gray-100 even:bg-gray-200"
+        >
+          ประวัติการฝึกอบรม Training Course
         </option>
       </select>
     </div>

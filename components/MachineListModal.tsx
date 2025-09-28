@@ -195,7 +195,10 @@ export function MachineListModal({
 
             {loading ? (
               <div className="flex justify-center items-center py-8">
-                <div className="text-gray-600">Loading machines...</div>
+                <div className="flex items-center gap-3">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-600"></div>
+                  <div className="text-gray-600">Loading machines...</div>
+                </div>
               </div>
             ) : filteredMachines.length === 0 ? (
               <div className="flex justify-center items-center py-8">

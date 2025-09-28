@@ -288,7 +288,7 @@ export default function DashboardPage() {
     <div className="container mx-auto p-6">
       <Breadcrumbs
         items={[
-          { label: "Dashboard", href: "/dashboardbysite" },
+          { label: "Dashboard by site", href: "/dashboardbysite" },
           { label: vocabularyLoading ? "Loading..." : (buInfo.name || "Unknown"), href: `/dashboard/${bu}` },
           { label: site.toUpperCase() },
         ]}

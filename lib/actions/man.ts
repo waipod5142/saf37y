@@ -2,6 +2,7 @@
 
 import { firestore } from "@/firebase/server";
 import { FieldValue } from "firebase-admin/firestore";
+import admin from "firebase-admin";
 
 // Utility function to remove undefined values from an object
 function removeUndefinedValues(obj: Record<string, any>): Record<string, any> {
@@ -50,25 +51,50 @@ export async function submitManForm(
   formData: Record<string, any>
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    // Create the man SOT/VFL inspection record
-    const manRecord = {
-      id: formData.id,
+    // Create the base man record with common fields
+    const baseRecord = {
+      id: formData.id, // Staff ID (user input)
+      alertNo: formData.alertNo, // Alert number (from URL parameter)
       bu: formData.bu,
       type: formData.type,
-      reportingType: formData.reportingType, // 'sot' or 'vfl'
-      area: formData.area,
-      observerName: formData.observerName,
-      safetyIssues: formData.safetyIssues || [],
-      positiveReinforcement: formData.positiveReinforcement,
-      safetyCare: formData.safetyCare,
-      riskLevel: formData.riskLevel,
-      processComments: formData.processComments,
-      remarks: formData.remarks,
       images: formData.images || [],
       timestamp: FieldValue.serverTimestamp(),
       createdAt: FieldValue.serverTimestamp(),
-      ...formData, // Include any additional form fields
+      remark: formData.remark, // Optional remarks field (common to all forms)
     };
+
+    // Handle different form types
+    let manRecord;
+
+    if (formData.type === 'sot' || formData.type === 'vfl') {
+      // SOT/VFL-specific fields
+      manRecord = {
+        ...baseRecord,
+        reportingType: formData.reportingType, // 'sot' or 'vfl'
+        area: formData.area,
+        observerName: formData.observerName,
+        safetyIssues: formData.safetyIssues || [],
+        positiveReinforcement: formData.positiveReinforcement,
+        safetyCare: formData.safetyCare,
+        riskLevel: formData.riskLevel,
+        processComments: formData.processComments,
+        remarks: formData.remarks,
+      };
+    } else if (formData.type === 'alert') {
+      // Alert-specific fields
+      manRecord = {
+        ...baseRecord,
+        typeAccident: formData.typeAccident, // Selected accident type
+        learn: formData.learn, // Lesson learned
+        acknowledge: formData.acknowledge, // Understanding acknowledgement (yes/no)
+      };
+    } else {
+      // Default case - include all form data
+      manRecord = {
+        ...baseRecord,
+        ...formData, // Include any additional form fields
+      };
+    }
 
     // Remove undefined values before saving to Firestore
     const cleanedRecord = removeUndefinedValues(manRecord);
@@ -78,17 +104,43 @@ export async function submitManForm(
       .collection("mantr")
       .add(cleanedRecord);
 
-    console.log("Man SOT/VFL record saved with ID:", docRef.id);
+    console.log("Man record saved with ID:", docRef.id);
 
     return {
       success: true,
     };
   } catch (error) {
-    console.error("Error saving man SOT/VFL record:", error);
+    console.error("Error saving man record:", error);
     return {
       success: false,
-      error: `Failed to save man SOT/VFL record: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      error: `Failed to save man record: ${error instanceof Error ? error.message : 'Unknown error'}`,
     };
+  }
+}
+
+// Helper function to extract storage path from Firebase Storage URL
+function extractStoragePathFromUrl(url: string): string | null {
+  try {
+    // Handle full Firebase Storage URLs
+    if (url.includes('firebasestorage.googleapis.com')) {
+      // Extract path between '/o/' and '?alt=media' or '?alt=...'
+      const match = url.match(/\/o\/([^?]+)/);
+      if (match) {
+        // Decode the URL-encoded path
+        return decodeURIComponent(match[1]);
+      }
+    }
+
+    // If it's already a storage path (not a full URL), return as-is
+    if (!url.startsWith('http')) {
+      return url;
+    }
+
+    console.warn(`Could not extract storage path from URL: ${url}`);
+    return null;
+  } catch (error) {
+    console.error(`Error extracting storage path from URL: ${url}`, error);
+    return null;
   }
 }
 
@@ -96,13 +148,68 @@ export async function deleteManRecord(
   recordId: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    await firestore
-      .collection("mantr")
-      .doc(recordId)
-      .delete();
+    // First, fetch the man record to get the images array
+    const docRef = firestore.collection("mantr").doc(recordId);
+    const docSnapshot = await docRef.get();
 
-    console.log(`Man record deleted with ID: ${recordId}`);
-    return { success: true };
+    if (!docSnapshot.exists) {
+      return {
+        success: false,
+        error: "Man record not found",
+      };
+    }
+
+    const recordData = docSnapshot.data();
+
+    // Collect all image URLs from the record
+    const allImageUrls: string[] = [];
+
+    // Add images from the images array
+    if (recordData?.images && recordData.images.length > 0) {
+      allImageUrls.push(...recordData.images);
+    }
+
+    // Delete all collected images from Firebase Storage
+    if (allImageUrls.length > 0) {
+      try {
+        const bucket = admin.storage().bucket("sccc-inseesafety-prod.firebasestorage.app");
+
+        // Delete all images in parallel
+        const deletePromises = allImageUrls.map(async (imageUrl: string) => {
+          try {
+            // Extract storage path from the URL
+            const storagePath = extractStoragePathFromUrl(imageUrl);
+            if (!storagePath) {
+              console.warn(`Skipping deletion - could not extract storage path from: ${imageUrl}`);
+              return;
+            }
+
+            const file = bucket.file(storagePath);
+            await file.delete();
+            console.log(`Successfully deleted image: ${storagePath}`);
+          } catch (imageError) {
+            console.error(`Failed to delete image ${imageUrl}:`, imageError);
+            // Don't throw here - we want to continue deleting other images
+          }
+        });
+
+        await Promise.allSettled(deletePromises);
+        console.log(`Attempted to delete ${allImageUrls.length} total images from Storage`);
+
+      } catch (storageError) {
+        console.error("Error during image deletion:", storageError);
+        // Continue with document deletion even if image deletion fails
+      }
+    }
+
+    // Delete the man record from the mantr collection
+    await docRef.delete();
+
+    console.log("Man record deleted with ID:", recordId);
+
+    return {
+      success: true,
+    };
   } catch (error) {
     console.error("Error deleting man record:", error);
     return {

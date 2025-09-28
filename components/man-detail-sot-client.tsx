@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { ManRecord } from "@/types/man";
+import { SotManRecord } from "@/types/man";
 import { deleteManRecord } from "@/lib/actions/man";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,8 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Calendar, MapPin, User, AlertTriangle, CheckCircle, MessageSquare, FileText, Camera, ToggleLeftIcon, ToggleRightIcon, Trash2Icon } from "lucide-react";
 
-interface ManDetailClientProps {
-  records: ManRecord[];
+interface SotManDetailClientProps {
+  records: SotManRecord[];
 }
 
 // Safety issue categories with colors matching the form
@@ -61,7 +61,7 @@ const formatDate = (date: Date | string) => {
   });
 };
 
-export default function ManDetailClient({ records }: ManDetailClientProps) {
+export default function SotManDetailClient({ records }: SotManDetailClientProps) {
   const [showAllRecords, setShowAllRecords] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
@@ -84,7 +84,7 @@ export default function ManDetailClient({ records }: ManDetailClientProps) {
   };
 
   // Helper function to check if record is within 5-minute delete window
-  const isWithinDeleteTimeWindow = (record: ManRecord) => {
+  const isWithinDeleteTimeWindow = (record: SotManRecord) => {
     const recordTimestamp = record.timestamp || record.createdAt;
     if (!recordTimestamp) return false;
 
@@ -240,7 +240,7 @@ export default function ManDetailClient({ records }: ManDetailClientProps) {
                     <div className="flex items-center gap-2">
                       <User className="h-5 w-5 text-gray-500" />
                       <div>
-                        <p className="font-semibold text-gray-700">ผู้สังเกตการณ์ / Observer</p>
+                        <p className="font-semibold text-gray-700">ชื่อผู้ที่สนทนาด้วย / Observee</p>
                         <p className="text-gray-600">{record.talkwith}</p>
                       </div>
                     </div>
