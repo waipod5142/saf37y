@@ -99,13 +99,13 @@ export default function ManHeader({ bu, type, id }: ManHeaderProps) {
                   <span className="text-gray-900">{employee.empId}</span>
                 </div>
               )}
-
-              {employee.idCard && (
+          {/* B ask to remove */}
+              {/* {employee.idCard && (
                 <div className="flex flex-col">
                   <span className="text-gray-500 font-medium">ID Card</span>
                   <span className="text-gray-900">{employee.idCard}</span>
                 </div>
-              )}
+              )} */}
 
               {employee.prefix && (
                 <div className="flex flex-col">

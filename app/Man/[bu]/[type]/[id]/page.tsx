@@ -7,6 +7,7 @@ import ManFormTalk from "@/components/man-form-talk";
 import ManFormToolbox from "@/components/man-form-toolbox";
 import ManFormToken from "@/components/man-form-token";
 import ManTypeBadge from "@/components/man-type-badge";
+import ChangeUserButton from "@/components/change-user-button";
 
 export default async function MachinePage({ 
   params 
@@ -25,6 +26,7 @@ export default async function MachinePage({
 
   return (
     <div className="max-w-4xl mx-auto p-2">
+      <ChangeUserButton />
       <ManOption bu={normalizedBu} type={decodedType} id={decodedId} />
       <div className="mb-4">
         <ManTypeBadge type={decodedType} className="text-sm" />
