@@ -99,7 +99,7 @@ export default function TrainingManDetailClient({ records }: TrainingManDetailCl
 
       const now = new Date();
       const timeDifference = now.getTime() - recordDate.getTime();
-      const fiveMinutesInMs = 500 * 60 * 1000; // 5 minutes in milliseconds
+      const fiveMinutesInMs = 5 * 60 * 1000; // 5 minutes in milliseconds
 
       return timeDifference <= fiveMinutesInMs;
     } catch (error) {

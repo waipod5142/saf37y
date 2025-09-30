@@ -46,20 +46,20 @@ export default function RootLayout({
             <ul className="hidden md:flex gap-6 items-center">
               <li>
                 <Link
-                  href="/dashboard"
+                  href="/kpi"
                   className="uppercase tracking-widest hover:underline"
                 >
                   Dashboard by country
                 </Link>
               </li>
-              <li>
+              {/* <li>
                 <Link
                   href="/dashboardbysite"
                   className="uppercase tracking-widest hover:underline"
                 >
                   Dashboard by Site
                 </Link>
-              </li>
+              </li> */}
               <li>
                 <Link
                   href="/transaction"
