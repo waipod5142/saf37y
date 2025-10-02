@@ -33,7 +33,7 @@ export default function MachineHeaderClient({ bu, type, id }: MachineHeaderClien
       try {
         setLoading(true);
         const result = await getMachineByIdAction(bu, normalizeTypeForDisplay(type), id);
-        
+
         if (result.success && result.machine) {
           setMachine(result.machine);
         } else {

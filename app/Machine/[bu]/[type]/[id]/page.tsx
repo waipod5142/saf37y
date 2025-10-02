@@ -1,6 +1,3 @@
-import { Button } from "@/components/ui/button";
-import { ArrowLeftIcon } from "lucide-react";
-import Link from "next/link";
 import MachineTitle from "@/components/machine-title";
 import MachineHeader from "@/components/machine-header";
 import MachineDetail from "@/components/machine-detail";
@@ -9,13 +6,13 @@ import MachineForm4photo from "@/components/machine-form4photo";
 import MachineOption from "@/components/machine-option";
 import { normalizeBuCode } from "@/lib/utils";
 
-export default async function MachinePage({ 
-  params 
-}: { 
-  params: Promise<{ bu: string; type: string; id: string }> 
+export default async function MachinePage({
+  params
+}: {
+  params: Promise<{ bu: string; type: string; id: string }>
 }) {
   const { bu, type, id } = await params;
-  
+
   // Decode URL parameters to handle special characters (including Thai characters)
   const decodedBu = decodeURIComponent(bu);
   const decodedType = decodeURIComponent(type);

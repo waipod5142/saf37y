@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useForm, FieldValues, SubmitHandler } from "react-hook-form";
 import { getMachineQuestions } from "@/lib/actions/forms";
 import { getVocabulary } from "@/lib/actions/vocabulary";
+import { getMachineByIdAction } from "@/lib/actions/machines";
 import { Vocabulary, Choice } from "@/types/vocabulary";
 import { Button } from "./ui/button";
 import { Input } from "@/components/ui/input";
@@ -46,6 +47,7 @@ export default function MachineForm4photo({ bu, type, id }: MachineForm4photoPro
   const [isLoadingQuestions, setIsLoadingQuestions] = useState<boolean>(true);
   const [vocabulary, setVocabulary] = useState<Vocabulary | null>(null);
   const [isLoadingVocabulary, setIsLoadingVocabulary] = useState<boolean>(true);
+  const [machineSite, setMachineSite] = useState<string | undefined>(undefined);
 
   // Multi-image states for each direction
   const [frontImages, setFrontImages] = useState<ImageUpload[]>([]);
@@ -70,10 +72,11 @@ export default function MachineForm4photo({ bu, type, id }: MachineForm4photoPro
         setIsLoadingQuestions(true);
         setIsLoadingVocabulary(true);
 
-        // Fetch title from forms collection and vocabulary in parallel
-        const [questionsResult, vocabularyResult] = await Promise.all([
+        // Fetch title from forms collection, vocabulary, and machine data in parallel
+        const [questionsResult, vocabularyResult, machineResult] = await Promise.all([
           getMachineQuestions(bu, type),
-          getVocabulary(bu)
+          getVocabulary(bu),
+          getMachineByIdAction(bu, type, id)
         ]);
 
         if (questionsResult.success) {
@@ -90,6 +93,11 @@ export default function MachineForm4photo({ bu, type, id }: MachineForm4photoPro
 
         if (vocabularyResult.success && vocabularyResult.vocabulary) {
           setVocabulary(vocabularyResult.vocabulary);
+        }
+
+        // Handle machine data (for site field)
+        if (machineResult.success && machineResult.machine) {
+          setMachineSite(machineResult.machine.site);
         }
       } catch (error) {
         console.error("Error loading form data:", error);
@@ -170,6 +178,7 @@ export default function MachineForm4photo({ bu, type, id }: MachineForm4photoPro
         bu,
         type: type.toLowerCase(),
         id,
+        site: machineSite || undefined,
         timestamp: new Date(),
         createdAt: new Date(),
         latitude: latitude || undefined,

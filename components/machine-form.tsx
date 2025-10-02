@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useForm, FieldValues, SubmitHandler } from "react-hook-form";
 import { getMachineQuestions } from "@/lib/actions/forms";
 import { getVocabulary } from "@/lib/actions/vocabulary";
+import { getMachineByIdAction } from "@/lib/actions/machines";
 import { MachineItem, quarterlyEquipment } from "@/lib/machine-types";
 import { Vocabulary, Choice } from "@/types/vocabulary";
 import RadioButtonGroup from "@/components/ui/radio-button-group";
@@ -53,6 +54,7 @@ export default function MachineForm({ bu, type, id, isInDialog = false }: Machin
   const [vocabulary, setVocabulary] = useState<Vocabulary | null>(null);
   const [isLoadingVocabulary, setIsLoadingVocabulary] = useState<boolean>(true);
   const [isLoadingQuestions, setIsLoadingQuestions] = useState<boolean>(true);
+  const [machineSite, setMachineSite] = useState<string | undefined>(undefined);
   const [selectedValues, setSelectedValues] = useState<{
     [key: string]: string | null;
   }>({});
@@ -75,13 +77,14 @@ export default function MachineForm({ bu, type, id, isInDialog = false }: Machin
       try {
         setIsLoadingQuestions(true);
         setIsLoadingVocabulary(true);
-        
-        // Fetch questions and vocabulary in parallel
-        const [questionsResult, vocabularyResult] = await Promise.all([
+
+        // Fetch questions, vocabulary, and machine data in parallel
+        const [questionsResult, vocabularyResult, machineResult] = await Promise.all([
           getMachineQuestions(bu, type),
-          getVocabulary(bu)
+          getVocabulary(bu),
+          getMachineByIdAction(bu, type, id)
         ]);
-        
+
         // Handle questions
         if (questionsResult.success && questionsResult.questions) {
           setQuestions(questionsResult.questions);
@@ -96,13 +99,18 @@ export default function MachineForm({ bu, type, id, isInDialog = false }: Machin
             toast.error(questionsResult.error);
           }
         }
-        
+
         // Handle vocabulary
         if (vocabularyResult.success && vocabularyResult.vocabulary) {
           setVocabulary(vocabularyResult.vocabulary);
         } else {
           console.warn("No vocabulary found for business unit:", bu);
           setVocabulary(null);
+        }
+
+        // Handle machine data (for site field)
+        if (machineResult.success && machineResult.machine) {
+          setMachineSite(machineResult.machine.site);
         }
       } catch (error) {
         console.error("Error loading data:", error);
@@ -167,6 +175,7 @@ export default function MachineForm({ bu, type, id, isInDialog = false }: Machin
         bu,
         type: type.toLowerCase(),
         id,
+        site: machineSite || undefined,
         // Include location data
         latitude: latitude || undefined,
         longitude: longitude || undefined,
