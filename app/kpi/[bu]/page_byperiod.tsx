@@ -15,22 +15,17 @@ import {
   AlertCircle,
   Calendar,
   Eye,
-  CheckCircle2,
-  AlertTriangle
+  CheckCircle2
 } from "lucide-react";
 
 interface InspectionData {
   inspected: number;
-  defected: number;
   total: number;
   percentage: number;
-  defectPercentage: number;
   bySite?: Record<string, {
     inspected: number;
-    defected: number;
     total: number;
     percentage: number;
-    defectPercentage: number;
   }>;
 }
 
@@ -100,37 +95,11 @@ function getPercentageBadgeColor(percentage: number): string {
 interface InspectionTableProps {
   data: KPIInspectionData;
   frequency: string;
-  showDefects: boolean;
   bu: string;
+  onCellClick: (bu: string, site: string, type: string, hasData: boolean) => void;
 }
 
-function InspectionTable({ data, frequency, showDefects, bu }: InspectionTableProps) {
-  const [modalState, setModalState] = useState<{
-    isOpen: boolean;
-    bu: string;
-    site: string;
-    type: string;
-  }>({
-    isOpen: false,
-    bu: "",
-    site: "",
-    type: "",
-  });
-
-  const handleCellClick = (bu: string, site: string, type: string, hasData: boolean) => {
-    if (hasData) {
-      setModalState({
-        isOpen: true,
-        bu,
-        site,
-        type,
-      });
-    }
-  };
-
-  const handleModalClose = () => {
-    setModalState(prev => ({ ...prev, isOpen: false }));
-  };
+function InspectionTable({ data, frequency, bu, onCellClick }: InspectionTableProps) {
   if (!data.success) {
     return (
       <div className="text-center py-8">
@@ -155,7 +124,7 @@ function InspectionTable({ data, frequency, showDefects, bu }: InspectionTablePr
   return (
     <div className="space-y-6">
       {/* Summary Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
@@ -163,18 +132,6 @@ function InspectionTable({ data, frequency, showDefects, bu }: InspectionTablePr
               <div>
                 <p className="text-sm text-gray-600">Total Inspected</p>
                 <p className="text-2xl font-bold">{total.inspected}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-red-600" />
-              <div>
-                <p className="text-sm text-gray-600">Total Defects</p>
-                <p className="text-2xl font-bold text-red-600">{total.defected}</p>
-                <p className="text-xs text-gray-500">{total.defectPercentage}% of inspected</p>
               </div>
             </div>
           </CardContent>
@@ -246,42 +203,24 @@ function InspectionTable({ data, frequency, showDefects, bu }: InspectionTablePr
                           </td>
                         );
                       }
-                      const hasData = siteData.total > 0;
                       return (
                         <td key={site} className="text-center p-3">
-                          <div
-                            className={`flex flex-col items-center gap-1 ${hasData ? 'cursor-pointer' : ''}`}
-                            onClick={() => handleCellClick(bu, site, type, hasData)}
+                          <Badge
+                            className={`text-xs font-medium cursor-pointer hover:opacity-80 transition-opacity ${getPercentageBadgeColor(siteData.percentage)}`}
+                            onClick={() => onCellClick(bu, site, type, true)}
                           >
-                            <Badge
-                              className={`text-xs font-medium ${hasData ? 'hover:opacity-80 transition-opacity' : ''} ${getPercentageBadgeColor(siteData.percentage)}`}
-                            >
-                              {siteData.inspected} / {siteData.total} ({siteData.percentage}%)
-                            </Badge>
-                            {showDefects && siteData.defected > 0 && (
-                              <Badge variant="destructive" className="text-xs">
-                                <AlertTriangle className="h-3 w-3 mr-1" />
-                                {siteData.defected} defect{siteData.defected !== 1 ? 's' : ''} ({siteData.defectPercentage}%)
-                              </Badge>
-                            )}
-                          </div>
+                            {siteData.inspected} / {siteData.total} ({siteData.percentage}%)
+                          </Badge>
                         </td>
                       );
                     })}
                     <td className="text-center p-3">
-                      <div className="flex flex-col items-center gap-1">
-                        <Badge
-                          className={`font-semibold ${getPercentageBadgeColor(equipment.percentage)}`}
-                        >
-                          {equipment.inspected} / {equipment.total} ({equipment.percentage}%)
-                        </Badge>
-                        {showDefects && equipment.defected > 0 && (
-                          <Badge variant="destructive" className="text-xs">
-                            <AlertTriangle className="h-3 w-3 mr-1" />
-                            {equipment.defected} defect{equipment.defected !== 1 ? 's' : ''} ({equipment.defectPercentage}%)
-                          </Badge>
-                        )}
-                      </div>
+                      <Badge
+                        className={`font-semibold cursor-pointer hover:opacity-80 transition-opacity ${getPercentageBadgeColor(equipment.percentage)}`}
+                        onClick={() => onCellClick(bu, "ALL", type, equipment.total > 0)}
+                      >
+                        {equipment.inspected} / {equipment.total} ({equipment.percentage}%)
+                      </Badge>
                     </td>
                   </tr>
                 ))}
@@ -299,36 +238,22 @@ function InspectionTable({ data, frequency, showDefects, bu }: InspectionTablePr
                     }
                     return (
                       <td key={site} className="text-center p-3">
-                        <div className="flex flex-col items-center gap-1">
-                          <Badge
-                            className={`font-bold ${getPercentageBadgeColor(siteData.percentage)}`}
-                          >
-                            {siteData.inspected} / {siteData.total} ({siteData.percentage}%)
-                          </Badge>
-                          {showDefects && siteData.defected > 0 && (
-                            <Badge variant="destructive" className="text-xs font-bold">
-                              <AlertTriangle className="h-3 w-3 mr-1" />
-                              {siteData.defected} defect{siteData.defected !== 1 ? 's' : ''} ({siteData.defectPercentage}%)
-                            </Badge>
-                          )}
-                        </div>
+                        <Badge
+                          className={`font-bold cursor-pointer hover:opacity-80 transition-opacity ${getPercentageBadgeColor(siteData.percentage)}`}
+                          onClick={() => onCellClick(bu, site, "ALL", siteData.total > 0)}
+                        >
+                          {siteData.inspected} / {siteData.total} ({siteData.percentage}%)
+                        </Badge>
                       </td>
                     );
                   })}
                   <td className="text-center p-3">
-                    <div className="flex flex-col items-center gap-1">
-                      <Badge
-                        className={`font-bold text-base px-3 py-1 ${getPercentageBadgeColor(total.percentage)}`}
-                      >
-                        {total.inspected} / {total.total} ({total.percentage}%)
-                      </Badge>
-                      {showDefects && total.defected > 0 && (
-                        <Badge variant="destructive" className="text-sm font-bold">
-                          <AlertTriangle className="h-4 w-4 mr-1" />
-                          {total.defected} defect{total.defected !== 1 ? 's' : ''} ({total.defectPercentage}%)
-                        </Badge>
-                      )}
-                    </div>
+                    <Badge
+                      className={`font-bold text-base px-3 py-1 cursor-pointer hover:opacity-80 transition-opacity ${getPercentageBadgeColor(total.percentage)}`}
+                      onClick={() => onCellClick(bu, "ALL", "ALL", total.total > 0)}
+                    >
+                      {total.inspected} / {total.total} ({total.percentage}%)
+                    </Badge>
                   </td>
                 </tr>
               </tbody>
@@ -336,16 +261,6 @@ function InspectionTable({ data, frequency, showDefects, bu }: InspectionTablePr
           </div>
         </CardContent>
       </Card>
-
-      <MachineListModal
-        isOpen={modalState.isOpen}
-        onClose={handleModalClose}
-        bu={modalState.bu}
-        site={modalState.site}
-        type={modalState.type}
-        siteName={modalState.site.toUpperCase()}
-        typeName={modalState.type.charAt(0).toUpperCase() + modalState.type.slice(1)}
-      />
     </div>
   );
 }
@@ -359,10 +274,27 @@ export default function BUKPIPage() {
   const [quarterlyData, setQuarterlyData] = useState<KPIInspectionData | null>(null);
   const [annualData, setAnnualData] = useState<KPIInspectionData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadingStates, setLoadingStates] = useState({
+    daily: false,
+    monthly: false,
+    quarterly: false,
+    annual: false
+  });
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [activeTab, setActiveTab] = useState("daily");
   const [showDefects, setShowDefects] = useState(false);
+  const [modalState, setModalState] = useState<{
+    isOpen: boolean;
+    bu: string;
+    site: string;
+    type: string;
+  }>({
+    isOpen: false,
+    bu: "",
+    site: "",
+    type: "",
+  });
 
   const fetchData = async (frequency: string) => {
     try {
@@ -379,39 +311,105 @@ export default function BUKPIPage() {
     }
   };
 
-  const fetchAllData = async () => {
+  const fetchDailyData = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      const [daily, monthly, quarterly, annual] = await Promise.all([
-        fetchData('daily'),
-        fetchData('monthly'),
-        fetchData('quarterly'),
-        fetchData('annual')
-      ]);
-
+      const daily = await fetchData('daily');
       setDailyData(daily);
-      setMonthlyData(monthly);
-      setQuarterlyData(quarterly);
-      setAnnualData(annual);
       setLastUpdated(new Date());
     } catch (err) {
-      console.error('Error fetching BU KPI data:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load data');
+      console.error('Error fetching daily KPI data:', err);
+      setError(err instanceof Error ? err.message : 'Failed to load daily data');
     } finally {
       setLoading(false);
     }
   };
 
+  const fetchFrequencyData = async (frequency: 'monthly' | 'quarterly' | 'annual') => {
+    try {
+      setLoadingStates(prev => ({ ...prev, [frequency]: true }));
+
+      const data = await fetchData(frequency);
+
+      switch (frequency) {
+        case 'monthly':
+          setMonthlyData(data);
+          break;
+        case 'quarterly':
+          setQuarterlyData(data);
+          break;
+        case 'annual':
+          setAnnualData(data);
+          break;
+      }
+    } catch (err) {
+      console.error(`Error fetching ${frequency} KPI data:`, err);
+    } finally {
+      setLoadingStates(prev => ({ ...prev, [frequency]: false }));
+    }
+  };
+
+  const refreshActiveTab = async () => {
+    try {
+      if (activeTab === 'daily') {
+        setLoading(true);
+        const daily = await fetchData('daily');
+        setDailyData(daily);
+        setLastUpdated(new Date());
+        setLoading(false);
+      } else {
+        await fetchFrequencyData(activeTab as 'monthly' | 'quarterly' | 'annual');
+      }
+    } catch (err) {
+      console.error(`Error refreshing ${activeTab} data:`, err);
+      if (activeTab === 'daily') {
+        setError(err instanceof Error ? err.message : 'Failed to refresh data');
+        setLoading(false);
+      }
+    }
+  };
+
   useEffect(() => {
     if (bu) {
-      fetchAllData();
-      // Refresh data every 5 minutes
-      const interval = setInterval(fetchAllData, 5 * 60 * 1000);
-      return () => clearInterval(interval);
+      fetchDailyData();
     }
   }, [bu]);
+
+  const handleTabChange = (newTab: string) => {
+    setActiveTab(newTab);
+
+    // Fetch data on-demand when switching tabs
+    if (newTab === 'monthly' && !monthlyData) {
+      fetchFrequencyData('monthly');
+    } else if (newTab === 'quarterly' && !quarterlyData) {
+      fetchFrequencyData('quarterly');
+    } else if (newTab === 'annual' && !annualData) {
+      fetchFrequencyData('annual');
+    }
+  };
+
+  const handleCellClick = (bu: string, site: string, type: string, hasData: boolean) => {
+    console.log("=== KPI Cell Click ===");
+    console.log("Click parameters:", { bu, site, type, hasData });
+
+    if (hasData) {
+      console.log("Opening modal with state:", { bu, site, type });
+      setModalState({
+        isOpen: true,
+        bu,
+        site,
+        type,
+      });
+    } else {
+      console.log("Cell click ignored - no data available");
+    }
+  };
+
+  const handleModalClose = () => {
+    setModalState(prev => ({ ...prev, isOpen: false }));
+  };
 
   const buName = BU_NAMES[bu?.toLowerCase()] || bu?.toUpperCase();
   const buFlag = BU_FLAGS[bu?.toLowerCase()] || "🏢";
@@ -473,7 +471,7 @@ export default function BUKPIPage() {
             <AlertCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">Unable to Load {buName} Inspection Data</h3>
             <p className="text-gray-600 mb-6">{error}</p>
-            <Button onClick={fetchAllData} className="flex items-center gap-2">
+            <Button onClick={fetchDailyData} className="flex items-center gap-2">
               <RefreshCw className="h-4 w-4" />
               Retry
             </Button>
@@ -511,13 +509,13 @@ export default function BUKPIPage() {
               </div>
             )}
             <Button
-              onClick={fetchAllData}
+              onClick={refreshActiveTab}
               variant="outline"
               size="sm"
-              disabled={loading}
+              disabled={loading || loadingStates[activeTab as keyof typeof loadingStates]}
               className="flex items-center gap-2"
             >
-              <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`h-4 w-4 ${(loading || loadingStates[activeTab as keyof typeof loadingStates]) ? 'animate-spin' : ''}`} />
               Refresh
             </Button>
           </div>
@@ -572,7 +570,7 @@ export default function BUKPIPage() {
       </Card>
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="daily" className="font-semibold">DAILY</TabsTrigger>
           <TabsTrigger value="monthly" className="font-semibold">MONTHLY</TabsTrigger>
@@ -581,21 +579,64 @@ export default function BUKPIPage() {
         </TabsList>
 
         <TabsContent value="daily">
-          {dailyData && <InspectionTable data={dailyData} frequency="daily" showDefects={showDefects} bu={bu} />}
+          {dailyData && <InspectionTable data={dailyData} frequency="daily" bu={bu} onCellClick={handleCellClick} />}
         </TabsContent>
 
         <TabsContent value="monthly">
-          {monthlyData && <InspectionTable data={monthlyData} frequency="monthly" showDefects={showDefects} bu={bu} />}
+          {loadingStates.monthly ? (
+            <div className="text-center py-8">
+              <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4 text-blue-500" />
+              <p className="text-gray-600">Loading monthly data...</p>
+            </div>
+          ) : monthlyData ? (
+            <InspectionTable data={monthlyData} frequency="monthly" bu={bu} onCellClick={handleCellClick} />
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-gray-600">Click to load monthly data</p>
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="quarterly">
-          {quarterlyData && <InspectionTable data={quarterlyData} frequency="quarterly" showDefects={showDefects} bu={bu} />}
+          {loadingStates.quarterly ? (
+            <div className="text-center py-8">
+              <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4 text-blue-500" />
+              <p className="text-gray-600">Loading quarterly data...</p>
+            </div>
+          ) : quarterlyData ? (
+            <InspectionTable data={quarterlyData} frequency="quarterly" bu={bu} onCellClick={handleCellClick} />
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-gray-600">Click to load quarterly data</p>
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="annual">
-          {annualData && <InspectionTable data={annualData} frequency="annual" showDefects={showDefects} bu={bu} />}
+          {loadingStates.annual ? (
+            <div className="text-center py-8">
+              <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4 text-blue-500" />
+              <p className="text-gray-600">Loading annual data...</p>
+            </div>
+          ) : annualData ? (
+            <InspectionTable data={annualData} frequency="annual" bu={bu} onCellClick={handleCellClick} />
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-gray-600">Click to load annual data</p>
+            </div>
+          )}
         </TabsContent>
       </Tabs>
+
+      <MachineListModal
+        isOpen={modalState.isOpen}
+        onClose={handleModalClose}
+        bu={modalState.bu}
+        site={modalState.site}
+        type={modalState.type}
+        siteName={modalState.site.toUpperCase()}
+        typeName={modalState.type.charAt(0).toUpperCase() + modalState.type.slice(1)}
+      />
     </div>
   );
 }

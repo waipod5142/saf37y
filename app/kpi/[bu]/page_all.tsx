@@ -8,29 +8,23 @@ import { Breadcrumbs } from "@/components/ui/breadcrumb";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MachineListModal } from "@/components/MachineListModal";
 import {
   ArrowLeft,
   RefreshCw,
   AlertCircle,
   Calendar,
   Eye,
-  CheckCircle2,
-  AlertTriangle
+  CheckCircle2
 } from "lucide-react";
 
 interface InspectionData {
   inspected: number;
-  defected: number;
   total: number;
   percentage: number;
-  defectPercentage: number;
   bySite?: Record<string, {
     inspected: number;
-    defected: number;
     total: number;
     percentage: number;
-    defectPercentage: number;
   }>;
 }
 
@@ -100,37 +94,9 @@ function getPercentageBadgeColor(percentage: number): string {
 interface InspectionTableProps {
   data: KPIInspectionData;
   frequency: string;
-  showDefects: boolean;
-  bu: string;
 }
 
-function InspectionTable({ data, frequency, showDefects, bu }: InspectionTableProps) {
-  const [modalState, setModalState] = useState<{
-    isOpen: boolean;
-    bu: string;
-    site: string;
-    type: string;
-  }>({
-    isOpen: false,
-    bu: "",
-    site: "",
-    type: "",
-  });
-
-  const handleCellClick = (bu: string, site: string, type: string, hasData: boolean) => {
-    if (hasData) {
-      setModalState({
-        isOpen: true,
-        bu,
-        site,
-        type,
-      });
-    }
-  };
-
-  const handleModalClose = () => {
-    setModalState(prev => ({ ...prev, isOpen: false }));
-  };
+function InspectionTable({ data, frequency }: InspectionTableProps) {
   if (!data.success) {
     return (
       <div className="text-center py-8">
@@ -155,7 +121,7 @@ function InspectionTable({ data, frequency, showDefects, bu }: InspectionTablePr
   return (
     <div className="space-y-6">
       {/* Summary Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
@@ -163,18 +129,6 @@ function InspectionTable({ data, frequency, showDefects, bu }: InspectionTablePr
               <div>
                 <p className="text-sm text-gray-600">Total Inspected</p>
                 <p className="text-2xl font-bold">{total.inspected}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-red-600" />
-              <div>
-                <p className="text-sm text-gray-600">Total Defects</p>
-                <p className="text-2xl font-bold text-red-600">{total.defected}</p>
-                <p className="text-xs text-gray-500">{total.defectPercentage}% of inspected</p>
               </div>
             </div>
           </CardContent>
@@ -246,42 +200,22 @@ function InspectionTable({ data, frequency, showDefects, bu }: InspectionTablePr
                           </td>
                         );
                       }
-                      const hasData = siteData.total > 0;
                       return (
                         <td key={site} className="text-center p-3">
-                          <div
-                            className={`flex flex-col items-center gap-1 ${hasData ? 'cursor-pointer' : ''}`}
-                            onClick={() => handleCellClick(bu, site, type, hasData)}
+                          <Badge
+                            className={`text-xs font-medium ${getPercentageBadgeColor(siteData.percentage)}`}
                           >
-                            <Badge
-                              className={`text-xs font-medium ${hasData ? 'hover:opacity-80 transition-opacity' : ''} ${getPercentageBadgeColor(siteData.percentage)}`}
-                            >
-                              {siteData.inspected} / {siteData.total} ({siteData.percentage}%)
-                            </Badge>
-                            {showDefects && siteData.defected > 0 && (
-                              <Badge variant="destructive" className="text-xs">
-                                <AlertTriangle className="h-3 w-3 mr-1" />
-                                {siteData.defected} defect{siteData.defected !== 1 ? 's' : ''} ({siteData.defectPercentage}%)
-                              </Badge>
-                            )}
-                          </div>
+                            {siteData.inspected} / {siteData.total} ({siteData.percentage}%)
+                          </Badge>
                         </td>
                       );
                     })}
                     <td className="text-center p-3">
-                      <div className="flex flex-col items-center gap-1">
-                        <Badge
-                          className={`font-semibold ${getPercentageBadgeColor(equipment.percentage)}`}
-                        >
-                          {equipment.inspected} / {equipment.total} ({equipment.percentage}%)
-                        </Badge>
-                        {showDefects && equipment.defected > 0 && (
-                          <Badge variant="destructive" className="text-xs">
-                            <AlertTriangle className="h-3 w-3 mr-1" />
-                            {equipment.defected} defect{equipment.defected !== 1 ? 's' : ''} ({equipment.defectPercentage}%)
-                          </Badge>
-                        )}
-                      </div>
+                      <Badge
+                        className={`font-semibold ${getPercentageBadgeColor(equipment.percentage)}`}
+                      >
+                        {equipment.inspected} / {equipment.total} ({equipment.percentage}%)
+                      </Badge>
                     </td>
                   </tr>
                 ))}
@@ -299,36 +233,20 @@ function InspectionTable({ data, frequency, showDefects, bu }: InspectionTablePr
                     }
                     return (
                       <td key={site} className="text-center p-3">
-                        <div className="flex flex-col items-center gap-1">
-                          <Badge
-                            className={`font-bold ${getPercentageBadgeColor(siteData.percentage)}`}
-                          >
-                            {siteData.inspected} / {siteData.total} ({siteData.percentage}%)
-                          </Badge>
-                          {showDefects && siteData.defected > 0 && (
-                            <Badge variant="destructive" className="text-xs font-bold">
-                              <AlertTriangle className="h-3 w-3 mr-1" />
-                              {siteData.defected} defect{siteData.defected !== 1 ? 's' : ''} ({siteData.defectPercentage}%)
-                            </Badge>
-                          )}
-                        </div>
+                        <Badge
+                          className={`font-bold ${getPercentageBadgeColor(siteData.percentage)}`}
+                        >
+                          {siteData.inspected} / {siteData.total} ({siteData.percentage}%)
+                        </Badge>
                       </td>
                     );
                   })}
                   <td className="text-center p-3">
-                    <div className="flex flex-col items-center gap-1">
-                      <Badge
-                        className={`font-bold text-base px-3 py-1 ${getPercentageBadgeColor(total.percentage)}`}
-                      >
-                        {total.inspected} / {total.total} ({total.percentage}%)
-                      </Badge>
-                      {showDefects && total.defected > 0 && (
-                        <Badge variant="destructive" className="text-sm font-bold">
-                          <AlertTriangle className="h-4 w-4 mr-1" />
-                          {total.defected} defect{total.defected !== 1 ? 's' : ''} ({total.defectPercentage}%)
-                        </Badge>
-                      )}
-                    </div>
+                    <Badge
+                      className={`font-bold text-base px-3 py-1 ${getPercentageBadgeColor(total.percentage)}`}
+                    >
+                      {total.inspected} / {total.total} ({total.percentage}%)
+                    </Badge>
                   </td>
                 </tr>
               </tbody>
@@ -336,16 +254,6 @@ function InspectionTable({ data, frequency, showDefects, bu }: InspectionTablePr
           </div>
         </CardContent>
       </Card>
-
-      <MachineListModal
-        isOpen={modalState.isOpen}
-        onClose={handleModalClose}
-        bu={modalState.bu}
-        site={modalState.site}
-        type={modalState.type}
-        siteName={modalState.site.toUpperCase()}
-        typeName={modalState.type.charAt(0).toUpperCase() + modalState.type.slice(1)}
-      />
     </div>
   );
 }
@@ -581,19 +489,19 @@ export default function BUKPIPage() {
         </TabsList>
 
         <TabsContent value="daily">
-          {dailyData && <InspectionTable data={dailyData} frequency="daily" showDefects={showDefects} bu={bu} />}
+          {dailyData && <InspectionTable data={dailyData} frequency="daily" />}
         </TabsContent>
 
         <TabsContent value="monthly">
-          {monthlyData && <InspectionTable data={monthlyData} frequency="monthly" showDefects={showDefects} bu={bu} />}
+          {monthlyData && <InspectionTable data={monthlyData} frequency="monthly" />}
         </TabsContent>
 
         <TabsContent value="quarterly">
-          {quarterlyData && <InspectionTable data={quarterlyData} frequency="quarterly" showDefects={showDefects} bu={bu} />}
+          {quarterlyData && <InspectionTable data={quarterlyData} frequency="quarterly" />}
         </TabsContent>
 
         <TabsContent value="annual">
-          {annualData && <InspectionTable data={annualData} frequency="annual" showDefects={showDefects} bu={bu} />}
+          {annualData && <InspectionTable data={annualData} frequency="annual" />}
         </TabsContent>
       </Tabs>
     </div>
