@@ -345,24 +345,14 @@ export default function MachineForm4photo({ bu, type, id }: MachineForm4photoPro
                     {...register("inspector", { required: "Inspector is required" })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
                   >
-                    <option value="">กรอกชื่อ Trainer / TSM</option>
-                    <option value="CAEC">CAEC MACHINERY CO.,LTD</option>
-                    <option value="CC">Chatchaiphuket Transport (2006) Co.,Ltd.</option>
-                    <option value="DO">D.O.K Co.,Ltd.</option>
-                    <option value="FT">F Transport Co.,Ltd.</option>
-                    <option value="IS">Insee logistic Co.,Ltd.</option>
-                    <option value="KC">Kijcharoen Transport Ltd.,Part</option>
-                    <option value="KJ">KJJ Development Co. ltd.</option>
-                    <option value="KM">Khemarat Transport Co.,Ltd.</option>
-                    <option value="MN">Mena Transport Public Co.,Ltd.</option>
-                    <option value="PI">Pechinsee Transport Co.,Ltd.</option>
-                    <option value="PT">Patarachatra Transport Co.,Ltd.</option>
-                    <option value="PU">Phupattanar Transport Co.,Ltd.</option>
-                    <option value="QC">QCarrier Co.,Ltd.</option>
-                    <option value="SH">Sahathanaseth Engineering Co.,Ltd.</option>
-                    <option value="SS">Sermsinpaiboon Co.,Ltd.</option>
-                    <option value="TR">TR.9 Ltd.,Part</option>
-                    <option value="TP">บริษัท ไทยภักดี การโยธา จำกัด (THAIPHAKDEE KAN YOTHA)</option>
+                    <option value="">กรอกชื่อ Trainer</option>
+                    <option value="CW">Chamnan Wichit (Driver Trainer)</option>
+                    <option value="KN">Kasemsak Nuengkhamin (Driver Trainer)</option>
+                    <option value="SN">Samansuk Ngeonjun (Driver Trainer)</option>
+                    <option value="TW">Theerawud Wattanaruangchai (Driver Trainer)</option>
+                    <option value="KS">Kriangkrai Sangsook (Driver Trainer)</option>
+                    <option value="NK">Nakorn Kamthong (Driver Trainer)</option>
+                    <option value="TS">Teerawath Saengsilawuthikul (Driver Trainer)</option>
                   </select>
                 ) : (
                   <Input
