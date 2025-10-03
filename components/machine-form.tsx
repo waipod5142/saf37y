@@ -395,7 +395,21 @@ export default function MachineForm({ bu, type, id, isInDialog = false }: Machin
               <Label htmlFor="inspector" className="text-lg font-semibold">
                 {getTranslation('inspector', 'Inspector')}
               </Label>
-              {type.toLowerCase() === "mixertsm" || type.toLowerCase() === "mixertrainer" ? (
+              {type.toLowerCase() === "mixertrainer" ? (
+                <select
+                  {...register("inspector", { required: "Inspector is required" })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                >
+                  <option value="">กรอกชื่อ Trainer</option>
+                  <option value="CW">Chamnan Wichit (Driver Trainer)</option>
+                  <option value="KN">Kasemsak Nuengkhamin (Driver Trainer)</option>
+                  <option value="SN">Samansuk Ngeonjun (Driver Trainer)</option>
+                  <option value="TW">Theerawud Wattanaruangchai (Driver Trainer)</option>
+                  <option value="KS">Kriangkrai Sangsook (Driver Trainer)</option>
+                  <option value="NK">Nakorn Kamthong (Driver Trainer)</option>
+                  <option value="TS">Teerawath Saengsilawuthikul (Driver Trainer)</option>
+                </select>
+              ) : type.toLowerCase() === "mixertsm" ? (
                 <select
                   {...register("inspector", { required: "Inspector is required" })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
