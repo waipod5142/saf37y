@@ -291,7 +291,7 @@ export default function MachineDetailClient({ records, questions }: MachineDetai
         const questionName = key.slice(0, -1);
         if (!groups[questionName]) groups[questionName] = { status: null };
         groups[questionName].images = Array.isArray(record[key]) ? record[key] : [record[key]];
-      } else if (!['id', 'bu', 'type', 'inspector', 'timestamp', 'createdAt', 'remark', 'images', 'docId', 'latitude', 'longitude', 'locationTimestamp', 'locationAccuracy'].includes(key)) {
+      } else if (!['id', 'bu', 'type', 'inspector', 'timestamp', 'createdAt', 'remark', 'images', 'docId', 'site', 'latitude', 'longitude', 'locationTimestamp', 'locationAccuracy'].includes(key)) {
         // Status field
         if (!groups[key]) groups[key] = { status: null };
         groups[key].status = record[key];
@@ -307,7 +307,7 @@ export default function MachineDetailClient({ records, questions }: MachineDetai
     const resultKeys = keys.filter(key => 
       key !== 'id' && key !== 'bu' && key !== 'type' && key !== 'inspector' && 
       key !== 'timestamp' && key !== 'createdAt' && key !== 'remark' && 
-      key !== 'images' && key !== 'docId' && 
+      key !== 'images' && key !== 'docId' && key !== 'site' && 
       key !== 'latitude' && key !== 'longitude' && key !== 'locationTimestamp' && key !== 'locationAccuracy' &&
       !key.endsWith('R') && !key.endsWith('P')
     );
@@ -390,7 +390,7 @@ export default function MachineDetailClient({ records, questions }: MachineDetai
                   className="mt-3 p-2 text-gray-800 hover:text-black hover:bg-gray-100 rounded-lg transition-colors"
                   title="View location on map"
                 >
-                  <MapPinIcon className="h-5 w-5" />
+                  <MapPinIcon className="h-6 w-6 text-blue-500" />
                 </button>
               )}
             </div>
@@ -437,7 +437,7 @@ export default function MachineDetailClient({ records, questions }: MachineDetai
                   .filter(key => 
                     key !== 'id' && key !== 'bu' && key !== 'type' && key !== 'inspector' && key !== 'certificate' && key !== 'mileage' && 
                     key !== 'timestamp' && key !== 'createdAt' && key !== 'remark' && 
-                    key !== 'images' && key !== 'docId' &&
+                    key !== 'images' && key !== 'docId' && key !== 'site' && 
                     key !== 'latitude' && key !== 'longitude' && key !== 'locationTimestamp' && key !== 'locationAccuracy' &&
                     !key.endsWith('R') && !key.endsWith('P') // Exclude remark and image fields
                   )
