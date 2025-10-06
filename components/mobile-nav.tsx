@@ -1,18 +1,14 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import Link from "next/link"
-import { Menu } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import {
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-} from "@/components/ui/sheet"
-import AuthButtons from "@/components/auth-buttons"
+import * as React from "react";
+import Link from "next/link";
+import { Menu } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import AuthButtons from "@/components/auth-buttons";
 
 export function MobileNav() {
-  const [open, setOpen] = React.useState(false)
+  const [open, setOpen] = React.useState(false);
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -26,16 +22,19 @@ export function MobileNav() {
           <span className="sr-only">Toggle Menu</span>
         </Button>
       </SheetTrigger>
-      <SheetContent side="right" className="w-[300px] bg-red-600 text-white border-l-red-500">
+      <SheetContent
+        side="right"
+        className="w-[300px] bg-red-600 text-white border-l-red-500"
+      >
         <nav className="flex flex-col space-y-6 mt-6">
           <Link
-            href="/dashboard"
+            href="/kpi"
             className="text-lg uppercase tracking-widest hover:underline"
             onClick={() => setOpen(false)}
           >
             Dashboard by country
           </Link>
-          <Link
+          {/* <Link
             href="/dashboardbysite"
             className="text-lg uppercase tracking-widest hover:underline"
             onClick={() => setOpen(false)}
@@ -48,12 +47,12 @@ export function MobileNav() {
             onClick={() => setOpen(false)}
           >
             Latest Transaction
-          </Link>
+          </Link> */}
           <div className="pt-4 border-t border-red-500">
             <AuthButtons />
           </div>
         </nav>
       </SheetContent>
     </Sheet>
-  )
+  );
 }
