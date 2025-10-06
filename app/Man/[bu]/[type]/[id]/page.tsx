@@ -29,7 +29,7 @@ export default async function MachinePage({
       <ChangeUserButton />
       <ManOption bu={normalizedBu} type={decodedType} id={decodedId} />
       <div className="mb-4">
-        <ManTypeBadge type={decodedType} className="text-sm" />
+        <ManTypeBadge type={decodedType} bu={normalizedBu} className="text-sm" />
       </div>
       {type === 'Coupon' && <ManFormToken bu={normalizedBu} type={decodedType} id={decodedId} />}
       <ManHeader bu={normalizedBu} type={decodedType} id={decodedId} />

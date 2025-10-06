@@ -22,7 +22,9 @@ export default function ManOption({ bu, type, id }: ManOptionProps) {
         htmlFor="man-select"
         className="block text-lg font-semibold text-gray-700 mb-2"
       >
-        เลือกกิจกรรมด้านความปลอดภัย:
+        {bu === "vn"
+          ? "Chọn hoạt động an toàn:"
+          : "เลือกกิจกรรมด้านความปลอดภัย:"}
       </label>
       <select
         id="man-select"
@@ -31,50 +33,60 @@ export default function ManOption({ bu, type, id }: ManOptionProps) {
         defaultValue=""
       >
         <option value="" className="text-gray-500">
-          -- ตัวเลือกทั้งหมด --
+          {bu === "vn" ? "-- Tất cả các tùy chọn --" : "-- ตัวเลือกทั้งหมด --"}
         </option>
-        <option
-          value={`/Man/${bu}/Sot/${id}`}
-          className="odd:bg-gray-100 even:bg-gray-200"
-        >
-          กิจกรรมความปลอดภัย SOT and VFL
-        </option>
-        <option
-          value={`/Man/${bu}/Talk/${id}`}
-          className="odd:bg-gray-100 even:bg-gray-200"
-        >
-          การพูดคุยกับพนักงาน / Talk
-        </option>
-        <option
-          value={`/Man/${bu}/Toolbox/${id}`}
-          className="odd:bg-gray-100 even:bg-gray-200"
-        >
-          การพูดคุยด้านความปลอดภัย Safety / Toolbox Talk
-        </option>
-        <option
-          value={`/Man/${bu}/Coupon/${id}`}
-          className="odd:bg-gray-100 even:bg-gray-200"
-        >
-          โทเคนสำหรับร้านอาหาร / Food Token
-        </option>
-        <option
-          value={`/Man/${bu}/Meeting/${id}`}
-          className="odd:bg-gray-100 even:bg-gray-200"
-        >
-          การมีส่วนร่วมในเซฟตี้มีทติ้ง / Safety Meeting
-        </option>
-        <option
-          value={`/Man/${bu}/Alert/${id}`}
-          className="odd:bg-gray-100 even:bg-gray-200"
-        >
-          ยืนยันการเข้าใจ Safety Alert / Safety Alert Acknowledgement
-        </option>
-        <option
-          value={`/Man/${bu}/Training/${id}`}
-          className="odd:bg-gray-100 even:bg-gray-200"
-        >
-          ประวัติการฝึกอบรม Training Course
-        </option>
+
+        {/* Options for TH business unit */}
+        {bu === "th" && (
+          <>
+            <option value={`/Man/${bu}/Sot/${id}`}>
+              กิจกรรมความปลอดภัย SOT and VFL
+            </option>
+            <option value={`/Man/${bu}/Talk/${id}`}>
+              การพูดคุยกับพนักงาน / Talk
+            </option>
+            <option value={`/Man/${bu}/Toolbox/${id}`}>
+              การพูดคุยด้านความปลอดภัย Safety / Toolbox Talk
+            </option>
+            <option value={`/Man/${bu}/Coupon/${id}`}>
+              โทเคนสำหรับร้านอาหาร / Food Token
+            </option>
+            <option value={`/Man/${bu}/Meeting/${id}`}>
+              การมีส่วนร่วมในเซฟตี้มีทติ้ง / Safety Meeting
+            </option>
+            <option value={`/Man/${bu}/Alert/${id}`}>
+              ยืนยันการเข้าใจ Safety Alert / Safety Alert Acknowledgement
+            </option>
+            <option value={`/Man/${bu}/Training/${id}`}>
+              ประวัติการฝึกอบรม Training Course
+            </option>
+          </>
+        )}
+
+        {/* Options for VN business unit */}
+        {bu === "vn" && (
+          <>
+            <option value={`/Man/${bu}/Toolbox/${id}`}>
+              Thảo luận an toàn / Toolbox Talk
+            </option>
+            <option value={`/Man/${bu}/Boot/${id}`}>
+              Danh sách kiểm tra hạng mục An toàn / BOOT ON THE GROUND CHECK
+              LIST
+            </option>
+            <option value={`/Man/${bu}/Pra/${id}`}>
+              Đánh giá rủi ro cá nhân / Personal Risk Assessment
+            </option>
+            <option value={`/Man/${bu}/Alert/${id}`}>
+              Cảnh báo an toàn / Safety Alert
+            </option>
+            <option value={`/Man/${bu}/Ra/${id}`}>
+              Danh sách kiểm tra đánh giá / Risk Assessmen Checklist
+            </option>
+            <option value={`/Man/${bu}/Pto/${id}`}>
+              Quan sát công việc theo kế hoạch / Planned Task Observation
+            </option>
+          </>
+        )}
       </select>
     </div>
   );

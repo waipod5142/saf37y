@@ -8,9 +8,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Calendar, GraduationCap, Clock, Award, FileText, Camera, ToggleLeftIcon, ToggleRightIcon, Trash2Icon, User } from "lucide-react";
+import { useManFormTranslation } from "@/lib/i18n/man-forms";
 
 interface TrainingManDetailClientProps {
   records: TrainingManRecord[];
+  bu: string;
 }
 
 
@@ -42,12 +44,13 @@ const formatDate = (date: Date | string | null | undefined) => {
       return 'Invalid Date';
     }
 
-    return dateObj.toLocaleString('th-TH', {
+    return dateObj.toLocaleString('en-GB', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
+      hour12: false
     });
   } catch (error) {
     console.error('Error formatting date:', error);
@@ -55,7 +58,8 @@ const formatDate = (date: Date | string | null | undefined) => {
   }
 };
 
-export default function TrainingManDetailClient({ records }: TrainingManDetailClientProps) {
+export default function TrainingManDetailClient({ records, bu }: TrainingManDetailClientProps) {
+  const { t } = useManFormTranslation(bu);
   const [showAllRecords, setShowAllRecords] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
@@ -169,12 +173,12 @@ export default function TrainingManDetailClient({ records }: TrainingManDetailCl
               {showAllRecords ? (
                 <>
                   <ToggleRightIcon className="h-4 w-4" />
-                  Show Latest Only
+                  {t.common.showLess}
                 </>
               ) : (
                 <>
                   <ToggleLeftIcon className="h-4 w-4" />
-                  Show All Records
+                  {t.common.showAll}
                 </>
               )}
             </Button>
@@ -377,7 +381,7 @@ export default function TrainingManDetailClient({ records }: TrainingManDetailCl
           <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full mx-4">
             <h3 className="text-lg font-semibold mb-4">Delete Training Form Report</h3>
             <p className="text-gray-600 mb-6">
-              Are you sure you want to delete this Training Form report? This action cannot be undone.
+              {t.common.deleteConfirm}
             </p>
             <div className="flex justify-end gap-3">
               <Button
@@ -385,14 +389,14 @@ export default function TrainingManDetailClient({ records }: TrainingManDetailCl
                 onClick={() => setShowDeleteConfirm(null)}
                 disabled={deletingRecordId !== null}
               >
-                Cancel
+                {t.common.cancel}
               </Button>
               <Button
                 variant="destructive"
                 onClick={() => handleDeleteRecord(showDeleteConfirm)}
                 disabled={deletingRecordId !== null}
               >
-                {deletingRecordId === showDeleteConfirm ? "Deleting..." : "Delete"}
+                {deletingRecordId === showDeleteConfirm ? t.common.deleting : t.common.delete}
               </Button>
             </div>
           </div>

@@ -8,9 +8,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Calendar, AlertTriangle, BookOpen, FileText, Camera, ToggleLeftIcon, ToggleRightIcon, Trash2Icon, ClipboardCheck } from "lucide-react";
+import { useManFormTranslation } from "@/lib/i18n/man-forms";
 
 interface AlertManDetailClientProps {
   records: AlertManRecord[];
+  bu: string;
 }
 
 // Accident type categories with colors and labels
@@ -51,17 +53,17 @@ const getAccidentTypeInfo = (type: string) => {
   };
 };
 
-// Get acknowledgment status styling
-const getAcknowledgmentStyle = (status: string) => {
+// Get acknowledgment status styling - will be created inside component to access translations
+const createGetAcknowledgmentStyle = (t: any) => (status: string) => {
   switch (status.toLowerCase()) {
     case 'yes':
     case 'acknowledged':
     case 'true':
-      return { color: 'bg-green-500 text-white', text: 'Acknowledged / รับทราบแล้ว' };
+      return { color: 'bg-green-500 text-white', text: t.alert.acknowledged };
     case 'no':
     case 'pending':
     case 'false':
-      return { color: 'bg-orange-500 text-white', text: 'Pending / รอรับทราบ' };
+      return { color: 'bg-orange-500 text-white', text: t.alert.pending };
     default:
       return { color: 'bg-gray-500 text-white', text: status };
   }
@@ -70,16 +72,19 @@ const getAcknowledgmentStyle = (status: string) => {
 // Format date
 const formatDate = (date: Date | string) => {
   const dateObj = typeof date === 'string' ? new Date(date) : date;
-  return dateObj.toLocaleString('th-TH', {
+  return dateObj.toLocaleString('en-GB', {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
     hour: '2-digit',
-    minute: '2-digit'
+    minute: '2-digit',
+    hour12: false
   });
 };
 
-export default function AlertManDetailClient({ records }: AlertManDetailClientProps) {
+export default function AlertManDetailClient({ records, bu }: AlertManDetailClientProps) {
+  const { t } = useManFormTranslation(bu);
+  const getAcknowledgmentStyle = createGetAcknowledgmentStyle(t);
   const [showAllRecords, setShowAllRecords] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
@@ -156,7 +161,7 @@ export default function AlertManDetailClient({ records }: AlertManDetailClientPr
   if (!records || records.length === 0) {
     return (
       <div className="mb-6">
-        <p className="text-sm text-red-500 mt-2">No Alert Form reports found for this machine.</p>
+        <p className="text-sm text-red-500 mt-2">{t.alert.noReports}</p>
       </div>
     );
   }
@@ -168,7 +173,7 @@ export default function AlertManDetailClient({ records }: AlertManDetailClientPr
       <div className="space-y-4">
         <div className="flex justify-between items-center">
           <h3 className="text-lg font-semibold">
-            Alert Form Reports ({showAllRecords ? records.length : 1} of {records.length} record{records.length > 1 ? 's' : ''})
+            {t.alert.reportsCount} ({showAllRecords ? records.length : 1} {t.alert.of} {records.length} {records.length > 1 ? t.alert.records : t.alert.record})
           </h3>
 
           {/* Toggle Button */}
@@ -182,12 +187,12 @@ export default function AlertManDetailClient({ records }: AlertManDetailClientPr
               {showAllRecords ? (
                 <>
                   <ToggleRightIcon className="h-4 w-4" />
-                  Show Latest Only
+                  {t.common.showLess}
                 </>
               ) : (
                 <>
                   <ToggleLeftIcon className="h-4 w-4" />
-                  Show All Records
+                  {t.common.showAll}
                 </>
               )}
             </Button>
@@ -206,9 +211,9 @@ export default function AlertManDetailClient({ records }: AlertManDetailClientPr
             <CardHeader className="bg-gradient-to-r from-red-50 to-orange-50 border-b">
               <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  {index === 0 && <Badge variant="default" className="mr-2">Latest</Badge>}
+                  {index === 0 && <Badge variant="default" className="mr-2">{t.alert.latest}</Badge>}
                   <Badge className="bg-red-600 text-white px-3 py-1 text-sm font-medium">
-                    ALERT FORM
+                    {t.alert.alertForm.toUpperCase()}
                   </Badge>
                   <div className="text-sm text-gray-600">
                     Alert No: {record.alertNo}
@@ -249,7 +254,7 @@ export default function AlertManDetailClient({ records }: AlertManDetailClientPr
                   <div className="flex items-center gap-2">
                     <AlertTriangle className="h-5 w-5 text-red-500" />
                     <div>
-                      <p className="font-semibold text-gray-700">หมายเลข Red alert / Alert Number</p>
+                      <p className="font-semibold text-gray-700">{t.alert.alertNumber}</p>
                       <p className="text-gray-600 font-mono">{record.alertNo}</p>
                     </div>
                   </div>
@@ -258,7 +263,7 @@ export default function AlertManDetailClient({ records }: AlertManDetailClientPr
                   <div className="flex items-center gap-2">
                     <FileText className="h-5 w-5 text-gray-500" />
                     <div>
-                      <p className="font-semibold text-gray-700 mb-2">ประเภทอุบัติเหตุ / Accident Type</p>
+                      <p className="font-semibold text-gray-700 mb-2">{t.alert.accidentType}</p>
                       <Badge className={`${accidentInfo.color} px-3 py-1`}>
                         {accidentInfo.label}
                       </Badge>
@@ -270,7 +275,7 @@ export default function AlertManDetailClient({ records }: AlertManDetailClientPr
                   <div className="flex items-center gap-2">
                     <ClipboardCheck className="h-5 w-5 text-gray-500" />
                     <div>
-                      <p className="font-semibold text-gray-700 mb-2">สถานะการรับทราบ / Acknowledgment Status</p>
+                      <p className="font-semibold text-gray-700 mb-2">{t.alert.acknowledgmentStatus}</p>
                       <Badge className={`${acknowledgmentInfo.color} px-3 py-1`}>
                         {acknowledgmentInfo.text}
                       </Badge>
@@ -285,7 +290,7 @@ export default function AlertManDetailClient({ records }: AlertManDetailClientPr
                     <div>
                       <p className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
                         <BookOpen className="h-5 w-5 text-blue-600" />
-                        บทเรียนที่ได้รับ / Learning Points
+                        {t.alert.learningPoints}
                       </p>
                       <div className="bg-blue-50 p-3 rounded-md border-l-4 border-blue-500">
                         <p className="text-gray-700">{record.learn}</p>
@@ -298,7 +303,7 @@ export default function AlertManDetailClient({ records }: AlertManDetailClientPr
                     <div>
                       <p className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
                         <FileText className="h-5 w-5 text-gray-600" />
-                        หมายเหตุ / Remarks
+                        {t.common.remark}
                       </p>
                       <div className="bg-gray-50 p-3 rounded-md border-l-4 border-gray-500">
                         <p className="text-gray-700">{record.remark}</p>
@@ -313,7 +318,7 @@ export default function AlertManDetailClient({ records }: AlertManDetailClientPr
                 <div className="mt-6 pt-6 border-t">
                   <p className="font-semibold text-gray-700 mb-4 flex items-center gap-2">
                     <Camera className="h-5 w-5" />
-                    รูปภาพประกอบ / Images ({record.images.length})
+                    {t.common.images} ({record.images.length})
                   </p>
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                     {record.images.map((imageUrl, imgIndex) => (
@@ -324,7 +329,7 @@ export default function AlertManDetailClient({ records }: AlertManDetailClientPr
                       >
                         <img
                           src={imageUrl}
-                          alt={`Alert Form Image ${imgIndex + 1}`}
+                          alt={`${t.alert.imageAlt} ${imgIndex + 1}`}
                           className="w-full h-32 object-cover rounded-md shadow-md group-hover:shadow-lg transition-shadow pointer-events-none"
                           onError={handleImageError}
                         />
@@ -345,14 +350,14 @@ export default function AlertManDetailClient({ records }: AlertManDetailClientPr
       <Dialog open={isImageModalOpen} onOpenChange={setIsImageModalOpen}>
         <DialogContent className="max-w-4xl max-h-[90vh] p-0">
           <DialogHeader className="p-6 pb-0">
-            <DialogTitle>Alert Form Image</DialogTitle>
+            <DialogTitle>{t.alert.imageModalTitle}</DialogTitle>
           </DialogHeader>
           <div className="p-6 pt-2">
             {selectedImage && (
               <div className="flex justify-center">
                 <img
                   src={selectedImage}
-                  alt="Alert Form image"
+                  alt={t.alert.imageAlt}
                   className="max-w-full max-h-[70vh] object-contain rounded"
                   onError={(e) => {
                     e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCA0MDAgMzAwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgogIDxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjRjNGNEY2Ii8+CiAgPHRleHQgeD0iMjAwIiB5PSIxNTAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM5Q0E0QUYiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNiI+SW1hZ2UgY291bGQgbm90IGJlIGxvYWRlZDwvdGV4dD4KPC9zdmc+';
@@ -368,9 +373,9 @@ export default function AlertManDetailClient({ records }: AlertManDetailClientPr
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full mx-4">
-            <h3 className="text-lg font-semibold mb-4">Delete Alert Form Report</h3>
+            <h3 className="text-lg font-semibold mb-4">{t.alert.deleteTitle}</h3>
             <p className="text-gray-600 mb-6">
-              Are you sure you want to delete this Alert Form report? This action cannot be undone.
+              {t.common.deleteConfirm}
             </p>
             <div className="flex justify-end gap-3">
               <Button
@@ -378,14 +383,14 @@ export default function AlertManDetailClient({ records }: AlertManDetailClientPr
                 onClick={() => setShowDeleteConfirm(null)}
                 disabled={deletingRecordId !== null}
               >
-                Cancel
+                {t.common.cancel}
               </Button>
               <Button
                 variant="destructive"
                 onClick={() => handleDeleteRecord(showDeleteConfirm)}
                 disabled={deletingRecordId !== null}
               >
-                {deletingRecordId === showDeleteConfirm ? "Deleting..." : "Delete"}
+                {deletingRecordId === showDeleteConfirm ? t.common.deleting : t.common.delete}
               </Button>
             </div>
           </div>

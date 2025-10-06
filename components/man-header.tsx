@@ -75,10 +75,12 @@ export default function ManHeader({ bu, type, id }: ManHeaderProps) {
               {/* Employee Header */}
               <div className="mb-4">
                 <h2 className="text-2xl font-bold text-blue-600 mb-1">
-                  {employee.displayName || employee.fullName || `${employee.firstName} ${employee.lastName}`}
+                  {employee.displayName ||
+                    employee.fullName ||
+                    `${employee.firstName} ${employee.lastName}`}
                 </h2>
                 <p className="text-lg text-gray-600">
-                  {employee.position || 'N/A'}
+                  {employee.position || "N/A"}
                 </p>
               </div>
             </div>
@@ -91,7 +93,9 @@ export default function ManHeader({ bu, type, id }: ManHeaderProps) {
 
           {/* Basic Information */}
           <div className="mb-6">
-            <h3 className="text-lg font-semibold text-gray-800 mb-3">Basic Information</h3>
+            <h3 className="text-lg font-semibold text-gray-800 mb-3">
+              Basic Information
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
               {employee.empId && (
                 <div className="flex flex-col">
@@ -99,13 +103,6 @@ export default function ManHeader({ bu, type, id }: ManHeaderProps) {
                   <span className="text-gray-900">{employee.empId}</span>
                 </div>
               )}
-          {/* B ask to remove */}
-              {/* {employee.idCard && (
-                <div className="flex flex-col">
-                  <span className="text-gray-500 font-medium">ID Card</span>
-                  <span className="text-gray-900">{employee.idCard}</span>
-                </div>
-              )} */}
 
               {employee.prefix && (
                 <div className="flex flex-col">
@@ -127,10 +124,18 @@ export default function ManHeader({ bu, type, id }: ManHeaderProps) {
                   <span className="text-gray-900">{employee.lastName}</span>
                 </div>
               )}
+              {employee.site && (
+                <div className="flex flex-col">
+                  <span className="text-gray-500 font-medium">Site</span>
+                  <span className="text-gray-900">{employee.site}</span>
+                </div>
+              )}
 
               {employee.dateOfBirth && (
                 <div className="flex flex-col">
-                  <span className="text-gray-500 font-medium">Date of Birth</span>
+                  <span className="text-gray-500 font-medium">
+                    Date of Birth
+                  </span>
                   <span className="text-gray-900">{employee.dateOfBirth}</span>
                 </div>
               )}

@@ -23,6 +23,156 @@ interface ManFormAlertProps {
   isInDialog?: boolean;
 }
 
+type Language = 'th' | 'vn' | 'lk' | 'bd' | 'cmic';
+
+const translations = {
+  th: {
+    title: "ยืนยันการเข้าใจ Safety Alert",
+    alertNo: "Alert No:",
+    staffId: "รหัสพนักงาน Staff ID",
+    staffIdPlaceholder: "Staff ID",
+    staffIdRequired: "กรุณากรอกรหัสพนักงาน",
+    typeOfAccident: "1. ประเภทของอุบัติเหตุ Type of accident",
+    selectAccidentType: "กรุณาเลือกประเภทอุบัติเหตุ",
+    fatality: "อุบัติเหตุขั้นเสียชีวิต Fatality Incident",
+    disability: "อุบัติเหตุขั้นทุพลภาพ/พิการถาวร Permanent Disability",
+    lostTime: "อุบัติเหตุบาดเจ็บถึงขั้นหยุดงาน Lost Time Injury Incident",
+    critical: "อุบัติเหตุขั้นวิกฤต Critical Incident",
+    medical: "อุบัติเหตุถึงขั้นรักษาพยาบาล Medical Treatment Incident",
+    other: "อื่นๆ________(โปรดระบุ) Other________(Please specify)",
+    lessonLearn: "2. บทเรียนที่ได้รับ Lesson learn ?",
+    lessonLearnPlaceholder: "Lesson learn",
+    lessonLearnRequired: "กรุณากรอกบทเรียนที่ได้รับ",
+    acknowledge: "3. ฉันเข้าใจและรับทราบคำเตือนนี้ I understand and acknowledge this accident",
+    acknowledgeRequired: "กรุณาเลือกการยืนยัน",
+    understand: "เข้าใจ",
+    notUnderstand: "ไม่เข้าใจ",
+    attachImage: "รูปภาพประกอบ (Attach Image) (Optional)",
+    remark: "หมายเหตุ (Remark) (Optional)",
+    remarkPlaceholder: "กรอกหมายเหตุ...",
+    submit: "ส่ง / Submit",
+    submitting: "กำลังส่ง...",
+    success: "ส่งแบบฟอร์มสำเร็จ!",
+    error: "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง",
+  },
+  vn: {
+    title: "Xác nhận hiểu Cảnh báo An toàn",
+    alertNo: "Số Cảnh báo:",
+    staffId: "Mã nhân viên Staff ID",
+    staffIdPlaceholder: "Mã nhân viên",
+    staffIdRequired: "Vui lòng nhập mã nhân viên",
+    typeOfAccident: "1. Loại tai nạn Type of accident",
+    selectAccidentType: "Vui lòng chọn loại tai nạn",
+    fatality: "Tai nạn tử vong Fatality Incident",
+    disability: "Tai nạn tàn tật vĩnh viễn Permanent Disability",
+    lostTime: "Tai nạn nghỉ việc Lost Time Injury Incident",
+    critical: "Tai nạn nghiêm trọng Critical Incident",
+    medical: "Tai nạn cần điều trị y tế Medical Treatment Incident",
+    other: "Khác________(Vui lòng ghi rõ) Other________(Please specify)",
+    lessonLearn: "2. Bài học kinh nghiệm Lesson learn ?",
+    lessonLearnPlaceholder: "Bài học kinh nghiệm",
+    lessonLearnRequired: "Vui lòng nhập bài học kinh nghiệm",
+    acknowledge: "3. Tôi hiểu và xác nhận cảnh báo này I understand and acknowledge this accident",
+    acknowledgeRequired: "Vui lòng chọn xác nhận",
+    understand: "Hiểu",
+    notUnderstand: "Không hiểu",
+    attachImage: "Hình ảnh đính kèm (Attach Image) (Tùy chọn)",
+    remark: "Ghi chú (Remark) (Tùy chọn)",
+    remarkPlaceholder: "Nhập ghi chú...",
+    submit: "Gửi / Submit",
+    submitting: "Đang gửi...",
+    success: "Gửi biểu mẫu thành công!",
+    error: "Đã xảy ra lỗi. Vui lòng thử lại",
+  },
+  lk: {
+    title: "ආරක්ෂණ අනතුරු ඇඟවීම තේරුම් ගැනීම තහවුරු කරන්න",
+    alertNo: "අනතුරු ඇඟවීම අංකය:",
+    staffId: "කාර්ය මණ්ඩල හැඳුනුම්පත Staff ID",
+    staffIdPlaceholder: "කාර්ය මණ්ඩල හැඳුනුම්පත",
+    staffIdRequired: "කරුණාකර කාර්ය මණ්ඩල හැඳුනුම්පත ඇතුළත් කරන්න",
+    typeOfAccident: "1. අනතුරේ වර්ගය Type of accident",
+    selectAccidentType: "කරුණාකර අනතුරේ වර්ගයක් තෝරන්න",
+    fatality: "මාරාන්තික අනතුර Fatality Incident",
+    disability: "ස්ථිර ආබාධිත අනතුර Permanent Disability",
+    lostTime: "වැඩ නැවතුම් තුවාල අනතුර Lost Time Injury Incident",
+    critical: "තීව්‍ර අනතුර Critical Incident",
+    medical: "වෛද්‍ය ප්‍රතිකාර අනතුර Medical Treatment Incident",
+    other: "වෙනත්________(කරුණාකර සඳහන් කරන්න) Other________(Please specify)",
+    lessonLearn: "2. ලැබුණු පාඩම Lesson learn ?",
+    lessonLearnPlaceholder: "ලැබුණු පාඩම",
+    lessonLearnRequired: "කරුණාකර ලැබුණු පාඩම ඇතුළත් කරන්න",
+    acknowledge: "3. මම මෙම අනතුරු ඇඟවීම තේරුම් ගෙන පිළිගනිමි I understand and acknowledge this accident",
+    acknowledgeRequired: "කරුණාකර තහවුරු කිරීම තෝරන්න",
+    understand: "තේරෙනවා",
+    notUnderstand: "තේරෙන්නේ නැහැ",
+    attachImage: "ඡායාරූප ඇමිණීම (Attach Image) (විකල්ප)",
+    remark: "සටහන (Remark) (විකල්ප)",
+    remarkPlaceholder: "සටහන ඇතුළත් කරන්න...",
+    submit: "ඉදිරිපත් කරන්න / Submit",
+    submitting: "ඉදිරිපත් කරමින්...",
+    success: "පෝරමය සාර්ථකව ඉදිරිපත් කරන ලදී!",
+    error: "දෝෂයක් ඇති විය. කරුණාකර නැවත උත්සාහ කරන්න",
+  },
+  bd: {
+    title: "নিরাপত্তা সতর্কতা বুঝতে নিশ্চিত করুন",
+    alertNo: "সতর্কতা নং:",
+    staffId: "কর্মচারী আইডি Staff ID",
+    staffIdPlaceholder: "কর্মচারী আইডি",
+    staffIdRequired: "অনুগ্রহ করে কর্মচারী আইডি লিখুন",
+    typeOfAccident: "1. দুর্ঘটনার ধরন Type of accident",
+    selectAccidentType: "অনুগ্রহ করে দুর্ঘটনার ধরন নির্বাচন করুন",
+    fatality: "মারাত্মক দুর্ঘটনা Fatality Incident",
+    disability: "স্থায়ী পঙ্গুত্ব দুর্ঘটনা Permanent Disability",
+    lostTime: "কাজ বন্ধের আঘাত দুর্ঘটনা Lost Time Injury Incident",
+    critical: "গুরুতর দুর্ঘটনা Critical Incident",
+    medical: "চিকিৎসা প্রয়োজন দুর্ঘটনা Medical Treatment Incident",
+    other: "অন্যান্য________(অনুগ্রহ করে উল্লেখ করুন) Other________(Please specify)",
+    lessonLearn: "2. শিক্ষা গ্রহণ Lesson learn ?",
+    lessonLearnPlaceholder: "শিক্ষা গ্রহণ",
+    lessonLearnRequired: "অনুগ্রহ করে শিক্ষা গ্রহণ লিখুন",
+    acknowledge: "3. আমি এই সতর্কতা বুঝি এবং স্বীকার করি I understand and acknowledge this accident",
+    acknowledgeRequired: "অনুগ্রহ করে নিশ্চিতকরণ নির্বাচন করুন",
+    understand: "বুঝি",
+    notUnderstand: "বুঝি না",
+    attachImage: "ছবি সংযুক্ত করুন (Attach Image) (ঐচ্ছিক)",
+    remark: "মন্তব্য (Remark) (ঐচ্ছিক)",
+    remarkPlaceholder: "মন্তব্য লিখুন...",
+    submit: "জমা দিন / Submit",
+    submitting: "জমা দেওয়া হচ্ছে...",
+    success: "ফর্ম সফলভাবে জমা হয়েছে!",
+    error: "একটি ত্রুটি ঘটেছে। অনুগ্রহ করে আবার চেষ্টা করুন",
+  },
+  cmic: {
+    title: "បញ្ជាក់ការយល់ដឹងអំពីការព្រមានសុវត្ថិភាព",
+    alertNo: "លេខការព្រមាន:",
+    staffId: "លេខសម្គាល់បុគ្គលិក Staff ID",
+    staffIdPlaceholder: "លេខសម្គាល់បុគ្គលិក",
+    staffIdRequired: "សូមបញ្ចូលលេខសម្គាល់បុគ្គលិក",
+    typeOfAccident: "1. ប្រភេទនៃគ្រោះថ្នាក់ Type of accident",
+    selectAccidentType: "សូមជ្រើសរើសប្រភេទនៃគ្រោះថ្នាក់",
+    fatality: "គ្រោះថ្នាក់ស្លាប់ Fatality Incident",
+    disability: "គ្រោះថ្នាក់ពិការអចិន្ត្រៃយ៍ Permanent Disability",
+    lostTime: "គ្រោះថ្នាក់រងរបួសបញ្ឈប់ការងារ Lost Time Injury Incident",
+    critical: "គ្រោះថ្នាក់ធ្ងន់ធ្ងរ Critical Incident",
+    medical: "គ្រោះថ្នាក់ត្រូវការព្យាបាល Medical Treatment Incident",
+    other: "ផ្សេងទៀត________(សូមបញ្ជាក់) Other________(Please specify)",
+    lessonLearn: "2. មេរៀនដែលបានទទួល Lesson learn ?",
+    lessonLearnPlaceholder: "មេរៀនដែលបានទទួល",
+    lessonLearnRequired: "សូមបញ្ចូលមេរៀនដែលបានទទួល",
+    acknowledge: "3. ខ្ញុំយល់ និងទទួលស្គាល់ការព្រមាននេះ I understand and acknowledge this accident",
+    acknowledgeRequired: "សូមជ្រើសរើសការបញ្ជាក់",
+    understand: "យល់",
+    notUnderstand: "មិនយល់",
+    attachImage: "ភ្ជាប់រូបភាព (Attach Image) (ជម្រើស)",
+    remark: "សម្គាល់ (Remark) (ជម្រើស)",
+    remarkPlaceholder: "បញ្ចូលសម្គាល់...",
+    submit: "ដាក់ស្នើ / Submit",
+    submitting: "កំពុងដាក់ស្នើ...",
+    success: "ដាក់ស្នើទម្រង់បានជោគជ័យ!",
+    error: "មានកំហុសកើតឡើង។ សូមព្យាយាមម្តងទៀត",
+  },
+};
+
 interface AlertFormData extends FieldValues {
   id: string;
   alertNo: string;
@@ -35,6 +185,19 @@ interface AlertFormData extends FieldValues {
 
 export default function ManFormAlert({ bu, type, id, isInDialog = false }: ManFormAlertProps) {
   const router = useRouter();
+
+  // Determine language based on bu (business unit/country)
+  const getLanguageFromBu = (bu: string): Language => {
+    const buLower = bu.toLowerCase();
+    if (buLower === 'vn' || buLower === 'vietnam') return 'vn';
+    if (buLower === 'lk' || buLower === 'srilanka') return 'lk';
+    if (buLower === 'bd' || buLower === 'bangladesh') return 'bd';
+    if (buLower === 'cmic' || buLower === 'cambodia') return 'cmic';
+    return 'th'; // Default to Thai
+  };
+
+  const language = getLanguageFromBu(bu);
+  const t = translations[language];
 
   const {
     register,
@@ -55,12 +218,12 @@ export default function ManFormAlert({ bu, type, id, isInDialog = false }: ManFo
 
   // Alert topics with colors matching the form image
   const alertTopics = [
-    { id: 'fatality', label: 'อุบัติเหตุขั้นเสียชีวิต Fatality Incident', color: 'bg-red-500' },
-    { id: 'disability', label: 'อุบัติเหตุขั้นทุพลภาพ/พิการถาวร Permanent Disability', color: 'bg-pink-500' },
-    { id: 'lostTime', label: 'อุบัติเหตุบาดเจ็บถึงขั้นหยุดงาน Lost Time Injury Incident', color: 'bg-orange-500' },
-    { id: 'critical', label: 'อุบัติเหตุขั้นวิกฤต Critical Incident', color: 'bg-yellow-500' },
-    { id: 'medical', label: 'อุบัติเหตุถึงขั้นรักษาพยาบาล Medical Treatment Incident', color: 'bg-yellow-400' },
-    { id: 'other', label: 'อื่นๆ________(โปรดระบุ) Other________(Please specify)', color: 'bg-green-500' },
+    { id: 'fatality', label: t.fatality, color: 'bg-red-500' },
+    { id: 'disability', label: t.disability, color: 'bg-pink-500' },
+    { id: 'lostTime', label: t.lostTime, color: 'bg-orange-500' },
+    { id: 'critical', label: t.critical, color: 'bg-yellow-500' },
+    { id: 'medical', label: t.medical, color: 'bg-yellow-400' },
+    { id: 'other', label: t.other, color: 'bg-green-500' },
   ];
 
 
@@ -68,22 +231,22 @@ export default function ManFormAlert({ bu, type, id, isInDialog = false }: ManFo
     try {
       // Validate required fields
       if (!formData.id) {
-        toast.error("Please enter Staff ID");
+        toast.error(t.staffIdRequired);
         return;
       }
 
       if (!formData.typeAccident) {
-        toast.error("Please select an accident type");
+        toast.error(t.selectAccidentType);
         return;
       }
 
       if (!formData.learn) {
-        toast.error("Please enter lesson learn");
+        toast.error(t.lessonLearnRequired);
         return;
       }
 
       if (!formData.acknowledge) {
-        toast.error("Please select acknowledge status");
+        toast.error(t.acknowledgeRequired);
         return;
       }
 
@@ -93,7 +256,7 @@ export default function ManFormAlert({ bu, type, id, isInDialog = false }: ManFo
           await signInAnonymously(auth);
         } catch (authError: any) {
           console.error("Authentication error:", authError);
-          toast.error("Authentication failed. Please try again.");
+          toast.error(t.error);
           return;
         }
       }
@@ -117,7 +280,7 @@ export default function ManFormAlert({ bu, type, id, isInDialog = false }: ManFo
             imageUrls.push(downloadURL);
           } catch (uploadError) {
             console.error(`Upload error for image ${index}:`, uploadError);
-            toast.error(`Failed to upload image ${index + 1}. Please try again.`);
+            toast.error(t.error);
             return;
           }
         }
@@ -137,7 +300,7 @@ export default function ManFormAlert({ bu, type, id, isInDialog = false }: ManFo
         const result = await submitManForm(alertData);
 
         if (result.success) {
-          toast.success("Safety Alert submitted successfully!");
+          toast.success(t.success);
 
           // Capture the ID before resetting the form
           const submittedId = formData.id;
@@ -148,15 +311,15 @@ export default function ManFormAlert({ bu, type, id, isInDialog = false }: ManFo
           // Navigate to the Man detail page
           router.push(`/Man/${bu}/Alert/${submittedId}`);
         } else {
-          toast.error(result.error || "Failed to submit Safety Alert");
+          toast.error(result.error || t.error);
         }
       } catch (serverError) {
         console.error("Server action error:", serverError);
-        toast.error("Failed to save Safety Alert. Please try again.");
+        toast.error(t.error);
       }
     } catch (error) {
       console.error("General error:", error);
-      toast.error("An unexpected error occurred. Please try again.");
+      toast.error(t.error);
     }
   };
 
@@ -167,10 +330,10 @@ export default function ManFormAlert({ bu, type, id, isInDialog = false }: ManFo
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <CardTitle className="text-center sm:text-left text-xl font-bold text-gray-800">
-                ยืนยันการเข้าใจ Safety Alert
+                {t.title}
               </CardTitle>
               <p className="text-center sm:text-left text-xl font-extrabold text-red-600 mt-1">
-                Alert No: {id}
+                {t.alertNo} {id}
               </p>
             </div>
             <div className="flex justify-center sm:justify-end flex-shrink-0">
@@ -186,11 +349,11 @@ export default function ManFormAlert({ bu, type, id, isInDialog = false }: ManFo
           <CardContent className="pt-6">
             <div className="space-y-2">
               <Label htmlFor="id" className="text-lg font-semibold">
-                รหัสพนักงาน Staff ID
+                {t.staffId}
               </Label>
               <Input
-                {...register("id", { required: "Staff ID is required" })}
-                placeholder="Staff ID"
+                {...register("id", { required: t.staffIdRequired })}
+                placeholder={t.staffIdPlaceholder}
                 className="w-full"
               />
               {errors.id && (
@@ -205,7 +368,7 @@ export default function ManFormAlert({ bu, type, id, isInDialog = false }: ManFo
           <CardContent className="pt-6">
             <div className="space-y-4">
               <Label className="text-lg font-semibold text-gray-800">
-                1. ประเภทของอุบัติเหตุ Type of accident
+                {t.typeOfAccident}
               </Label>
               <div className="grid grid-cols-1 gap-3">
                 {alertTopics.map((topic) => (
@@ -213,7 +376,7 @@ export default function ManFormAlert({ bu, type, id, isInDialog = false }: ManFo
                     <input
                       type="radio"
                       value={topic.id}
-                      {...register('typeAccident', { required: 'Please select a topic' })}
+                      {...register('typeAccident', { required: t.selectAccidentType })}
                       className="sr-only"
                     />
                     <div className={`px-3 py-2 rounded-md text-white text-sm font-medium transition-all ${
@@ -238,11 +401,11 @@ export default function ManFormAlert({ bu, type, id, isInDialog = false }: ManFo
           <CardContent className="pt-6">
             <div className="space-y-2">
               <Label htmlFor="learn" className="text-lg font-semibold">
-                2. บทเรียนที่ได้รับ Lesson learn ?
+                {t.lessonLearn}
               </Label>
               <Textarea
-                {...register("learn", { required: "Lesson learn is required" })}
-                placeholder="Lesson learn"
+                {...register("learn", { required: t.lessonLearnRequired })}
+                placeholder={t.lessonLearnPlaceholder}
                 className="w-full min-h-[80px]"
               />
               {errors.learn && (
@@ -257,14 +420,14 @@ export default function ManFormAlert({ bu, type, id, isInDialog = false }: ManFo
           <CardContent className="pt-6">
             <div className="space-y-4">
               <Label className="text-lg font-semibold text-gray-800">
-                3. ฉันเข้าใจและรับทราบคำเตือนนี้ I understand and acknowledge this accident
+                {t.acknowledge}
               </Label>
               <div className="grid grid-cols-2 gap-3">
                 <label className="flex items-center space-x-3 cursor-pointer">
                   <input
                     type="radio"
                     value="yes"
-                    {...register('acknowledge', { required: 'Please select acknowledge status' })}
+                    {...register('acknowledge', { required: t.acknowledgeRequired })}
                     className="sr-only"
                   />
                   <div className={`px-4 py-2 rounded-md text-white text-sm font-medium transition-all ${
@@ -272,14 +435,14 @@ export default function ManFormAlert({ bu, type, id, isInDialog = false }: ManFo
                       ? "bg-green-500 opacity-100 ring-2 ring-offset-2 ring-gray-400"
                       : "bg-green-500 opacity-70 hover:opacity-90"
                   }`}>
-                    เข้าใจ
+                    {t.understand}
                   </div>
                 </label>
                 <label className="flex items-center space-x-3 cursor-pointer">
                   <input
                     type="radio"
                     value="no"
-                    {...register('acknowledge', { required: 'Please select acknowledge status' })}
+                    {...register('acknowledge', { required: t.acknowledgeRequired })}
                     className="sr-only"
                   />
                   <div className={`px-4 py-2 rounded-md text-white text-sm font-medium transition-all ${
@@ -287,7 +450,7 @@ export default function ManFormAlert({ bu, type, id, isInDialog = false }: ManFo
                       ? "bg-red-500 opacity-100 ring-2 ring-offset-2 ring-gray-400"
                       : "bg-red-500 opacity-70 hover:opacity-90"
                   }`}>
-                    ไม่เข้าใจ
+                    {t.notUnderstand}
                   </div>
                 </label>
               </div>
@@ -303,7 +466,7 @@ export default function ManFormAlert({ bu, type, id, isInDialog = false }: ManFo
           <CardContent className="pt-6">
             <div className="space-y-4">
               <Label className="text-lg font-semibold">
-                รูปภาพประกอบ (Attach Image) (Optional)
+                {t.attachImage}
               </Label>
               <MultiImageUploader
                 images={images}
@@ -327,11 +490,11 @@ export default function ManFormAlert({ bu, type, id, isInDialog = false }: ManFo
           <CardContent className="pt-6">
             <div className="space-y-2">
               <Label className="text-lg font-semibold">
-                หมายเหตุ (Remark) (Optional)
+                {t.remark}
               </Label>
               <Textarea
                 {...register("remark")}
-                placeholder="กรอกหมายเหตุ..."
+                placeholder={t.remarkPlaceholder}
                 className="w-full min-h-[60px]"
               />
             </div>
@@ -344,7 +507,7 @@ export default function ManFormAlert({ bu, type, id, isInDialog = false }: ManFo
           disabled={isSubmitting}
           className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-4 px-6 rounded-md shadow-lg text-lg"
         >
-          {isSubmitting ? "Submitting..." : "ส่ง / Submit"}
+          {isSubmitting ? t.submitting : t.submit}
         </Button>
       </form>
     </div>

@@ -13,6 +13,7 @@ import { auth, storage } from "@/firebase/client";
 import { signInAnonymously } from "firebase/auth";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { submitManForm } from "@/lib/actions/man";
+import { useManFormTranslation } from "@/lib/i18n/man-forms";
 
 interface ManFormToolboxProps {
   bu: string;
@@ -30,6 +31,8 @@ interface ToolboxTalkFormData extends FieldValues {
 }
 
 export default function ManFormToolbox({ bu, type, id, isInDialog = false }: ManFormToolboxProps) {
+  const { t } = useManFormTranslation(bu);
+
   const {
     register,
     handleSubmit,
@@ -44,17 +47,17 @@ export default function ManFormToolbox({ bu, type, id, isInDialog = false }: Man
     try {
       // Validate required fields
       if (!formData.presenter) {
-        toast.error("Please enter presenter name");
+        toast.error(t.toolbox.errors.presenterRequired);
         return;
       }
 
       if (!formData.subject) {
-        toast.error("Please enter subject");
+        toast.error(t.toolbox.errors.subjectRequired);
         return;
       }
 
       if (!formData.learn) {
-        toast.error("Please enter lesson learned");
+        toast.error(t.toolbox.errors.learnRequired);
         return;
       }
 
@@ -133,7 +136,7 @@ export default function ManFormToolbox({ bu, type, id, isInDialog = false }: Man
       <Card className="mb-6">
         <CardHeader>
           <CardTitle className="text-center text-xl font-bold text-gray-800">
-            การพูดคุยด้านความปลอดภัย Safety / Toolbox Talk
+            {t.toolbox.title}
           </CardTitle>
         </CardHeader>
       </Card>
@@ -144,11 +147,11 @@ export default function ManFormToolbox({ bu, type, id, isInDialog = false }: Man
           <CardContent className="pt-6">
             <div className="space-y-2">
               <Label htmlFor="presenter" className="text-lg font-semibold">
-                ผู้นำเสนอ: Presenter
+                {t.toolbox.presenter}
               </Label>
               <Input
                 {...register("presenter", { required: "Presenter is required" })}
-                placeholder="Presenter"
+                placeholder={t.toolbox.presenterPlaceholder}
                 className="w-full"
               />
               {errors.presenter && (
@@ -163,11 +166,11 @@ export default function ManFormToolbox({ bu, type, id, isInDialog = false }: Man
           <CardContent className="pt-6">
             <div className="space-y-2">
               <Label htmlFor="subject" className="text-lg font-semibold">
-                หัวข้อของการพูดคุยด้านความปลอดภัย: Subject
+                {t.toolbox.subject}
               </Label>
               <Input
                 {...register("subject", { required: "Subject is required" })}
-                placeholder="Subject of Toolbox Talk"
+                placeholder={t.toolbox.subjectPlaceholder}
                 className="w-full"
               />
               {errors.subject && (
@@ -182,11 +185,11 @@ export default function ManFormToolbox({ bu, type, id, isInDialog = false }: Man
           <CardContent className="pt-6">
             <div className="space-y-2">
               <Label htmlFor="learn" className="text-lg font-semibold">
-                บทเรียนที่ได้รับจากการพูดคุยด้านความปลอดภัย: Lesson Learn
+                {t.toolbox.learn}
               </Label>
               <Textarea
                 {...register("learn", { required: "Lesson learn is required" })}
-                placeholder="Lesson learn"
+                placeholder={t.toolbox.learnPlaceholder}
                 className="w-full min-h-[80px]"
               />
               {errors.learn && (
@@ -202,7 +205,7 @@ export default function ManFormToolbox({ bu, type, id, isInDialog = false }: Man
           <CardContent className="pt-6">
             <div className="space-y-4">
               <Label className="text-lg font-semibold">
-                รูปภาพประกอบ (Attach Image) (Optional)
+                {t.common.attachImage} {t.common.optional}
               </Label>
               <MultiImageUploader
                 images={images}
@@ -226,11 +229,11 @@ export default function ManFormToolbox({ bu, type, id, isInDialog = false }: Man
           <CardContent className="pt-6">
             <div className="space-y-2">
               <Label className="text-lg font-semibold">
-                หมายเหตุ (Remark) (Optional)
+                {t.common.remark} {t.common.optional}
               </Label>
               <Textarea
                 {...register("remark")}
-                placeholder="กรอกหมายเหตุ..."
+                placeholder={t.common.remarkPlaceholder}
                 className="w-full min-h-[60px]"
               />
             </div>
@@ -243,7 +246,7 @@ export default function ManFormToolbox({ bu, type, id, isInDialog = false }: Man
           disabled={isSubmitting}
           className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-4 px-6 rounded-md shadow-lg text-lg"
         >
-          {isSubmitting ? "Submitting..." : "ส่ง / Submit"}
+          {isSubmitting ? t.common.submitting : t.common.submit}
         </Button>
       </form>
     </div>

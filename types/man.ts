@@ -12,13 +12,13 @@ export interface BaseManRecord {
 
 // SOT/VFL/Meeting record interface (safety-focused)
 export interface SotManRecord extends BaseManRecord {
-  report: 'sot' | 'vfl';
+  report: "sot" | "vfl";
   area: string;
   talkwith: string; // Observer name
   topics: string[]; // Safety issues array
   safe?: string; // Positive reinforcement
   care?: string; // Safety care
-  riskLevel: 'low' | 'medium' | 'high';
+  riskLevel: "low" | "medium" | "high";
   actionComment?: string;
   safetyIssues?: string[]; // Alternative field name for topics
 }
@@ -47,6 +47,16 @@ export interface AlertManRecord extends BaseManRecord {
   learn: string; // Learning points from the incident
 }
 
+// Alert form record interface (accident reporting)
+export interface BootManRecord extends BaseManRecord {
+  observeContact: string;
+  commentSafeBehavior: string;
+  discussUnsafeBehavior: string;
+  otherSafetyIssues: string;
+  agreementWorkSafely: string;
+  area: string;
+}
+
 // Meeting form record interface (safety meeting participation)
 export interface MeetingManRecord extends BaseManRecord {
   acknowledge: string; // Acknowledgment status
@@ -72,20 +82,27 @@ export interface TrainingManRecord extends BaseManRecord {
 }
 
 // Union type for all man records
-export type ManRecord = SotManRecord | TalkManRecord | ToolboxManRecord | AlertManRecord | MeetingManRecord | TrainingManRecord;
+export type ManRecord =
+  | SotManRecord
+  | TalkManRecord
+  | ToolboxManRecord
+  | AlertManRecord
+  | BootManRecord
+  | MeetingManRecord
+  | TrainingManRecord;
 
 // Legacy interface for backward compatibility
 export interface LegacyManRecord {
   id: string;
   bu: string;
   type: string;
-  report: 'sot' | 'vfl';
+  report: "sot" | "vfl";
   area: string;
   talkwith: string; // Observer name
   topics: string[]; // Safety issues array
   safe?: string; // Positive reinforcement
   care?: string; // Safety care
-  riskLevel: 'low' | 'medium' | 'high';
+  riskLevel: "low" | "medium" | "high";
   actionComment?: string;
   remark?: string;
   images: string[]; // Array of image URLs

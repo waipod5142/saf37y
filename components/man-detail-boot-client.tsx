@@ -1,71 +1,80 @@
 "use client";
 
 import React, { useState } from "react";
-import { TalkManRecord } from "@/types/man";
+import { BootManRecord } from "@/types/man";
 import { deleteManRecord } from "@/lib/actions/man";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Calendar, MapPin, Users, MessageSquare, FileText, Camera, ToggleLeftIcon, ToggleRightIcon, Trash2Icon } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Calendar,
+  AlertTriangle,
+  BookOpen,
+  FileText,
+  Camera,
+  ToggleLeftIcon,
+  ToggleRightIcon,
+  Trash2Icon,
+  ClipboardCheck,
+} from "lucide-react";
 import { useManFormTranslation } from "@/lib/i18n/man-forms";
 
-interface TalkManDetailClientProps {
-  records: TalkManRecord[];
+interface BootManDetailClientProps {
+  records: BootManRecord[];
   bu: string;
 }
 
-// Talk topic categories with colors
-const talkTopicCategories = [
-  { id: 'communicate', label: 'การสื่อสาร (Communication)', color: 'bg-blue-500' },
-  { id: 'meeting', label: 'การประชุม (Meeting)', color: 'bg-green-500' },
-  { id: 'discussion', label: 'การอภิปราย (Discussion)', color: 'bg-purple-500' },
-  { id: 'briefing', label: 'การแจ้งข้อมูล (Briefing)', color: 'bg-orange-500' },
-];
-
-// Get talk topic category by ID
-const getTalkCategory = (id: string) => {
-  return talkTopicCategories.find(cat => cat.id === id) || { id, label: id, color: 'bg-gray-400' };
-};
-
 // Format date
 const formatDate = (date: Date | string) => {
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
-  return dateObj.toLocaleString('en-GB', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false
+  const dateObj = typeof date === "string" ? new Date(date) : date;
+  return dateObj.toLocaleString("en-GB", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
   });
 };
 
-export default function TalkManDetailClient({ records, bu }: TalkManDetailClientProps) {
+export default function BootManDetailClient({
+  records,
+  bu,
+}: BootManDetailClientProps) {
   const { t } = useManFormTranslation(bu);
   const [showAllRecords, setShowAllRecords] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [deletingRecordId, setDeletingRecordId] = useState<string | null>(null);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(
+    null
+  );
 
   // Utility function for Firebase timestamp conversion
   const convertFirebaseTimestamp = (timestamp: any): Date | null => {
     if (!timestamp) return null;
 
-    if (timestamp.toDate && typeof timestamp.toDate === 'function') {
+    if (timestamp.toDate && typeof timestamp.toDate === "function") {
       return timestamp.toDate();
     }
 
     if (timestamp._seconds !== undefined) {
-      return new Date(timestamp._seconds * 1000 + (timestamp._nanoseconds || 0) / 1000000);
+      return new Date(
+        timestamp._seconds * 1000 + (timestamp._nanoseconds || 0) / 1000000
+      );
     }
 
     return new Date(timestamp);
   };
 
   // Helper function to check if record is within 5-minute delete window
-  const isWithinDeleteTimeWindow = (record: TalkManRecord) => {
+  const isWithinDeleteTimeWindow = (record: BootManRecord) => {
     const recordTimestamp = record.timestamp || record.createdAt;
     if (!recordTimestamp) return false;
 
@@ -91,7 +100,8 @@ export default function TalkManDetailClient({ records, bu }: TalkManDetailClient
   };
 
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
-    e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0yMCAyMkgxNFYxNkgyMFYyMlpNMjAgMzhIMTRWMzJIMjBWMzhaTTIwIDQ2SDE0VjQwSDIwVjQ2WiIgZmlsbD0iIzlDQTRBRiIvPgo8cGF0aCBkPSJNNTAgMjJINDRWMTZINTBWMjJaTTUwIDM4SDQ0VjMySDUwVjM4Wk01MCA0Nkg0NFY0MEg1MFY0NloiIGZpbGw9IiM5Q0E0QUYiLz4KPHBhdGggZD0iTTM1IDIySDI5VjE2SDM1VjIyWk0zNSAzOEgyOVYzMkgzNVYzOFpNMzUgNDZIMjlWNDBIMzVWNDZaIiBmaWxsPSIjOUNBNEFGIi8+Cjx0ZXh0IHg9IjMyIiB5PSIzNSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzlDQTRBRiIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjhweCI+RXJyb3I8L3RleHQ+Cjwvc3ZnPg==';
+    e.currentTarget.src =
+      "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0yMCAyMkgxNFYxNkgyMFYyMlpNMjAgMzhIMTRWMzJIMjBWMzhaTTIwIDQ2SDE0VjQwSDIwVjQ2WiIgZmlsbD0iIzlDQTRBRiIvPgo8cGF0aCBkPSJNNTAgMjJINDRWMTZINTBWMjJaTTUwIDM4SDQ0VjMySDUwVjM4Wk01MCA0Nkg0NFY0MEg1MFY0NloiIGZpbGw9IiM5Q0E0QUYiLz4KPHBhdGggZD0iTTM1IDIySDI5VjE2SDM1VjIyWk0zNSAzOEgyOVYzMkgzNVYzOFpNMzUgNDZIMjlWNDBIMzVWNDZaIiBmaWxsPSIjOUNBNEFGIi8+Cjx0ZXh0IHg9IjMyIiB5PSIzNSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzlDQTRBRiIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjhweCI+RXJyb3I8L3RleHQ+Cjwvc3ZnPg==";
   };
 
   // Delete record handler
@@ -119,7 +129,9 @@ export default function TalkManDetailClient({ records, bu }: TalkManDetailClient
   if (!records || records.length === 0) {
     return (
       <div className="mb-6">
-        <p className="text-sm text-red-500 mt-2">No Talk reports found for this machine.</p>
+        <p className="text-sm text-red-500 mt-2">
+          {t.bog?.noReports || "No BOG reports found for this machine"}
+        </p>
       </div>
     );
   }
@@ -131,7 +143,9 @@ export default function TalkManDetailClient({ records, bu }: TalkManDetailClient
       <div className="space-y-4">
         <div className="flex justify-between items-center">
           <h3 className="text-lg font-semibold">
-            Talk Reports ({showAllRecords ? records.length : 1} of {records.length} record{records.length > 1 ? 's' : ''})
+            {t.alert.reportsCount} ({showAllRecords ? records.length : 1}{" "}
+            {t.alert.of} {records.length}{" "}
+            {records.length > 1 ? t.alert.records : t.alert.record})
           </h3>
 
           {/* Toggle Button */}
@@ -140,7 +154,7 @@ export default function TalkManDetailClient({ records, bu }: TalkManDetailClient
               variant="outline"
               size="sm"
               onClick={() => setShowAllRecords(!showAllRecords)}
-              className={`flex items-center gap-2 ${showAllRecords ? 'bg-red-100' : 'bg-green-100'}`}
+              className={`flex items-center gap-2 ${showAllRecords ? "bg-red-100" : "bg-green-100"}`}
             >
               {showAllRecords ? (
                 <>
@@ -160,18 +174,23 @@ export default function TalkManDetailClient({ records, bu }: TalkManDetailClient
         {/* Records */}
         <div className="space-y-4">
           {displayedRecords.map((record, index) => {
-            const topicCategory = getTalkCategory(record.selectedTopic);
-
             return (
               <Card key={index} className="shadow-lg">
                 {/* Header */}
-                <CardHeader className="bg-gradient-to-r from-green-50 to-blue-50 border-b">
+                <CardHeader className="bg-gradient-to-r from-purple-50 to-blue-50 border-b">
                   <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                     <div className="flex items-center gap-3">
-                      {index === 0 && <Badge variant="default" className="mr-2">Latest</Badge>}
-                      <Badge className="bg-green-500 text-white px-3 py-1 text-sm font-medium">
-                        TALK
+                      {index === 0 && (
+                        <Badge variant="default" className="mr-2">
+                          {t.alert?.latest || "Latest"}
+                        </Badge>
+                      )}
+                      <Badge className="bg-purple-600 text-white px-3 py-1 text-sm font-medium">
+                        {t.bog?.bogForm?.toUpperCase() || "BOG FORM"}
                       </Badge>
+                      <div className="text-sm text-gray-600">
+                        Area: {record.area}
+                      </div>
                       <div className="text-sm text-gray-600">
                         ID: {record.id}
                       </div>
@@ -204,49 +223,87 @@ export default function TalkManDetailClient({ records, bu }: TalkManDetailClient
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {/* Left Column */}
                     <div className="space-y-4">
-                      {/* Location & Participants */}
-                      <div className="space-y-3">
+                      {/* Contact Person */}
+                      {record.observeContact && (
                         <div className="flex items-center gap-2">
-                          <MapPin className="h-5 w-5 text-gray-500" />
+                          <AlertTriangle className="h-5 w-5 text-blue-500" />
                           <div>
-                            <p className="font-semibold text-gray-700">สถานที่ / Location</p>
-                            <p className="text-gray-600">{record.place}</p>
+                            <p className="font-semibold text-gray-700">
+                              {t.bog?.contactPerson || "Contact Person"}
+                            </p>
+                            <p className="text-gray-600">
+                              {record.observeContact}
+                            </p>
                           </div>
                         </div>
+                      )}
 
+                      {/* Safe Behavior */}
+                      {record.commentSafeBehavior && (
                         <div className="flex items-center gap-2">
-                          <Users className="h-5 w-5 text-gray-500" />
+                          <FileText className="h-5 w-5 text-green-500" />
                           <div>
-                            <p className="font-semibold text-gray-700">จำนวนผู้เข้าร่วม / Participants</p>
-                            <p className="text-gray-600">{record.participate} คน</p>
+                            <p className="font-semibold text-gray-700 mb-2">
+                              {t.bog?.safeBehavior || "Safe Behavior"}
+                            </p>
+                            <div className="bg-green-50 p-3 rounded-md border-l-4 border-green-500">
+                              <p className="text-gray-700">
+                                {record.commentSafeBehavior}
+                              </p>
+                            </div>
                           </div>
                         </div>
-                      </div>
+                      )}
 
-                      {/* Talk Topic */}
-                      <div className="flex items-center gap-2">
-                        <MessageSquare className="h-5 w-5 text-gray-500" />
-                        <div>
-                          <p className="font-semibold text-gray-700 mb-1">หัวข้อการสนทนา / Topic</p>
-                          <Badge className={`${topicCategory.color} text-white px-3 py-1`}>
-                            {topicCategory.label}
-                          </Badge>
+                      {/* Unsafe Behavior */}
+                      {record.discussUnsafeBehavior && (
+                        <div className="flex items-center gap-2">
+                          <ClipboardCheck className="h-5 w-5 text-orange-500" />
+                          <div>
+                            <p className="font-semibold text-gray-700 mb-2">
+                              {t.bog?.unsafeCondition || "Unsafe Behavior"}
+                            </p>
+                            <div className="bg-orange-50 p-3 rounded-md border-l-4 border-orange-500">
+                              <p className="text-gray-700">
+                                {record.discussUnsafeBehavior}
+                              </p>
+                            </div>
+                          </div>
                         </div>
-                      </div>
+                      )}
                     </div>
 
                     {/* Right Column */}
                     <div className="space-y-4">
-                      {/* Talk Details */}
-                      <div>
-                        <p className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                          <MessageSquare className="h-5 w-5 text-blue-600" />
-                          รายละเอียดการสนทนา / Talk Details
-                        </p>
-                        <div className="bg-blue-50 p-3 rounded-md border-l-4 border-blue-500">
-                          <p className="text-gray-700">{record.talkdetail}</p>
+                      {/* Other Issues */}
+                      {record.otherSafetyIssues && (
+                        <div>
+                          <p className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                            <BookOpen className="h-5 w-5 text-purple-600" />
+                            {t.bog?.otherIssues || "Other Issues"}
+                          </p>
+                          <div className="bg-purple-50 p-3 rounded-md border-l-4 border-purple-500">
+                            <p className="text-gray-700">
+                              {record.otherSafetyIssues}
+                            </p>
+                          </div>
                         </div>
-                      </div>
+                      )}
+
+                      {/* Agreement */}
+                      {record.agreementWorkSafely && (
+                        <div>
+                          <p className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                            <ClipboardCheck className="h-5 w-5 text-blue-600" />
+                            {t.bog?.agreement || "Agreement"}
+                          </p>
+                          <div className="bg-blue-50 p-3 rounded-md border-l-4 border-blue-500">
+                            <p className="text-gray-700">
+                              {record.agreementWorkSafely}
+                            </p>
+                          </div>
+                        </div>
+                      )}
 
                       {/* Remarks */}
                       {record.remark && (
@@ -279,7 +336,7 @@ export default function TalkManDetailClient({ records, bu }: TalkManDetailClient
                           >
                             <img
                               src={imageUrl}
-                              alt={`Talk Image ${imgIndex + 1}`}
+                              alt={`${t.alert.imageAlt} ${imgIndex + 1}`}
                               className="w-full h-32 object-cover rounded-md shadow-md group-hover:shadow-lg transition-shadow pointer-events-none"
                               onError={handleImageError}
                             />
@@ -300,17 +357,18 @@ export default function TalkManDetailClient({ records, bu }: TalkManDetailClient
       <Dialog open={isImageModalOpen} onOpenChange={setIsImageModalOpen}>
         <DialogContent className="max-w-4xl max-h-[90vh] p-0">
           <DialogHeader className="p-6 pb-0">
-            <DialogTitle>Talk Image</DialogTitle>
+            <DialogTitle>{t.alert.imageModalTitle}</DialogTitle>
           </DialogHeader>
           <div className="p-6 pt-2">
             {selectedImage && (
               <div className="flex justify-center">
                 <img
                   src={selectedImage}
-                  alt="Talk image"
+                  alt={t.alert.imageAlt}
                   className="max-w-full max-h-[70vh] object-contain rounded"
                   onError={(e) => {
-                    e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCA0MDAgMzAwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgogIDxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjRjNGNEY2Ii8+CiAgPHRleHQgeD0iMjAwIiB5PSIxNTAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM5Q0E0QUYiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNiI+SW1hZ2UgY291bGQgbm90IGJlIGxvYWRlZDwvdGV4dD4KPC9zdmc+';
+                    e.currentTarget.src =
+                      "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCA0MDAgMzAwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgogIDxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjRjNGNEY2Ii8+CiAgPHRleHQgeD0iMjAwIiB5PSIxNTAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM5Q0E0QUYiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNiI+SW1hZ2UgY291bGQgbm90IGJlIGxvYWRlZDwvdGV4dD4KPC9zdmc+";
                   }}
                 />
               </div>
@@ -323,10 +381,10 @@ export default function TalkManDetailClient({ records, bu }: TalkManDetailClient
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full mx-4">
-            <h3 className="text-lg font-semibold mb-4">Delete Talk Report</h3>
-            <p className="text-gray-600 mb-6">
-              {t.common.deleteConfirm}
-            </p>
+            <h3 className="text-lg font-semibold mb-4">
+              {t.alert.deleteTitle}
+            </h3>
+            <p className="text-gray-600 mb-6">{t.common.deleteConfirm}</p>
             <div className="flex justify-end gap-3">
               <Button
                 variant="outline"
@@ -340,7 +398,9 @@ export default function TalkManDetailClient({ records, bu }: TalkManDetailClient
                 onClick={() => handleDeleteRecord(showDeleteConfirm)}
                 disabled={deletingRecordId !== null}
               >
-                {deletingRecordId === showDeleteConfirm ? t.common.deleting : t.common.delete}
+                {deletingRecordId === showDeleteConfirm
+                  ? t.common.deleting
+                  : t.common.delete}
               </Button>
             </div>
           </div>

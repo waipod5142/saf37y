@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "./ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { CalendarIcon, UserIcon, FileTextIcon, ToggleLeftIcon, ToggleRightIcon, Trash2Icon, MapPinIcon, WrenchIcon, CheckIcon, AwardIcon, GaugeIcon } from "lucide-react";
+import { CalendarIcon, UserIcon, FileTextIcon, ToggleLeftIcon, ToggleRightIcon, Trash2Icon, MapPinIcon, WrenchIcon, CheckIcon, AwardIcon, GaugeIcon, FactoryIcon } from "lucide-react";
 import { deleteMachineInspectionRecord, updateMachineInspectionRecord } from "@/lib/actions/machines";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -291,7 +291,7 @@ export default function MachineDetailClient({ records, questions }: MachineDetai
         const questionName = key.slice(0, -1);
         if (!groups[questionName]) groups[questionName] = { status: null };
         groups[questionName].images = Array.isArray(record[key]) ? record[key] : [record[key]];
-      } else if (!['id', 'bu', 'type', 'inspector', 'timestamp', 'createdAt', 'remark', 'images', 'docId', 'site', 'latitude', 'longitude', 'locationTimestamp', 'locationAccuracy'].includes(key)) {
+      } else if (!['id', 'bu', 'type', 'inspector', 'timestamp', 'createdAt', 'updatedAt', 'remark', 'images', 'docId', 'site', 'latitude', 'longitude', 'locationTimestamp', 'locationAccuracy'].includes(key)) {
         // Status field
         if (!groups[key]) groups[key] = { status: null };
         groups[key].status = record[key];
@@ -306,7 +306,7 @@ export default function MachineDetailClient({ records, questions }: MachineDetai
     const keys = Object.keys(record);
     const resultKeys = keys.filter(key => 
       key !== 'id' && key !== 'bu' && key !== 'type' && key !== 'inspector' && 
-      key !== 'timestamp' && key !== 'createdAt' && key !== 'remark' && 
+      key !== 'timestamp' && key !== 'createdAt' && key !== 'updatedAt' && key !== 'remark' && 
       key !== 'images' && key !== 'docId' && key !== 'site' && 
       key !== 'latitude' && key !== 'longitude' && key !== 'locationTimestamp' && key !== 'locationAccuracy' &&
       !key.endsWith('R') && !key.endsWith('P')
@@ -351,6 +351,12 @@ export default function MachineDetailClient({ records, questions }: MachineDetai
                   <UserIcon className="h-4 w-4" />
                   {record.inspector || "Unknown Inspector"}
                 </div>
+                {record.site && (
+                  <div className="flex items-center gap-1">
+                    <FactoryIcon className="h-4 w-4" />
+                    {record.site}
+                  </div>
+                )}
               </div>
               
               {/* Certificate Section */}
@@ -382,7 +388,7 @@ export default function MachineDetailClient({ records, questions }: MachineDetai
                   </div>
                 </div>
               )}
-              
+
               {/* Location Information Section */}
               {record.latitude && record.longitude && (
                 <button
@@ -436,7 +442,7 @@ export default function MachineDetailClient({ records, questions }: MachineDetai
                 {Object.keys(record)
                   .filter(key => 
                     key !== 'id' && key !== 'bu' && key !== 'type' && key !== 'inspector' && key !== 'certificate' && key !== 'mileage' && 
-                    key !== 'timestamp' && key !== 'createdAt' && key !== 'remark' && 
+                    key !== 'timestamp' && key !== 'createdAt'&& key !== 'updatedAt' && key !== 'remark' && 
                     key !== 'images' && key !== 'docId' && key !== 'site' && 
                     key !== 'latitude' && key !== 'longitude' && key !== 'locationTimestamp' && key !== 'locationAccuracy' &&
                     !key.endsWith('R') && !key.endsWith('P') // Exclude remark and image fields

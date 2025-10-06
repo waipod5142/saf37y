@@ -60,14 +60,14 @@ export default function RootLayout({
                   Dashboard by Site
                 </Link>
               </li> */}
-              <li>
+              {/* <li>
                 <Link
                   href="/transaction"
                   className="uppercase tracking-widest hover:underline"
                 >
                   Lastest transaction
                 </Link>
-              </li>
+              </li> */}
               <li>
                 <AuthButtons />
               </li>

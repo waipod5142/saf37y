@@ -2,14 +2,15 @@ import ManFormAlert from "@/components/man-form-alert";
 import { normalizeBuCode } from "@/lib/utils";
 import ManFormMeeting from "@/components/man-form-meeting";
 import ManFormToolbox from "@/components/man-form-toolbox";
+import ManFormBog from "@/components/man-form-boot";
 
-export default async function MachinePage({ 
-  params 
-}: { 
-  params: Promise<{ bu: string; type: string; id: string }> 
+export default async function MachinePage({
+  params,
+}: {
+  params: Promise<{ bu: string; type: string; id: string }>;
 }) {
   const { bu, type, id } = await params;
-  
+
   // Decode URL parameters to handle special characters (including Thai characters)
   const decodedBu = decodeURIComponent(bu);
   const decodedType = decodeURIComponent(type);
@@ -20,15 +21,32 @@ export default async function MachinePage({
 
   return (
     <div className="max-w-4xl mx-auto p-2">
-      
       {(() => {
         const lowerType = decodedType.toLowerCase();
         if (lowerType === "alertform") {
-          return <ManFormAlert bu={normalizedBu} type={decodedType} id={decodedId} />;
+          return (
+            <ManFormAlert bu={normalizedBu} type={decodedType} id={decodedId} />
+          );
         } else if (lowerType === "meetingform") {
-          return <ManFormMeeting bu={normalizedBu} type={decodedType} id={decodedId} />;
+          return (
+            <ManFormMeeting
+              bu={normalizedBu}
+              type={decodedType}
+              id={decodedId}
+            />
+          );
         } else if (lowerType === "toolbox") {
-          return <ManFormToolbox bu={normalizedBu} type={decodedType} id={decodedId} />;
+          return (
+            <ManFormToolbox
+              bu={normalizedBu}
+              type={decodedType}
+              id={decodedId}
+            />
+          );
+        } else if (lowerType === "bootform") {
+          return (
+            <ManFormBog bu={normalizedBu} type={decodedType} id={decodedId} />
+          );
         }
         // Return nothing for unrecognized types
         return null;

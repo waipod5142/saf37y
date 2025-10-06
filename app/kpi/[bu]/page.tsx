@@ -496,14 +496,6 @@ export default function BUKPIPage() {
       <div className="mt-6 mb-8">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
-            <Link href="/kpi">
-              <Button variant="outline" size="sm" className="flex items-center gap-2 hover:bg-gray-100">
-                <ArrowLeft className="h-4 w-4" />
-                Back to Overview
-              </Button>
-            </Link>
-          </div>
-          <div className="flex items-center gap-4">
             {lastUpdated && (
               <div className="text-sm text-gray-500 flex items-center gap-2">
                 <Calendar className="h-4 w-4" />
@@ -562,7 +554,7 @@ export default function BUKPIPage() {
               variant="outline"
               size="sm"
               onClick={() => setShowDefects(!showDefects)}
-              className="flex items-center gap-2"
+              className={`flex items-center gap-2 ${showDefects ? 'border-green-500 hover:border-green-600' : 'border-red-500 hover:border-red-600'}`}
             >
               <Eye className="h-4 w-4" />
               {showDefects ? 'HIDE' : 'SHOW'} DEFECTS

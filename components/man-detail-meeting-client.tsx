@@ -8,9 +8,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Calendar, AlertTriangle, BookOpen, FileText, Camera, ToggleLeftIcon, ToggleRightIcon, Trash2Icon, ClipboardCheck } from "lucide-react";
+import { useManFormTranslation } from "@/lib/i18n/man-forms";
 
 interface MeetingManDetailClientProps {
   records: MeetingManRecord[];
+  bu: string;
 }
 
 
@@ -33,16 +35,18 @@ const getAcknowledgmentStyle = (status: string) => {
 // Format date
 const formatDate = (date: Date | string) => {
   const dateObj = typeof date === 'string' ? new Date(date) : date;
-  return dateObj.toLocaleString('th-TH', {
+  return dateObj.toLocaleString('en-GB', {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
     hour: '2-digit',
-    minute: '2-digit'
+    minute: '2-digit',
+    hour12: false
   });
 };
 
-export default function MeetingManDetailClient({ records }: MeetingManDetailClientProps) {
+export default function MeetingManDetailClient({ records, bu }: MeetingManDetailClientProps) {
+  const { t } = useManFormTranslation(bu);
   const [showAllRecords, setShowAllRecords] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
@@ -145,12 +149,12 @@ export default function MeetingManDetailClient({ records }: MeetingManDetailClie
               {showAllRecords ? (
                 <>
                   <ToggleRightIcon className="h-4 w-4" />
-                  Show Latest Only
+                  {t.common.showLess}
                 </>
               ) : (
                 <>
                   <ToggleLeftIcon className="h-4 w-4" />
-                  Show All Records
+                  {t.common.showAll}
                 </>
               )}
             </Button>
@@ -249,7 +253,7 @@ export default function MeetingManDetailClient({ records }: MeetingManDetailClie
                     <div>
                       <p className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
                         <FileText className="h-5 w-5 text-gray-600" />
-                        หมายเหตุ / Remarks
+                        {t.common.remark}
                       </p>
                       <div className="bg-gray-50 p-3 rounded-md border-l-4 border-gray-500">
                         <p className="text-gray-700">{record.remark}</p>
@@ -264,7 +268,7 @@ export default function MeetingManDetailClient({ records }: MeetingManDetailClie
                 <div className="mt-6 pt-6 border-t">
                   <p className="font-semibold text-gray-700 mb-4 flex items-center gap-2">
                     <Camera className="h-5 w-5" />
-                    รูปภาพประกอบ / Images ({record.images.length})
+                    {t.common.images} ({record.images.length})
                   </p>
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                     {record.images.map((imageUrl, imgIndex) => (
@@ -321,7 +325,7 @@ export default function MeetingManDetailClient({ records }: MeetingManDetailClie
           <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full mx-4">
             <h3 className="text-lg font-semibold mb-4">Delete Meeting Form Report</h3>
             <p className="text-gray-600 mb-6">
-              Are you sure you want to delete this Meeting Form report? This action cannot be undone.
+              {t.common.deleteConfirm}
             </p>
             <div className="flex justify-end gap-3">
               <Button
@@ -329,14 +333,14 @@ export default function MeetingManDetailClient({ records }: MeetingManDetailClie
                 onClick={() => setShowDeleteConfirm(null)}
                 disabled={deletingRecordId !== null}
               >
-                Cancel
+                {t.common.cancel}
               </Button>
               <Button
                 variant="destructive"
                 onClick={() => handleDeleteRecord(showDeleteConfirm)}
                 disabled={deletingRecordId !== null}
               >
-                {deletingRecordId === showDeleteConfirm ? "Deleting..." : "Delete"}
+                {deletingRecordId === showDeleteConfirm ? t.common.deleting : t.common.delete}
               </Button>
             </div>
           </div>
