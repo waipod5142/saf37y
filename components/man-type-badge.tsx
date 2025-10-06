@@ -8,7 +8,7 @@ const typeLabels: { [bu: string]: { [type: string]: string } } = {
     coupon: "โทเคนสำหรับร้านอาหาร / Food Token",
     meeting: "การมีส่วนร่วมในเซฟตี้มีทติ้ง / Safety Meeting",
     alert: "ยืนยันการเข้าใจ Safety Alert / Safety Alert Acknowledgement",
-    training: "การมีส่วนร่วมในเซฟตี้มีทติ้ง / Training record",
+    training: "ประวัติการฝึกอบรม / Training record",
   },
   vn: {
     pra: "Đánh giá rủi ro cá nhân / Personal Risk Assessment",
@@ -22,17 +22,25 @@ const typeLabels: { [bu: string]: { [type: string]: string } } = {
   },
 };
 
-type BadgeVariant = "primary" | "warning" | "success" | "secondary" | "purple" | "pink" | "indigo" | "destructive";
+type BadgeVariant =
+  | "primary"
+  | "warning"
+  | "success"
+  | "secondary"
+  | "purple"
+  | "pink"
+  | "indigo"
+  | "destructive";
 
 const typeVariants: { [bu: string]: { [type: string]: BadgeVariant } } = {
   th: {
-    sot: "primary",      // Blue for SOT (Safety Observation Tour)
-    talk: "warning",     // Amber/Orange for Talk
-    toolbox: "success",  // Green for Toolbox
-    coupon: "pink",      // Pink for Food Token (friendly, food-related)
-    meeting: "purple",   // Purple for Safety Meeting (formal, important)
+    sot: "primary", // Blue for SOT (Safety Observation Tour)
+    talk: "warning", // Amber/Orange for Talk
+    toolbox: "success", // Green for Toolbox
+    coupon: "pink", // Pink for Food Token (friendly, food-related)
+    meeting: "purple", // Purple for Safety Meeting (formal, important)
     alert: "destructive", // Red for Safety Alert (urgent, attention-grabbing)
-    training: "indigo",  // Indigo for Training (educational, professional)
+    training: "indigo", // Indigo for Training (educational, professional)
   },
   vn: {
     pra: "primary",
@@ -52,7 +60,11 @@ interface ManTypeBadgeProps {
   className?: string;
 }
 
-export default function ManTypeBadge({ type, bu = 'th', className }: ManTypeBadgeProps) {
+export default function ManTypeBadge({
+  type,
+  bu = "th",
+  className,
+}: ManTypeBadgeProps) {
   const normalizedType = type.toLowerCase();
 
   // Get label and variant based on business unit and type

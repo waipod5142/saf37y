@@ -70,8 +70,10 @@ export interface TrainingManRecord extends BaseManRecord {
   empId: string; // Employee ID (maps to id param)
   courseId: string; // Course identifier
   courseName: string; // Course name in Thai/English
+  trainingCourse: string; // Course name in Thai/English
   trainingDate: Date | string; // Training completion date
   expiryDate: Date | string; // Certificate expiry date
+  expirationDate: Date | string; // Certificate expiry date
   hours: string; // Training duration
   score: string; // Test score
   status: string; // Training status (active, expired, etc.)

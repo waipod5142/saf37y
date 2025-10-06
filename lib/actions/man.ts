@@ -55,6 +55,7 @@ export async function submitManForm(
     const baseRecord = {
       id: formData.id, // Staff ID (user input)
       alertNo: formData.alertNo, // Alert number (from URL parameter)
+      trainingCourse: formData.trainingCourse, // Training course name (from URL parameter)
       bu: formData.bu,
       type: formData.type,
       images: formData.images || [],
@@ -70,15 +71,14 @@ export async function submitManForm(
       // SOT/VFL-specific fields
       manRecord = {
         ...baseRecord,
-        reportingType: formData.reportingType, // 'sot' or 'vfl'
+        report: formData.report, // 'sot' or 'vfl'
         area: formData.area,
-        observerName: formData.observerName,
-        safetyIssues: formData.safetyIssues || [],
-        positiveReinforcement: formData.positiveReinforcement,
-        safetyCare: formData.safetyCare,
+        talkwith: formData.talkwith,
+        topics: formData.topics || [],
+        safe: formData.safe,
+        care: formData.care,
         riskLevel: formData.riskLevel,
-        processComments: formData.processComments,
-        remarks: formData.remarks,
+        actionComment: formData.actionComment,
       };
     } else if (formData.type === 'alert') {
       // Alert-specific fields
@@ -87,6 +87,14 @@ export async function submitManForm(
         typeAccident: formData.typeAccident, // Selected accident type
         learn: formData.learn, // Lesson learned
         acknowledge: formData.acknowledge, // Understanding acknowledgement (yes/no)
+      };
+    } else if (formData.type === 'trainingform') {
+      // Training-specific fields
+      manRecord = {
+        ...baseRecord,
+        courseId: formData.courseId,
+        trainingDate: formData.trainingDate,
+        expirationDate: formData.expirationDate,
       };
     } else {
       // Default case - include all form data
@@ -114,6 +122,46 @@ export async function submitManForm(
     return {
       success: false,
       error: `Failed to save man record: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    };
+  }
+}
+
+export async function submitTrainingForm(
+  formData: Record<string, any>
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    // Create the training record with specific fields
+    const trainingRecord = {
+      empId: formData.empId, // Staff ID (user input)
+      trainingCourse: formData.trainingCourse, // Training course name (from URL parameter)
+      bu: formData.bu,
+      type: formData.type,
+      courseId: formData.courseId,
+      trainingDate: formData.trainingDate,
+      expirationDate: formData.expirationDate,
+      remark: formData.remark || '',
+      timestamp: FieldValue.serverTimestamp(),
+      createdAt: FieldValue.serverTimestamp(),
+    };
+
+    // Remove undefined values before saving to Firestore
+    const cleanedRecord = removeUndefinedValues(trainingRecord);
+
+    // Save to the trainings collection
+    const docRef = await firestore
+      .collection("trainings")
+      .add(cleanedRecord);
+
+    console.log("Training record saved with ID:", docRef.id);
+
+    return {
+      success: true,
+    };
+  } catch (error) {
+    console.error("Error saving training record:", error);
+    return {
+      success: false,
+      error: `Failed to save training record: ${error instanceof Error ? error.message : 'Unknown error'}`,
     };
   }
 }

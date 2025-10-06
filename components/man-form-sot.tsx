@@ -140,11 +140,18 @@ export default function ManFormSOT({ bu, type, id, isInDialog = false }: ManForm
       }
 
       const sotData = {
-        ...formData,
-        topics: selectedSafetyIssues,
         bu,
         type: type.toLowerCase(),
         id,
+        report: formData.report,
+        area: formData.area,
+        talkwith: formData.talkwith,
+        topics: selectedSafetyIssues,
+        safe: formData.safe || '',
+        care: formData.care || '',
+        riskLevel: formData.riskLevel,
+        actionComment: formData.actionComment || '',
+        remark: formData.remark || '',
         images: imageUrls,
         timestamp: new Date().toISOString(),
       };

@@ -85,12 +85,7 @@ const isMeetingRecord = (record: ManRecord): record is MeetingManRecord => {
 };
 
 const isTrainingRecord = (record: ManRecord): record is TrainingManRecord => {
-  return (
-    "empId" in record &&
-    "courseId" in record &&
-    "courseName" in record &&
-    "trainingDate" in record
-  );
+  return "empId" in record && "courseId" in record && "trainingDate" in record;
 };
 
 const isSotOrVflRecord = (record: ManRecord): record is SotManRecord => {

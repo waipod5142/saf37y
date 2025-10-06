@@ -2,7 +2,8 @@ import ManFormAlert from "@/components/man-form-alert";
 import { normalizeBuCode } from "@/lib/utils";
 import ManFormMeeting from "@/components/man-form-meeting";
 import ManFormToolbox from "@/components/man-form-toolbox";
-import ManFormBog from "@/components/man-form-boot";
+import ManFormBoot from "@/components/man-form-boot";
+import ManFormTraining from "@/components/man-form-training";
 
 export default async function MachinePage({
   params,
@@ -45,7 +46,7 @@ export default async function MachinePage({
           );
         } else if (lowerType === "bootform") {
           return (
-            <ManFormBog bu={normalizedBu} type={decodedType} id={decodedId} />
+            <ManFormBoot bu={normalizedBu} type={decodedType} id={decodedId} />
           );
         }
         // Return nothing for unrecognized types
