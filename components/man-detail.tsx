@@ -93,6 +93,9 @@ const isSotOrVflRecord = (record: ManRecord): record is SotManRecord => {
 };
 
 export default async function ManDetail({ bu, type, id }: ManDetailProps) {
+  // Return null if type is undefined
+  if (!type) return null;
+
   // Fetch man records from the mantr collection
   const records = await getManRecords(bu, type, id);
 
