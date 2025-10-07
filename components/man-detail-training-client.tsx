@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { TrainingManRecord } from "@/types/man";
-import { deleteManRecord } from "@/lib/actions/man";
+import { deleteTrainingRecord } from "@/lib/actions/man";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -33,6 +33,10 @@ interface TrainingManDetailClientProps {
 
 // Get training status styling
 const getTrainingStatusStyle = (status: string) => {
+  if (!status) {
+    return { color: "bg-gray-400 text-white", text: "N/A" };
+  }
+
   switch (status.toLowerCase()) {
     case "active":
       return { color: "bg-green-500 text-white", text: "Active / ใช้งานได้" };
@@ -154,7 +158,7 @@ export default function TrainingManDetailClient({
 
     setDeletingRecordId(docId);
     try {
-      const result = await deleteManRecord(docId);
+      const result = await deleteTrainingRecord(docId);
       if (result.success) {
         // Reload the page to refresh the records
         window.location.reload();

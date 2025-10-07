@@ -266,3 +266,78 @@ export async function deleteManRecord(
     };
   }
 }
+
+export async function deleteTrainingRecord(
+  recordId: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    // First, fetch the training record to get the files array
+    const docRef = firestore.collection("trainings").doc(recordId);
+    const docSnapshot = await docRef.get();
+
+    if (!docSnapshot.exists) {
+      return {
+        success: false,
+        error: "Training record not found",
+      };
+    }
+
+    const recordData = docSnapshot.data();
+
+    // Collect all file URLs from the record
+    const allFileUrls: string[] = [];
+
+    // Add files from the files array
+    if (recordData?.files && recordData.files.length > 0) {
+      allFileUrls.push(...recordData.files);
+    }
+
+    // Delete all collected files from Firebase Storage
+    if (allFileUrls.length > 0) {
+      try {
+        const bucket = admin.storage().bucket("sccc-inseesafety-prod.firebasestorage.app");
+
+        // Delete all files in parallel
+        const deletePromises = allFileUrls.map(async (fileUrl: string) => {
+          try {
+            // Extract storage path from the URL
+            const storagePath = extractStoragePathFromUrl(fileUrl);
+            if (!storagePath) {
+              console.warn(`Skipping deletion - could not extract storage path from: ${fileUrl}`);
+              return;
+            }
+
+            const file = bucket.file(storagePath);
+            await file.delete();
+            console.log(`Successfully deleted file: ${storagePath}`);
+          } catch (fileError) {
+            console.error(`Failed to delete file ${fileUrl}:`, fileError);
+            // Don't throw here - we want to continue deleting other files
+          }
+        });
+
+        await Promise.allSettled(deletePromises);
+        console.log(`Attempted to delete ${allFileUrls.length} total files from Storage`);
+
+      } catch (storageError) {
+        console.error("Error during file deletion:", storageError);
+        // Continue with document deletion even if file deletion fails
+      }
+    }
+
+    // Delete the training record from the trainings collection
+    await docRef.delete();
+
+    console.log("Training record deleted with ID:", recordId);
+
+    return {
+      success: true,
+    };
+  } catch (error) {
+    console.error("Error deleting training record:", error);
+    return {
+      success: false,
+      error: `Failed to delete training record: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    };
+  }
+}
