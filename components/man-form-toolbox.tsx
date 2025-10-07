@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm, FieldValues, SubmitHandler } from "react-hook-form";
 import { Button } from "./ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,7 +12,7 @@ import MultiImageUploader, { ImageUpload } from "@/components/multi-image-upload
 import { auth, storage } from "@/firebase/client";
 import { signInAnonymously } from "firebase/auth";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-import { submitManForm } from "@/lib/actions/man";
+import { submitManForm, getEmployeeByIdAction } from "@/lib/actions/man";
 import { useManFormTranslation } from "@/lib/i18n/man-forms";
 
 interface ManFormToolboxProps {
@@ -41,7 +41,23 @@ export default function ManFormToolbox({ bu, type, id, isInDialog = false }: Man
   } = useForm<ToolboxTalkFormData>();
 
   const [images, setImages] = useState<ImageUpload[]>([]);
+  const [employeeSite, setEmployeeSite] = useState<string | undefined>(undefined);
 
+  // Fetch employee data on component mount
+  useEffect(() => {
+    const fetchEmployeeData = async () => {
+      console.log('Fetching employee data for bu:', bu, 'id:', id);
+      const employeeResult = await getEmployeeByIdAction(bu, id);
+      console.log('Employee fetch result:', employeeResult);
+      if (employeeResult.success && employeeResult.employee) {
+        console.log('Employee site:', employeeResult.employee.site);
+        setEmployeeSite(employeeResult.employee.site);
+      } else {
+        console.warn('Employee not found or no site data:', employeeResult.error);
+      }
+    };
+    fetchEmployeeData();
+  }, [bu, id]);
 
   const onSubmit: SubmitHandler<ToolboxTalkFormData> = async (formData) => {
     try {
@@ -102,9 +118,13 @@ export default function ManFormToolbox({ bu, type, id, isInDialog = false }: Man
         bu,
         type: "toolbox",
         id,
+        site: employeeSite || undefined,
         images: imageUrls,
         timestamp: new Date().toISOString(),
       };
+
+      console.log('Submitting toolbox data with site:', employeeSite);
+      console.log('Full toolbox data:', toolboxTalkData);
 
       // Save to Firestore using server action
       try {

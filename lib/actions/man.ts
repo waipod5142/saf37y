@@ -25,19 +25,19 @@ function serializeFirestoreData(obj: any): any {
   }
 
   // Handle Firestore Timestamp objects
-  if (obj && typeof obj === 'object' && obj.toDate) {
+  if (obj && typeof obj === "object" && obj.toDate) {
     return obj.toDate().toISOString();
   }
 
   // Handle arrays
   if (Array.isArray(obj)) {
-    return obj.map(item => serializeFirestoreData(item));
+    return obj.map((item) => serializeFirestoreData(item));
   }
 
   // Handle plain objects
-  if (obj && typeof obj === 'object' && obj.constructor === Object) {
+  if (obj && typeof obj === "object" && obj.constructor === Object) {
     const serialized: any = {};
-    Object.keys(obj).forEach(key => {
+    Object.keys(obj).forEach((key) => {
       serialized[key] = serializeFirestoreData(obj[key]);
     });
     return serialized;
@@ -45,6 +45,60 @@ function serializeFirestoreData(obj: any): any {
 
   // Return primitive values as-is
   return obj;
+}
+
+export async function getEmployeeByIdAction(
+  bu: string,
+  id: string
+): Promise<{
+  success: boolean;
+  employee?: { site?: string; [key: string]: any };
+  error?: string;
+}> {
+  try {
+    const decodedId = decodeURIComponent(id);
+    const buUpperCase = bu.toUpperCase(); // Convert to uppercase to match Firestore data
+
+    const employeeQuery = firestore
+      .collection("employees")
+      .where("bu", "==", buUpperCase)
+      .where("empId", "==", decodedId);
+
+    const employeeSnapshot = await employeeQuery.get();
+
+    if (employeeSnapshot.empty) {
+      // Try with original case if uppercase didn't work
+      const employeeQueryOriginal = firestore
+        .collection("employees")
+        .where("bu", "==", bu)
+        .where("empId", "==", decodedId);
+
+      const employeeSnapshotOriginal = await employeeQueryOriginal.get();
+
+      if (employeeSnapshotOriginal.empty) {
+        return { success: false, error: "Employee not found" };
+      }
+
+      const doc = employeeSnapshotOriginal.docs[0];
+      const employeeData = doc.data();
+
+      return {
+        success: true,
+        employee: serializeFirestoreData({ ...employeeData, docId: doc.id }),
+      };
+    }
+
+    const doc = employeeSnapshot.docs[0];
+    const employeeData = doc.data();
+
+    return {
+      success: true,
+      employee: serializeFirestoreData({ ...employeeData, docId: doc.id }),
+    };
+  } catch (error) {
+    console.error("Error fetching employee data:", error);
+    return { success: false, error: "Failed to fetch employee data" };
+  }
 }
 
 export async function submitManForm(
@@ -58,6 +112,7 @@ export async function submitManForm(
       trainingCourse: formData.trainingCourse, // Training course name (from URL parameter)
       bu: formData.bu,
       type: formData.type,
+      site: formData.site, // Site field fetched from employees collection
       images: formData.images || [],
       timestamp: FieldValue.serverTimestamp(),
       createdAt: FieldValue.serverTimestamp(),
@@ -67,7 +122,7 @@ export async function submitManForm(
     // Handle different form types
     let manRecord;
 
-    if (formData.type === 'sot' || formData.type === 'vfl') {
+    if (formData.type === "sot" || formData.type === "vfl") {
       // SOT/VFL-specific fields
       manRecord = {
         ...baseRecord,
@@ -80,7 +135,7 @@ export async function submitManForm(
         riskLevel: formData.riskLevel,
         actionComment: formData.actionComment,
       };
-    } else if (formData.type === 'alert') {
+    } else if (formData.type === "alert") {
       // Alert-specific fields
       manRecord = {
         ...baseRecord,
@@ -88,7 +143,7 @@ export async function submitManForm(
         learn: formData.learn, // Lesson learned
         acknowledge: formData.acknowledge, // Understanding acknowledgement (yes/no)
       };
-    } else if (formData.type === 'trainingform') {
+    } else if (formData.type === "trainingform") {
       // Training-specific fields
       manRecord = {
         ...baseRecord,
@@ -108,9 +163,7 @@ export async function submitManForm(
     const cleanedRecord = removeUndefinedValues(manRecord);
 
     // Save to the mantr collection
-    const docRef = await firestore
-      .collection("mantr")
-      .add(cleanedRecord);
+    const docRef = await firestore.collection("mantr").add(cleanedRecord);
 
     console.log("Man record saved with ID:", docRef.id);
 
@@ -121,7 +174,7 @@ export async function submitManForm(
     console.error("Error saving man record:", error);
     return {
       success: false,
-      error: `Failed to save man record: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      error: `Failed to save man record: ${error instanceof Error ? error.message : "Unknown error"}`,
     };
   }
 }
@@ -139,7 +192,7 @@ export async function submitTrainingForm(
       courseId: formData.courseId,
       trainingDate: formData.trainingDate,
       expirationDate: formData.expirationDate,
-      remark: formData.remark || '',
+      remark: formData.remark || "",
       timestamp: FieldValue.serverTimestamp(),
       createdAt: FieldValue.serverTimestamp(),
     };
@@ -148,9 +201,7 @@ export async function submitTrainingForm(
     const cleanedRecord = removeUndefinedValues(trainingRecord);
 
     // Save to the trainings collection
-    const docRef = await firestore
-      .collection("trainings")
-      .add(cleanedRecord);
+    const docRef = await firestore.collection("trainings").add(cleanedRecord);
 
     console.log("Training record saved with ID:", docRef.id);
 
@@ -161,7 +212,7 @@ export async function submitTrainingForm(
     console.error("Error saving training record:", error);
     return {
       success: false,
-      error: `Failed to save training record: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      error: `Failed to save training record: ${error instanceof Error ? error.message : "Unknown error"}`,
     };
   }
 }
@@ -170,7 +221,7 @@ export async function submitTrainingForm(
 function extractStoragePathFromUrl(url: string): string | null {
   try {
     // Handle full Firebase Storage URLs
-    if (url.includes('firebasestorage.googleapis.com')) {
+    if (url.includes("firebasestorage.googleapis.com")) {
       // Extract path between '/o/' and '?alt=media' or '?alt=...'
       const match = url.match(/\/o\/([^?]+)/);
       if (match) {
@@ -180,7 +231,7 @@ function extractStoragePathFromUrl(url: string): string | null {
     }
 
     // If it's already a storage path (not a full URL), return as-is
-    if (!url.startsWith('http')) {
+    if (!url.startsWith("http")) {
       return url;
     }
 
@@ -220,7 +271,9 @@ export async function deleteManRecord(
     // Delete all collected images from Firebase Storage
     if (allImageUrls.length > 0) {
       try {
-        const bucket = admin.storage().bucket("sccc-inseesafety-prod.firebasestorage.app");
+        const bucket = admin
+          .storage()
+          .bucket("sccc-inseesafety-prod.firebasestorage.app");
 
         // Delete all images in parallel
         const deletePromises = allImageUrls.map(async (imageUrl: string) => {
@@ -228,7 +281,9 @@ export async function deleteManRecord(
             // Extract storage path from the URL
             const storagePath = extractStoragePathFromUrl(imageUrl);
             if (!storagePath) {
-              console.warn(`Skipping deletion - could not extract storage path from: ${imageUrl}`);
+              console.warn(
+                `Skipping deletion - could not extract storage path from: ${imageUrl}`
+              );
               return;
             }
 
@@ -242,8 +297,9 @@ export async function deleteManRecord(
         });
 
         await Promise.allSettled(deletePromises);
-        console.log(`Attempted to delete ${allImageUrls.length} total images from Storage`);
-
+        console.log(
+          `Attempted to delete ${allImageUrls.length} total images from Storage`
+        );
       } catch (storageError) {
         console.error("Error during image deletion:", storageError);
         // Continue with document deletion even if image deletion fails
@@ -262,7 +318,7 @@ export async function deleteManRecord(
     console.error("Error deleting man record:", error);
     return {
       success: false,
-      error: `Failed to delete man record: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      error: `Failed to delete man record: ${error instanceof Error ? error.message : "Unknown error"}`,
     };
   }
 }
@@ -295,7 +351,9 @@ export async function deleteTrainingRecord(
     // Delete all collected files from Firebase Storage
     if (allFileUrls.length > 0) {
       try {
-        const bucket = admin.storage().bucket("sccc-inseesafety-prod.firebasestorage.app");
+        const bucket = admin
+          .storage()
+          .bucket("sccc-inseesafety-prod.firebasestorage.app");
 
         // Delete all files in parallel
         const deletePromises = allFileUrls.map(async (fileUrl: string) => {
@@ -303,7 +361,9 @@ export async function deleteTrainingRecord(
             // Extract storage path from the URL
             const storagePath = extractStoragePathFromUrl(fileUrl);
             if (!storagePath) {
-              console.warn(`Skipping deletion - could not extract storage path from: ${fileUrl}`);
+              console.warn(
+                `Skipping deletion - could not extract storage path from: ${fileUrl}`
+              );
               return;
             }
 
@@ -317,8 +377,9 @@ export async function deleteTrainingRecord(
         });
 
         await Promise.allSettled(deletePromises);
-        console.log(`Attempted to delete ${allFileUrls.length} total files from Storage`);
-
+        console.log(
+          `Attempted to delete ${allFileUrls.length} total files from Storage`
+        );
       } catch (storageError) {
         console.error("Error during file deletion:", storageError);
         // Continue with document deletion even if file deletion fails
@@ -337,7 +398,7 @@ export async function deleteTrainingRecord(
     console.error("Error deleting training record:", error);
     return {
       success: false,
-      error: `Failed to delete training record: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      error: `Failed to delete training record: ${error instanceof Error ? error.message : "Unknown error"}`,
     };
   }
 }

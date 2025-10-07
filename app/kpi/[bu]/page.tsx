@@ -9,6 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MachineListModal } from "@/components/MachineListModal";
+import { getAllVocabulariesAction } from "@/lib/actions/vocabulary";
+import { getMachineEmoji } from "@/lib/machine-types";
 import {
   ArrowLeft,
   RefreshCw,
@@ -102,9 +104,10 @@ interface InspectionTableProps {
   frequency: string;
   showDefects: boolean;
   bu: string;
+  machineTypeMapping: Record<string, string>;
 }
 
-function InspectionTable({ data, frequency, showDefects, bu }: InspectionTableProps) {
+function InspectionTable({ data, frequency, showDefects, bu, machineTypeMapping }: InspectionTableProps) {
   const [modalState, setModalState] = useState<{
     isOpen: boolean;
     bu: string;
@@ -230,10 +233,10 @@ function InspectionTable({ data, frequency, showDefects, bu }: InspectionTablePr
                     <td className="p-3">
                       <div className="flex items-center gap-2">
                         <span className="text-xl">
-                          {EQUIPMENT_ICONS[type] || "🔧"}
+                          {getMachineEmoji(type) || "🔧"}
                         </span>
                         <span className="font-medium capitalize">
-                          {type.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
+                          {machineTypeMapping[type] || type.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
                         </span>
                       </div>
                     </td>
@@ -344,7 +347,7 @@ function InspectionTable({ data, frequency, showDefects, bu }: InspectionTablePr
         site={modalState.site}
         type={modalState.type}
         siteName={modalState.site.toUpperCase()}
-        typeName={modalState.type.charAt(0).toUpperCase() + modalState.type.slice(1)}
+        typeName={machineTypeMapping[modalState.type] || modalState.type.charAt(0).toUpperCase() + modalState.type.slice(1)}
       />
     </div>
   );
@@ -363,6 +366,8 @@ export default function BUKPIPage() {
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [activeTab, setActiveTab] = useState("daily");
   const [showDefects, setShowDefects] = useState(false);
+  const [vocabularyLoading, setVocabularyLoading] = useState(true);
+  const [machineTypeMapping, setMachineTypeMapping] = useState<Record<string, string>>({});
 
   const fetchData = async (frequency: string) => {
     try {
@@ -403,6 +408,28 @@ export default function BUKPIPage() {
       setLoading(false);
     }
   };
+
+  // Fetch vocabulary data on component mount
+  useEffect(() => {
+    async function fetchVocabularies() {
+      try {
+        setVocabularyLoading(true);
+        const result = await getAllVocabulariesAction();
+
+        if (result.success && result.machineTypeMapping) {
+          setMachineTypeMapping(result.machineTypeMapping);
+        } else {
+          console.warn('Failed to load vocabularies, using fallback data:', result.error);
+        }
+      } catch (error) {
+        console.error('Error fetching vocabularies:', error);
+      } finally {
+        setVocabularyLoading(false);
+      }
+    }
+
+    fetchVocabularies();
+  }, []);
 
   useEffect(() => {
     if (bu) {
@@ -573,19 +600,19 @@ export default function BUKPIPage() {
         </TabsList>
 
         <TabsContent value="daily">
-          {dailyData && <InspectionTable data={dailyData} frequency="daily" showDefects={showDefects} bu={bu} />}
+          {dailyData && <InspectionTable data={dailyData} frequency="daily" showDefects={showDefects} bu={bu} machineTypeMapping={machineTypeMapping} />}
         </TabsContent>
 
         <TabsContent value="monthly">
-          {monthlyData && <InspectionTable data={monthlyData} frequency="monthly" showDefects={showDefects} bu={bu} />}
+          {monthlyData && <InspectionTable data={monthlyData} frequency="monthly" showDefects={showDefects} bu={bu} machineTypeMapping={machineTypeMapping} />}
         </TabsContent>
 
         <TabsContent value="quarterly">
-          {quarterlyData && <InspectionTable data={quarterlyData} frequency="quarterly" showDefects={showDefects} bu={bu} />}
+          {quarterlyData && <InspectionTable data={quarterlyData} frequency="quarterly" showDefects={showDefects} bu={bu} machineTypeMapping={machineTypeMapping} />}
         </TabsContent>
 
         <TabsContent value="annual">
-          {annualData && <InspectionTable data={annualData} frequency="annual" showDefects={showDefects} bu={bu} />}
+          {annualData && <InspectionTable data={annualData} frequency="annual" showDefects={showDefects} bu={bu} machineTypeMapping={machineTypeMapping} />}
         </TabsContent>
       </Tabs>
     </div>

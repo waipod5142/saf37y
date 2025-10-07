@@ -380,6 +380,19 @@ export default function TrainingManDetailClient({
                           </div>
                         </div>
                       )}
+
+                      {/* Type*/}
+                      {record.type && (
+                        <div>
+                          <p className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                            <FileText className="h-5 w-5 text-gray-600" />
+                            วิธีการ Upload / Type
+                          </p>
+                          <div className="bg-gray-50 p-3 rounded-md border-l-4 border-gray-500">
+                            <p className="text-gray-700">{record.type}</p>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
 

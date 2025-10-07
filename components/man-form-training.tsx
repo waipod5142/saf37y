@@ -60,7 +60,7 @@ export default function ManFormTraining({
         ...formData, // This includes user-input empId as Staff ID
         trainingCourse, // URL parameter as trainingCourse
         bu,
-        type: "training",
+        type: "trainingform",
         courseId,
         trainingDate,
         expirationDate,

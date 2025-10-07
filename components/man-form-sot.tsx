@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm, FieldValues, SubmitHandler } from "react-hook-form";
 import { Button } from "./ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,7 +12,7 @@ import MultiImageUploader, { ImageUpload } from "@/components/multi-image-upload
 import { auth, storage } from "@/firebase/client";
 import { signInAnonymously } from "firebase/auth";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-import { submitManForm } from "@/lib/actions/man";
+import { submitManForm, getEmployeeByIdAction } from "@/lib/actions/man";
 
 interface ManFormSOTProps {
   bu: string;
@@ -46,10 +46,22 @@ export default function ManFormSOT({ bu, type, id, isInDialog = false }: ManForm
 
   const [images, setImages] = useState<ImageUpload[]>([]);
   const [selectedSafetyIssues, setSelectedSafetyIssues] = useState<string[]>([]);
+  const [employeeSite, setEmployeeSite] = useState<string | undefined>(undefined);
 
   // Watch form values
   const report = watch('report');
   const riskLevel = watch('riskLevel');
+
+  // Fetch employee data on component mount
+  useEffect(() => {
+    const fetchEmployeeData = async () => {
+      const employeeResult = await getEmployeeByIdAction(bu, id);
+      if (employeeResult.success && employeeResult.employee) {
+        setEmployeeSite(employeeResult.employee.site);
+      }
+    };
+    fetchEmployeeData();
+  }, [bu, id]);
 
   // Safety issue categories with colors matching the screenshot
   const safetyIssueCategories = [
@@ -143,6 +155,7 @@ export default function ManFormSOT({ bu, type, id, isInDialog = false }: ManForm
         bu,
         type: "sot",
         id,
+        site: employeeSite || undefined,
         report: formData.report,
         area: formData.area,
         talkwith: formData.talkwith,

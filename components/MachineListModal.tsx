@@ -11,7 +11,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { formatRelativeDateTime } from "@/components/ui/date-utils";
-import { getMachinesWithInspectionsAction, MachineWithInspection } from "@/lib/actions/machines";
+import {
+  getMachinesWithInspectionsAction,
+  MachineWithInspection,
+} from "@/lib/actions/machines";
 import { LocationMapDialog } from "./LocationMapDialog";
 import { RecentInspectionsDialog } from "./RecentInspectionsDialog";
 import { MachineDetailDialog } from "./MachineDetailDialog";
@@ -36,7 +39,9 @@ export function MachineListModal({
   typeName,
 }: MachineListModalProps) {
   const [machines, setMachines] = useState<MachineWithInspection[]>([]);
-  const [filteredMachines, setFilteredMachines] = useState<MachineWithInspection[]>([]);
+  const [filteredMachines, setFilteredMachines] = useState<
+    MachineWithInspection[]
+  >([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [showLocationMap, setShowLocationMap] = useState(false);
@@ -44,6 +49,8 @@ export function MachineListModal({
   const [showMachineDetail, setShowMachineDetail] = useState(false);
   const [selectedMachineId, setSelectedMachineId] = useState("");
   const [isMainModalVisible, setIsMainModalVisible] = useState(true);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
 
   useEffect(() => {
     if (isOpen && bu && site && type) {
@@ -64,7 +71,7 @@ export function MachineListModal({
     if (searchTerm.trim() === "") {
       setFilteredMachines(machines);
     } else {
-      const filtered = machines.filter(machine =>
+      const filtered = machines.filter((machine) =>
         machine.id.toLowerCase().includes(searchTerm.toLowerCase())
       );
       setFilteredMachines(filtered);
@@ -75,11 +82,11 @@ export function MachineListModal({
     setLoading(true);
     console.log("=== MachineListModal fetchMachines ===");
     console.log("Modal parameters:", { bu, site, type, isOpen });
-    
+
     try {
       const result = await getMachinesWithInspectionsAction(bu, site, type);
       console.log("getMachinesWithInspectionsAction result:", result);
-      
+
       if (result.success) {
         const machinesData = result.machines || [];
         console.log("Setting machines data:", machinesData.length, "machines");
@@ -111,6 +118,21 @@ export function MachineListModal({
     setIsMainModalVisible(true);
   };
 
+  const handleImageClick = (imgUrl: string) => {
+    // Helper function to convert relative paths to full URLs (defined inline to access it here)
+    const getImageUrl = (imgPath: string) => {
+      if (imgPath.startsWith('http')) {
+        return imgPath; // Already a full URL
+      }
+      // Convert relative path to Firebase Storage URL
+      return `https://firebasestorage.googleapis.com/v0/b/sccc-inseesafety-prod.firebasestorage.app/o/${encodeURIComponent(imgPath)}?alt=media`;
+    };
+
+    const imageUrl = getImageUrl(imgUrl);
+    setSelectedImage(imageUrl);
+    setIsImageModalOpen(true);
+  };
+
   const getDaysLabel = (days: number) => {
     if (days === 0) return "Today";
     if (days === 1) return "Yesterday";
@@ -119,13 +141,14 @@ export function MachineListModal({
 
   const getStats = () => {
     const total = filteredMachines.length;
-    const inspected = filteredMachines.filter(m => m.lastInspection).length;
-    const withDefects = filteredMachines.filter(m => m.hasDefects).length;
+    const inspected = filteredMachines.filter((m) => m.lastInspection).length;
+    const withDefects = filteredMachines.filter((m) => m.hasDefects).length;
     return { total, inspected, withDefects };
   };
 
   const displaySiteName = siteName || site.toUpperCase();
-  const displayTypeName = typeName || type.charAt(0).toUpperCase() + type.slice(1);
+  const displayTypeName =
+    typeName || type.charAt(0).toUpperCase() + type.slice(1);
   const stats = getStats();
 
   return (
@@ -137,14 +160,15 @@ export function MachineListModal({
               {displayTypeName} - {displaySiteName} Site
             </DialogTitle>
           </DialogHeader>
-          
+
           <div className="mt-4">
             {/* Stats and Controls */}
             <div className="mb-4 space-y-3">
               {/* Stats Summary */}
               <div className="p-3 bg-gray-50 rounded-lg">
                 <div className="text-sm text-gray-600 mb-2">
-                  Total: {stats.total} | Inspected: {stats.inspected} | With Defects: {stats.withDefects}
+                  Total: {stats.total} | Inspected: {stats.inspected} | With
+                  Defects: {stats.withDefects}
                 </div>
                 <div className="flex gap-2 text-xs">
                   <div className="flex items-center gap-1">
@@ -203,7 +227,9 @@ export function MachineListModal({
             ) : filteredMachines.length === 0 ? (
               <div className="flex justify-center items-center py-8">
                 <div className="text-gray-500">
-                  {searchTerm ? `No machines found matching "${searchTerm}"` : "No machines found for this combination."}
+                  {searchTerm
+                    ? `No machines found matching "${searchTerm}"`
+                    : "No machines found for this combination."}
                 </div>
               </div>
             ) : (
@@ -225,7 +251,11 @@ export function MachineListModal({
                               {machine.id}
                             </Button>
                             {machine.lastInspection && (
-                              <Badge variant={machine.hasDefects ? "destructive" : "success"}>
+                              <Badge
+                                variant={
+                                  machine.hasDefects ? "destructive" : "success"
+                                }
+                              >
                                 {machine.hasDefects ? "Defects" : "Pass"}
                               </Badge>
                             )}
@@ -240,10 +270,15 @@ export function MachineListModal({
                           </div>
                           <div className="text-sm text-gray-600">
                             {machine.inspectionDate && (
-                              <div>📅 Last Inspected: {formatRelativeDateTime(machine.inspectionDate)}</div>
+                              <div>
+                                📅 Last Inspected:{" "}
+                                {formatRelativeDateTime(machine.inspectionDate)}
+                              </div>
                             )}
                             {machine.lastInspection?.inspector && (
-                              <div>👤 Inspector: {machine.lastInspection.inspector}</div>
+                              <div>
+                                👤 Inspector: {machine.lastInspection.inspector}
+                              </div>
                             )}
                             {machine.description && (
                               <div>📝 Description: {machine.description}</div>
@@ -254,6 +289,45 @@ export function MachineListModal({
                             {machine.name && machine.name !== machine.id && (
                               <div>🏷️ Name: {machine.name}</div>
                             )}
+
+                            {/* Images section - moved here from gray wrapper */}
+                            {(() => {
+                              // Check both machine.images and lastInspection.images
+                              const imageArray = machine.images || machine.image || machine.lastInspection?.images;
+                              console.log('Machine images for', machine.id, ':', imageArray);
+
+                              // Helper function to convert relative paths to full URLs
+                              const getImageUrl = (imgPath: string) => {
+                                if (imgPath.startsWith('http')) {
+                                  return imgPath; // Already a full URL
+                                }
+                                // Convert relative path to Firebase Storage URL
+                                return `https://firebasestorage.googleapis.com/v0/b/sccc-inseesafety-prod.firebasestorage.app/o/${encodeURIComponent(imgPath)}?alt=media`;
+                              };
+
+                              return imageArray && Array.isArray(imageArray) && imageArray.length > 0 && (
+                                <div className="mt-2">
+                                  <div className="text-xs text-gray-600 mb-1">
+                                    📷 Images ({imageArray.length}):
+                                  </div>
+                                  <div className="flex gap-2 flex-wrap">
+                                    {imageArray.map((imgUrl: string, idx: number) => (
+                                      <img
+                                        key={idx}
+                                        src={getImageUrl(imgUrl)}
+                                        alt={`${machine.id} image ${idx + 1}`}
+                                        className="w-16 h-16 object-cover rounded border cursor-pointer hover:opacity-80"
+                                        onClick={() => handleImageClick(imgUrl)}
+                                        onError={(e) => {
+                                          e.currentTarget.src =
+                                            'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><rect fill="%23ddd"/><text x="50%" y="50%" text-anchor="middle" dy=".3em" fill="%23999">✗</text></svg>';
+                                        }}
+                                      />
+                                    ))}
+                                  </div>
+                                </div>
+                              );
+                            })()}
                           </div>
                         </div>
                         <div className="text-xs text-gray-400">
@@ -266,7 +340,7 @@ export function MachineListModal({
               </div>
             )}
           </div>
-          
+
           <div className="mt-6 flex justify-end">
             <Button variant="outline" onClick={onClose}>
               Close
@@ -303,6 +377,29 @@ export function MachineListModal({
         type={type.charAt(0).toUpperCase() + type.slice(1)}
         id={selectedMachineId}
       />
+
+      {/* Image Modal */}
+      <Dialog open={isImageModalOpen} onOpenChange={setIsImageModalOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] p-0">
+          <DialogHeader className="p-6 pb-0">
+            <DialogTitle>Machine Image</DialogTitle>
+          </DialogHeader>
+          <div className="p-6 pt-2">
+            {selectedImage && (
+              <div className="flex justify-center">
+                <img
+                  src={selectedImage}
+                  alt="Machine image"
+                  className="max-w-full max-h-[70vh] object-contain rounded"
+                  onError={(e) => {
+                    e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCA0MDAgMzAwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgogIDxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjRjNGNEY2Ii8+CiAgPHRleHQgeD0iMjAwIiB5PSIxNTAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM5Q0E0QUYiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNiI+SW1hZ2UgY291bGQgbm90IGJlIGxvYWRlZDwvdGV4dD4KPC9zdmc+';
+                  }}
+                />
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

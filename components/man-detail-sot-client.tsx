@@ -272,7 +272,10 @@ export default function SotManDetailClient({
             const riskStyle = getRiskLevelStyle(record.riskLevel, t);
 
             return (
-              <Card key={index} className="shadow-lg border-l-4 border-l-purple-500">
+              <Card
+                key={index}
+                className="shadow-lg border-l-4 border-l-purple-500"
+              >
                 {/* Header */}
                 <CardHeader className="bg-gradient-to-r from-purple-50 via-blue-50 to-indigo-50 border-b">
                   <div className="flex flex-col gap-3">
@@ -286,7 +289,9 @@ export default function SotManDetailClient({
                         )}
                         <Badge
                           className={`${
-                            record.report === "sot" ? "bg-red-600" : "bg-blue-600"
+                            record.report === "sot"
+                              ? "bg-red-600"
+                              : "bg-blue-600"
                           } text-white px-3 py-1.5 text-sm font-semibold shadow-sm`}
                         >
                           {record.report === "sot" ? "🔍 SOT" : "👁️ VFL"}
@@ -298,7 +303,9 @@ export default function SotManDetailClient({
                       <div className="flex items-center gap-2">
                         <div className="flex items-center gap-2 text-sm text-gray-700 bg-white px-3 py-1.5 rounded-md shadow-sm">
                           <Calendar className="h-4 w-4 text-purple-600" />
-                          <span className="font-medium">{formatDate(record.createdAt || record.timestamp)}</span>
+                          <span className="font-medium">
+                            {formatDate(record.createdAt || record.timestamp)}
+                          </span>
                         </div>
                         {record.docId && isWithinDeleteTimeWindow(record) && (
                           <Button
@@ -333,7 +340,9 @@ export default function SotManDetailClient({
                           <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
                             {t.sot.area}
                           </p>
-                          <p className="font-semibold text-gray-900">{record.area || '-'}</p>
+                          <p className="font-semibold text-gray-900">
+                            {record.area || "-"}
+                          </p>
                         </div>
                       </div>
 
@@ -346,7 +355,9 @@ export default function SotManDetailClient({
                           <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
                             {t.sot.talkWith}
                           </p>
-                          <p className="font-semibold text-gray-900">{record.talkwith || '-'}</p>
+                          <p className="font-semibold text-gray-900">
+                            {record.talkwith || "-"}
+                          </p>
                         </div>
                       </div>
 
@@ -359,7 +370,9 @@ export default function SotManDetailClient({
                           <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
                             {t.sot.riskLevel}
                           </p>
-                          <Badge className={`${riskStyle.color} px-3 py-1 font-semibold shadow-sm`}>
+                          <Badge
+                            className={`${riskStyle.color} px-3 py-1 font-semibold shadow-sm`}
+                          >
                             {riskStyle.text}
                           </Badge>
                         </div>
@@ -372,7 +385,9 @@ export default function SotManDetailClient({
                     <div className="mb-6">
                       <div className="flex items-center gap-2 mb-3">
                         <CheckCircle className="h-5 w-5 text-indigo-600" />
-                        <h4 className="font-bold text-gray-800">ประเด็นความปลอดภัย / Safety Issues</h4>
+                        <h4 className="font-bold text-gray-800">
+                          ประเด็นความปลอดภัย / Safety Issues
+                        </h4>
                       </div>
                       <div className="flex flex-wrap gap-2">
                         {record.topics.map((topicId, topicIndex) => {
@@ -397,9 +412,13 @@ export default function SotManDetailClient({
                       <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-lg border-l-4 border-green-500 shadow-sm">
                         <div className="flex items-center gap-2 mb-2">
                           <CheckCircle className="h-5 w-5 text-green-600" />
-                          <h4 className="font-bold text-green-900">การชมเชย / Positive Reinforcement</h4>
+                          <h4 className="font-bold text-green-900">
+                            การชมเชย / Positive Reinforcement
+                          </h4>
                         </div>
-                        <p className="text-gray-800 leading-relaxed">{record.safe}</p>
+                        <p className="text-gray-800 leading-relaxed">
+                          {record.safe}
+                        </p>
                       </div>
                     )}
 
@@ -408,9 +427,13 @@ export default function SotManDetailClient({
                       <div className="bg-gradient-to-r from-orange-50 to-amber-50 p-4 rounded-lg border-l-4 border-orange-500 shadow-sm">
                         <div className="flex items-center gap-2 mb-2">
                           <AlertTriangle className="h-5 w-5 text-orange-600" />
-                          <h4 className="font-bold text-orange-900">ความห่วงใย / Safety Care</h4>
+                          <h4 className="font-bold text-orange-900">
+                            ความห่วงใย / Safety Care
+                          </h4>
                         </div>
-                        <p className="text-gray-800 leading-relaxed">{record.care}</p>
+                        <p className="text-gray-800 leading-relaxed">
+                          {record.care}
+                        </p>
                       </div>
                     )}
 
@@ -419,9 +442,13 @@ export default function SotManDetailClient({
                       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border-l-4 border-blue-500 shadow-sm">
                         <div className="flex items-center gap-2 mb-2">
                           <MessageSquare className="h-5 w-5 text-blue-600" />
-                          <h4 className="font-bold text-blue-900">มาตรการแก้ไข / Action Comments</h4>
+                          <h4 className="font-bold text-blue-900">
+                            มาตรการแก้ไข / Action Comments
+                          </h4>
                         </div>
-                        <p className="text-gray-800 leading-relaxed">{record.actionComment}</p>
+                        <p className="text-gray-800 leading-relaxed">
+                          {record.actionComment}
+                        </p>
                       </div>
                     )}
 
@@ -430,9 +457,13 @@ export default function SotManDetailClient({
                       <div className="bg-gradient-to-r from-gray-50 to-slate-50 p-4 rounded-lg border-l-4 border-gray-500 shadow-sm">
                         <div className="flex items-center gap-2 mb-2">
                           <FileText className="h-5 w-5 text-gray-600" />
-                          <h4 className="font-bold text-gray-900">{t.common.remark}</h4>
+                          <h4 className="font-bold text-gray-900">
+                            {t.common.remark}
+                          </h4>
                         </div>
-                        <p className="text-gray-800 leading-relaxed">{record.remark}</p>
+                        <p className="text-gray-800 leading-relaxed">
+                          {record.remark}
+                        </p>
                       </div>
                     )}
                   </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm, FieldValues, SubmitHandler } from "react-hook-form";
 import { Button } from "./ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,7 +12,7 @@ import MultiImageUploader, { ImageUpload } from "@/components/multi-image-upload
 import { auth, storage } from "@/firebase/client";
 import { signInAnonymously } from "firebase/auth";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-import { submitManForm } from "@/lib/actions/man";
+import { submitManForm, getEmployeeByIdAction } from "@/lib/actions/man";
 
 interface ManFormTalkProps {
   bu: string;
@@ -40,9 +40,21 @@ export default function ManFormTalk({ bu, type, id, isInDialog = false }: ManFor
   } = useForm<TalkFormData>();
 
   const [images, setImages] = useState<ImageUpload[]>([]);
+  const [employeeSite, setEmployeeSite] = useState<string | undefined>(undefined);
 
   // Watch form values
   const selectedTopic = watch('selectedTopic');
+
+  // Fetch employee data on component mount
+  useEffect(() => {
+    const fetchEmployeeData = async () => {
+      const employeeResult = await getEmployeeByIdAction(bu, id);
+      if (employeeResult.success && employeeResult.employee) {
+        setEmployeeSite(employeeResult.employee.site);
+      }
+    };
+    fetchEmployeeData();
+  }, [bu, id]);
 
   // Talk topics with colors matching the form image
   const talkTopics = [
@@ -116,6 +128,7 @@ export default function ManFormTalk({ bu, type, id, isInDialog = false }: ManFor
         bu,
         type: "talk",
         id,
+        site: employeeSite || undefined,
         images: imageUrls,
         timestamp: new Date().toISOString(),
       };

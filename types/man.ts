@@ -3,6 +3,7 @@ export interface BaseManRecord {
   id: string;
   bu: string;
   type: string;
+  site?: string; // Site field from employees collection
   images: string[]; // Array of image URLs
   timestamp: Date | string;
   createdAt: Date | string;

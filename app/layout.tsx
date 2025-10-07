@@ -28,10 +28,7 @@ export default function RootLayout({
       <body className={`${poppins.className} antialiased`}>
         <AuthProvider>
           <nav className="bg-red-600 text-white p-5 h-14 flex items-center justify-between z-10 relative">
-            <Link
-              href="/"
-              className="flex gap-3 items-center"
-            >
+            <Link href="/" className="flex gap-3 items-center">
               <Image
                 src="/SCCC.BK.svg"
                 alt="INSEE Logo"
@@ -39,9 +36,11 @@ export default function RootLayout({
                 height={40}
                 className="w-8 h-8 filter brightness-0 invert"
               />
-              <span className="text-xl tracking-widest uppercase font-semibold">INSEE Safety</span>
+              <span className="text-xl tracking-widest uppercase font-semibold">
+                INSEE Safety
+              </span>
             </Link>
-            
+
             {/* Desktop Navigation */}
             <ul className="hidden md:flex gap-6 items-center">
               <li>
@@ -49,7 +48,7 @@ export default function RootLayout({
                   href="/kpi"
                   className="uppercase tracking-widest hover:underline"
                 >
-                  Dashboard by country
+                  Dashboard-Machine
                 </Link>
               </li>
               {/* <li>

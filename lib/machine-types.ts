@@ -140,7 +140,7 @@ export const machineEmojis: { [key: string]: string } = {
   crane: "🏗️",
   overheadcrane: "🏗️",
   hoist: "🔗",
-  mobile: "📱",
+  mobile: "🚜",
   vehicle: "🚗",
   car: "🚗",
   truck: "🚛",
@@ -155,8 +155,8 @@ export const machineEmojis: { [key: string]: string } = {
   
   // Fire Safety
   extinguisher: "🧯",
-  hydrant: "🚰",
-  foam: "🧼",
+  hydrant: "🧯",
+  foam: "🛢️",
   pump: "⛽",
   valve: "🔧",
   firealarm: "🚨",

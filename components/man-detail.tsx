@@ -76,7 +76,12 @@ const isMeetingRecord = (record: ManRecord): record is MeetingManRecord => {
 };
 
 const isTrainingRecord = (record: ManRecord): record is TrainingManRecord => {
-  return record.type === "training";
+  return (
+    record.type === "trainingform" ||
+    record.type === "training" ||
+    record.type === undefined ||
+    !("type" in record)
+  );
 };
 
 const isSotOrVflRecord = (record: ManRecord): record is SotManRecord => {
