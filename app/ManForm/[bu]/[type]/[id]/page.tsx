@@ -3,7 +3,6 @@ import { normalizeBuCode } from "@/lib/utils";
 import ManFormMeeting from "@/components/man-form-meeting";
 import ManFormToolbox from "@/components/man-form-toolbox";
 import ManFormBoot from "@/components/man-form-boot";
-import ManFormTraining from "@/components/man-form-training";
 
 export default async function MachinePage({
   params,

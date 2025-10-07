@@ -100,7 +100,7 @@ export default function ManFormToolbox({ bu, type, id, isInDialog = false }: Man
       const toolboxTalkData = {
         ...formData,
         bu,
-        type: type.toLowerCase(),
+        type: "toolbox",
         id,
         images: imageUrls,
         timestamp: new Date().toISOString(),

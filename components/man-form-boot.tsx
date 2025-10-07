@@ -388,7 +388,7 @@ export default function ManFormBoot({
         ...formData,
         area: id, // URL parameter as area
         bu,
-        type: type.toLowerCase(),
+        type: "bootform",
         images: imageUrls,
         timestamp: new Date().toISOString(),
       };

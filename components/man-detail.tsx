@@ -48,48 +48,39 @@ const serializeRecord = (record: ManRecord): ManRecord => {
 
 // Type guard functions
 const isSotRecord = (record: ManRecord): record is SotManRecord => {
-  return "report" in record && (record as any).report === "sot";
+  return record.type === "sot";
 };
 
 const isVflRecord = (record: ManRecord): record is SotManRecord => {
-  return "report" in record && (record as any).report === "vfl";
+  return record.type === "sot";
 };
 
 const isTalkRecord = (record: ManRecord): record is TalkManRecord => {
-  return "selectedTopic" in record;
+  return record.type === "talk";
 };
 
 const isToolboxRecord = (record: ManRecord): record is ToolboxManRecord => {
-  return "presenter" in record && "subject" in record && "learn" in record;
+  return record.type === "toolbox";
 };
 
 const isAlertRecord = (record: ManRecord): record is AlertManRecord => {
-  return (
-    "alertNo" in record && "typeAccident" in record && "acknowledge" in record
-  );
+  return record.type === "alertform";
 };
 
 const isBootRecord = (record: ManRecord): record is BootManRecord => {
-  return (
-    "area" in record &&
-    "observeContact" in record &&
-    "discussUnsafeBehavior" in record &&
-    "otherSafetyIssues" in record &&
-    "agreementWorkSafely" in record &&
-    "commentSafeBehavior" in record
-  );
+  return record.type === "bootform";
 };
 
 const isMeetingRecord = (record: ManRecord): record is MeetingManRecord => {
-  return "alertNo" in record && "feedback" in record && "acknowledge" in record;
+  return record.type === "meetingform";
 };
 
 const isTrainingRecord = (record: ManRecord): record is TrainingManRecord => {
-  return "empId" in record && "courseId" in record && "trainingDate" in record;
+  return record.type === "training";
 };
 
 const isSotOrVflRecord = (record: ManRecord): record is SotManRecord => {
-  return isSotRecord(record) || isVflRecord(record) || "riskLevel" in record;
+  return record.type === "sot";
 };
 
 export default async function ManDetail({ bu, type, id }: ManDetailProps) {

@@ -55,6 +55,10 @@ const getAccidentTypeInfo = (type: string) => {
 
 // Get acknowledgment status styling - will be created inside component to access translations
 const createGetAcknowledgmentStyle = (t: any) => (status: string) => {
+  if (!status) {
+    return { color: 'bg-gray-400 text-white', text: 'N/A' };
+  }
+
   switch (status.toLowerCase()) {
     case 'yes':
     case 'acknowledged':
@@ -161,7 +165,7 @@ export default function AlertManDetailClient({ records, bu }: AlertManDetailClie
   if (!records || records.length === 0) {
     return (
       <div className="mb-6">
-        <p className="text-sm text-red-500 mt-2">{t.alert.noReports}</p>
+        <p className="text-sm text-red-500 mt-2">{t.alert?.noReports || "No alert form reports found for this machine"}</p>
       </div>
     );
   }
@@ -173,7 +177,7 @@ export default function AlertManDetailClient({ records, bu }: AlertManDetailClie
       <div className="space-y-4">
         <div className="flex justify-between items-center">
           <h3 className="text-lg font-semibold">
-            {t.alert.reportsCount} ({showAllRecords ? records.length : 1} {t.alert.of} {records.length} {records.length > 1 ? t.alert.records : t.alert.record})
+            {t.alert?.reportsCount || "Alert Form Reports"} ({showAllRecords ? records.length : 1} {t.alert?.of || "of"} {records.length} {records.length > 1 ? (t.alert?.records || "records") : (t.alert?.record || "record")})
           </h3>
 
           {/* Toggle Button */}
@@ -187,12 +191,12 @@ export default function AlertManDetailClient({ records, bu }: AlertManDetailClie
               {showAllRecords ? (
                 <>
                   <ToggleRightIcon className="h-4 w-4" />
-                  {t.common.showLess}
+                  {t.common?.showLess || "Show Less"}
                 </>
               ) : (
                 <>
                   <ToggleLeftIcon className="h-4 w-4" />
-                  {t.common.showAll}
+                  {t.common?.showAll || "Show All"}
                 </>
               )}
             </Button>
@@ -211,9 +215,9 @@ export default function AlertManDetailClient({ records, bu }: AlertManDetailClie
             <CardHeader className="bg-gradient-to-r from-red-50 to-orange-50 border-b">
               <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  {index === 0 && <Badge variant="default" className="mr-2">{t.alert.latest}</Badge>}
+                  {index === 0 && <Badge variant="default" className="mr-2">{t.alert?.latest || "Latest"}</Badge>}
                   <Badge className="bg-red-600 text-white px-3 py-1 text-sm font-medium">
-                    {t.alert.alertForm.toUpperCase()}
+                    {(t.alert?.alertForm || "ALERT FORM").toUpperCase()}
                   </Badge>
                   <div className="text-sm text-gray-600">
                     Alert No: {record.alertNo}
@@ -254,7 +258,7 @@ export default function AlertManDetailClient({ records, bu }: AlertManDetailClie
                   <div className="flex items-center gap-2">
                     <AlertTriangle className="h-5 w-5 text-red-500" />
                     <div>
-                      <p className="font-semibold text-gray-700">{t.alert.alertNumber}</p>
+                      <p className="font-semibold text-gray-700">{t.alert?.alertNumber || "Alert Number"}</p>
                       <p className="text-gray-600 font-mono">{record.alertNo}</p>
                     </div>
                   </div>
@@ -263,7 +267,7 @@ export default function AlertManDetailClient({ records, bu }: AlertManDetailClie
                   <div className="flex items-center gap-2">
                     <FileText className="h-5 w-5 text-gray-500" />
                     <div>
-                      <p className="font-semibold text-gray-700 mb-2">{t.alert.accidentType}</p>
+                      <p className="font-semibold text-gray-700 mb-2">{t.alert?.accidentType || "Accident Type"}</p>
                       <Badge className={`${accidentInfo.color} px-3 py-1`}>
                         {accidentInfo.label}
                       </Badge>
@@ -275,7 +279,7 @@ export default function AlertManDetailClient({ records, bu }: AlertManDetailClie
                   <div className="flex items-center gap-2">
                     <ClipboardCheck className="h-5 w-5 text-gray-500" />
                     <div>
-                      <p className="font-semibold text-gray-700 mb-2">{t.alert.acknowledgmentStatus}</p>
+                      <p className="font-semibold text-gray-700 mb-2">{t.alert?.acknowledgmentStatus || "Acknowledgment Status"}</p>
                       <Badge className={`${acknowledgmentInfo.color} px-3 py-1`}>
                         {acknowledgmentInfo.text}
                       </Badge>
@@ -290,7 +294,7 @@ export default function AlertManDetailClient({ records, bu }: AlertManDetailClie
                     <div>
                       <p className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
                         <BookOpen className="h-5 w-5 text-blue-600" />
-                        {t.alert.learningPoints}
+                        {t.alert?.learningPoints || "Learning Points"}
                       </p>
                       <div className="bg-blue-50 p-3 rounded-md border-l-4 border-blue-500">
                         <p className="text-gray-700">{record.learn}</p>
@@ -303,7 +307,7 @@ export default function AlertManDetailClient({ records, bu }: AlertManDetailClie
                     <div>
                       <p className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
                         <FileText className="h-5 w-5 text-gray-600" />
-                        {t.common.remark}
+                        {t.common?.remark || "Remark"}
                       </p>
                       <div className="bg-gray-50 p-3 rounded-md border-l-4 border-gray-500">
                         <p className="text-gray-700">{record.remark}</p>
@@ -318,7 +322,7 @@ export default function AlertManDetailClient({ records, bu }: AlertManDetailClie
                 <div className="mt-6 pt-6 border-t">
                   <p className="font-semibold text-gray-700 mb-4 flex items-center gap-2">
                     <Camera className="h-5 w-5" />
-                    {t.common.images} ({record.images.length})
+                    {t.common?.images || "Images"} ({record.images.length})
                   </p>
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                     {record.images.map((imageUrl, imgIndex) => (
@@ -329,7 +333,7 @@ export default function AlertManDetailClient({ records, bu }: AlertManDetailClie
                       >
                         <img
                           src={imageUrl}
-                          alt={`${t.alert.imageAlt} ${imgIndex + 1}`}
+                          alt={`${t.alert?.imageAlt || "Alert image"} ${imgIndex + 1}`}
                           className="w-full h-32 object-cover rounded-md shadow-md group-hover:shadow-lg transition-shadow pointer-events-none"
                           onError={handleImageError}
                         />
@@ -350,14 +354,14 @@ export default function AlertManDetailClient({ records, bu }: AlertManDetailClie
       <Dialog open={isImageModalOpen} onOpenChange={setIsImageModalOpen}>
         <DialogContent className="max-w-4xl max-h-[90vh] p-0">
           <DialogHeader className="p-6 pb-0">
-            <DialogTitle>{t.alert.imageModalTitle}</DialogTitle>
+            <DialogTitle>{t.alert?.imageModalTitle || "Alert Form Image"}</DialogTitle>
           </DialogHeader>
           <div className="p-6 pt-2">
             {selectedImage && (
               <div className="flex justify-center">
                 <img
                   src={selectedImage}
-                  alt={t.alert.imageAlt}
+                  alt={t.alert?.imageAlt || "Alert image"}
                   className="max-w-full max-h-[70vh] object-contain rounded"
                   onError={(e) => {
                     e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCA0MDAgMzAwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgogIDxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjRjNGNEY2Ii8+CiAgPHRleHQgeD0iMjAwIiB5PSIxNTAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM5Q0E0QUYiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNiI+SW1hZ2UgY291bGQgbm90IGJlIGxvYWRlZDwvdGV4dD4KPC9zdmc+';
@@ -373,9 +377,9 @@ export default function AlertManDetailClient({ records, bu }: AlertManDetailClie
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full mx-4">
-            <h3 className="text-lg font-semibold mb-4">{t.alert.deleteTitle}</h3>
+            <h3 className="text-lg font-semibold mb-4">{t.alert?.deleteTitle || "Delete Alert Form Report"}</h3>
             <p className="text-gray-600 mb-6">
-              {t.common.deleteConfirm}
+              {t.common?.deleteConfirm || "Are you sure you want to delete this record?"}
             </p>
             <div className="flex justify-end gap-3">
               <Button
@@ -383,14 +387,14 @@ export default function AlertManDetailClient({ records, bu }: AlertManDetailClie
                 onClick={() => setShowDeleteConfirm(null)}
                 disabled={deletingRecordId !== null}
               >
-                {t.common.cancel}
+                {t.common?.cancel || "Cancel"}
               </Button>
               <Button
                 variant="destructive"
                 onClick={() => handleDeleteRecord(showDeleteConfirm)}
                 disabled={deletingRecordId !== null}
               >
-                {deletingRecordId === showDeleteConfirm ? t.common.deleting : t.common.delete}
+                {deletingRecordId === showDeleteConfirm ? (t.common?.deleting || "Deleting...") : (t.common?.delete || "Delete")}
               </Button>
             </div>
           </div>

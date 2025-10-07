@@ -111,7 +111,7 @@ export default function ManFormAlert({ bu, type, id, isInDialog = false }: ManFo
         ...formData, // This includes user-input id as Staff ID
         alertNo: id, // URL parameter as alertNo
         bu,
-        type: type.toLowerCase(),
+        type: "meetingform",
         images: imageUrls,
         timestamp: new Date().toISOString(),
       };

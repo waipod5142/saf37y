@@ -114,7 +114,7 @@ export default function ManFormTalk({ bu, type, id, isInDialog = false }: ManFor
       const talkData = {
         ...formData,
         bu,
-        type: type.toLowerCase(),
+        type: "talk",
         id,
         images: imageUrls,
         timestamp: new Date().toISOString(),

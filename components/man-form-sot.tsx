@@ -141,7 +141,7 @@ export default function ManFormSOT({ bu, type, id, isInDialog = false }: ManForm
 
       const sotData = {
         bu,
-        type: type.toLowerCase(),
+        type: "sot",
         id,
         report: formData.report,
         area: formData.area,
