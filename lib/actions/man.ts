@@ -402,3 +402,128 @@ export async function deleteTrainingRecord(
     };
   }
 }
+
+export interface ManRecord {
+  docId: string;
+  id: string;
+  bu: string;
+  type: string;
+  site?: string;
+  timestamp: string;
+  createdAt: string;
+  remark?: string;
+  images?: string[];
+  [key: string]: any; // Allow other fields from different form types
+}
+
+export async function getManWithRecordsAction(
+  bu: string,
+  site: string,
+  type: string,
+  frequency: string
+): Promise<{ success: boolean; records?: ManRecord[]; error?: string }> {
+  try {
+    console.log("=== getManWithRecordsAction ===");
+    console.log("Input parameters:", { bu, site, type, frequency });
+
+    // Calculate date range based on frequency
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
+    const date = now.getDate();
+    const day = now.getDay();
+
+    let startDate: Date;
+
+    switch (frequency) {
+      case "daily":
+        // Daily: from midnight today to now (local time)
+        startDate = new Date(year, month, date, 0, 0, 0, 0);
+        break;
+      case "weekly":
+        // Weekly: from Monday to Sunday (current week)
+        const daysFromMonday = day === 0 ? 6 : day - 1;
+        startDate = new Date(year, month, date - daysFromMonday, 0, 0, 0, 0);
+        break;
+      case "monthly":
+        // Monthly: from 1st day of current month
+        startDate = new Date(year, month, 1, 0, 0, 0, 0);
+        break;
+      case "annual":
+        // Annual: from 1st of January of current year
+        startDate = new Date(year, 0, 1, 0, 0, 0, 0);
+        break;
+      default:
+        startDate = new Date(year, month, date, 0, 0, 0, 0);
+    }
+
+    const endDate = now;
+
+    console.log("Date range:", {
+      startDate: startDate.toISOString(),
+      endDate: endDate.toISOString(),
+    });
+
+    // Build query
+    let query = firestore
+      .collection("mantr")
+      .where("bu", "==", bu)
+      .where("timestamp", ">=", startDate)
+      .where("timestamp", "<=", endDate);
+
+    // Add optional filters
+    if (site && site !== "all") {
+      query = query.where("site", "==", site);
+    }
+
+    if (type && type !== "all") {
+      query = query.where("type", "==", type);
+    }
+
+    // Execute query
+    const snapshot = await query.get();
+
+    console.log("Query results:", {
+      empty: snapshot.empty,
+      size: snapshot.size,
+      docs: snapshot.docs.length,
+    });
+
+    if (snapshot.empty) {
+      console.log("=== No records found ===");
+      return {
+        success: true,
+        records: [],
+      };
+    }
+
+    // Convert to plain objects
+    const records: ManRecord[] = snapshot.docs.map((doc) => {
+      const data = doc.data();
+      return serializeFirestoreData({
+        docId: doc.id,
+        ...data,
+      }) as ManRecord;
+    });
+
+    // Sort by timestamp descending (most recent first)
+    records.sort((a, b) => {
+      const dateA = new Date(a.timestamp || a.createdAt);
+      const dateB = new Date(b.timestamp || b.createdAt);
+      return dateB.getTime() - dateA.getTime();
+    });
+
+    console.log(`Found ${records.length} man records`);
+
+    return {
+      success: true,
+      records,
+    };
+  } catch (error) {
+    console.error("Error fetching man records:", error);
+    return {
+      success: false,
+      error: `Failed to fetch man records: ${error instanceof Error ? error.message : "Unknown error"}`,
+    };
+  }
+}

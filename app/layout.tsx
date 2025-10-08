@@ -51,14 +51,14 @@ export default function RootLayout({
                   Dashboard-Machine
                 </Link>
               </li>
-              {/* <li>
+              <li>
                 <Link
-                  href="/dashboardbysite"
+                  href="/kpiman"
                   className="uppercase tracking-widest hover:underline"
                 >
-                  Dashboard by Site
+                  DDashboard-Man
                 </Link>
-              </li> */}
+              </li>
               {/* <li>
                 <Link
                   href="/transaction"

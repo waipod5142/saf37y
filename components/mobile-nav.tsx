@@ -34,14 +34,14 @@ export function MobileNav() {
           >
             Dashboard-Machine
           </Link>
-          {/* <Link
-            href="/dashboardbysite"
+          <Link
+            href="/kpiman"
             className="text-lg uppercase tracking-widest hover:underline"
             onClick={() => setOpen(false)}
           >
-            Dashboard by Site
+            Dashboard-Man
           </Link>
-          <Link
+          {/* <Link
             href="/transaction"
             className="text-lg uppercase tracking-widest hover:underline"
             onClick={() => setOpen(false)}
