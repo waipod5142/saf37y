@@ -30,6 +30,7 @@ const serializeManRecord = (record: any): ManRecord => {
     trainingDate: convertFirebaseTimestamp(record.trainingDate),
     expiryDate: convertFirebaseTimestamp(record.expiryDate),
     updateAt: convertFirebaseTimestamp(record.updateAt),
+    updatedAt: convertFirebaseTimestamp(record.updatedAt),
   };
 };
 
