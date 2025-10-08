@@ -8,12 +8,7 @@ import { Breadcrumbs } from "@/components/ui/breadcrumb";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { ManListModal } from "@/components/ManListModal";
 import {
   ArrowLeft,
   RefreshCw,
@@ -21,7 +16,6 @@ import {
   Calendar,
   FileText,
   BarChart3,
-  X,
 } from "lucide-react";
 
 interface TransactionData {
@@ -113,86 +107,73 @@ function TransactionTable({
     site: string;
     type: string;
     frequency: string;
+    startDate: Date;
+    endDate: Date;
   }>({
     isOpen: false,
     bu: "",
     site: "",
     type: "",
     frequency: "",
+    startDate: new Date(),
+    endDate: new Date(),
   });
-  const [records, setRecords] = useState<any[]>([]);
-  const [loadingRecords, setLoadingRecords] = useState(false);
 
   // Calculate date ranges based on frequency
   const getDateRange = (freq: string) => {
     const now = new Date();
-    const year = now.getFullYear();
-    const month = now.getMonth();
-    const date = now.getDate();
-    const day = now.getDay();
+    const year = now.getUTCFullYear();
+    const month = now.getUTCMonth();
+    const date = now.getUTCDate();
+    const day = now.getUTCDay();
 
     let startDate: Date;
 
     switch (freq) {
       case "daily":
-        // Daily: from midnight today to now (local time)
-        startDate = new Date(year, month, date, 0, 0, 0, 0);
+        // Daily: from midnight today to now (UTC time)
+        startDate = new Date(Date.UTC(year, month, date, 0, 0, 0, 0));
         break;
       case "weekly":
-        // Weekly: from Monday to Sunday (current week)
+        // Weekly: from Monday to Sunday (current week in UTC)
         const daysFromMonday = day === 0 ? 6 : day - 1;
-        startDate = new Date(year, month, date - daysFromMonday, 0, 0, 0, 0);
+        startDate = new Date(Date.UTC(year, month, date - daysFromMonday, 0, 0, 0, 0));
         break;
       case "monthly":
-        // Monthly: from 1st day of current month
-        startDate = new Date(year, month, 1, 0, 0, 0, 0);
+        // Monthly: from 1st day of current month (UTC)
+        startDate = new Date(Date.UTC(year, month, 1, 0, 0, 0, 0));
         break;
       case "annual":
-        // Annual: from 1st of January of current year
-        startDate = new Date(year, 0, 1, 0, 0, 0, 0);
+        // Annual: from 1st of January of current year (UTC)
+        startDate = new Date(Date.UTC(year, 0, 1, 0, 0, 0, 0));
         break;
       default:
-        startDate = new Date(year, month, date, 0, 0, 0, 0);
+        startDate = new Date(Date.UTC(year, month, date, 0, 0, 0, 0));
     }
 
     return { startDate, endDate: now };
   };
 
-  const handleBadgeClick = async (
+  const handleBadgeClick = (
     bu: string,
     site: string,
     type: string,
     freq: string
   ) => {
-    setModalState({ isOpen: true, bu, site, type, frequency: freq });
-    setLoadingRecords(true);
-
-    try {
-      const { startDate, endDate } = getDateRange(freq);
-
-      // Fetch records from mantr collection
-      const response = await fetch(
-        `/api/man-records?bu=${bu}&site=${site}&type=${type}&startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        setRecords(data.records || []);
-      } else {
-        console.error("Failed to fetch records");
-        setRecords([]);
-      }
-    } catch (error) {
-      console.error("Error fetching records:", error);
-      setRecords([]);
-    } finally {
-      setLoadingRecords(false);
-    }
+    const { startDate, endDate } = getDateRange(freq);
+    setModalState({
+      isOpen: true,
+      bu,
+      site,
+      type,
+      frequency: freq,
+      startDate,
+      endDate
+    });
   };
 
   const handleModalClose = () => {
-    setModalState({ isOpen: false, bu: "", site: "", type: "", frequency: "" });
-    setRecords([]);
+    setModalState(prev => ({ ...prev, isOpen: false }));
   };
 
   if (!data.success) {
@@ -425,105 +406,18 @@ function TransactionTable({
       </Card>
 
       {/* Records Modal */}
-      <Dialog open={modalState.isOpen} onOpenChange={handleModalClose}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center justify-between">
-              <span>
-                {modalState.type !== "all"
-                  ? FORM_TYPE_CONFIG[modalState.type]?.label || modalState.type
-                  : "All Forms"}
-                {" - "}
-                {modalState.site !== "all"
-                  ? modalState.site.toUpperCase()
-                  : "All Sites"}{" "}
-                (
-                {modalState.frequency.charAt(0).toUpperCase() +
-                  modalState.frequency.slice(1)}
-                )
-              </span>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleModalClose}
-                className="h-6 w-6 p-0"
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </DialogTitle>
-          </DialogHeader>
-
-          <div className="mt-4">
-            {loadingRecords ? (
-              <div className="flex items-center justify-center py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-              </div>
-            ) : records.length === 0 ? (
-              <div className="text-center py-12 text-gray-500">
-                <FileText className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-                <p>No records found</p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {records.map((record, index) => (
-                  <Card
-                    key={index}
-                    className="hover:shadow-md transition-shadow"
-                  >
-                    <CardContent className="p-4">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <Badge
-                              className={
-                                FORM_TYPE_CONFIG[record.type]?.color ||
-                                "bg-gray-500"
-                              }
-                            >
-                              {FORM_TYPE_CONFIG[record.type]?.icon || "📄"}{" "}
-                              {FORM_TYPE_CONFIG[record.type]?.label ||
-                                record.type}
-                            </Badge>
-                            {record.site && (
-                              <Badge variant="outline" className="text-xs">
-                                {record.site}
-                              </Badge>
-                            )}
-                          </div>
-                          <div className="text-sm text-gray-600 space-y-1">
-                            <p>
-                              <strong>ID:</strong> {record.id}
-                            </p>
-                            {record.timestamp && (
-                              <p>
-                                <strong>Date:</strong>{" "}
-                                {new Date(record.timestamp).toLocaleString()}
-                              </p>
-                            )}
-                            {record.remark && (
-                              <p className="text-xs text-gray-500 mt-2">
-                                {record.remark}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                        <Link
-                          href={`/Man/${record.bu}/${record.type}/${record.id}`}
-                          className="ml-4"
-                        >
-                          <Button size="sm" variant="outline">
-                            View Details
-                          </Button>
-                        </Link>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
+      <ManListModal
+        isOpen={modalState.isOpen}
+        onClose={handleModalClose}
+        bu={modalState.bu}
+        site={modalState.site}
+        type={modalState.type}
+        frequency={modalState.frequency}
+        siteName={modalState.site !== "all" ? modalState.site.toUpperCase() : undefined}
+        typeName={modalState.type !== "all" ? FORM_TYPE_CONFIG[modalState.type]?.label : undefined}
+        startDate={modalState.startDate}
+        endDate={modalState.endDate}
+      />
     </div>
   );
 }

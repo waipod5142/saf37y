@@ -416,6 +416,65 @@ export interface ManRecord {
   [key: string]: any; // Allow other fields from different form types
 }
 
+export async function getManRecordsByIdAction(
+  bu: string,
+  type: string,
+  id: string
+): Promise<{ success: boolean; records?: ManRecord[]; error?: string }> {
+  try {
+    console.log("=== getManRecordsByIdAction ===");
+    console.log("Input parameters:", { bu, type, id });
+
+    const decodedId = decodeURIComponent(id);
+
+    // Build query to fetch all records for this man
+    const query = firestore
+      .collection("mantr")
+      .where("bu", "==", bu)
+      .where("type", "==", type)
+      .where("id", "==", decodedId)
+      .orderBy("timestamp", "desc");
+
+    // Execute query
+    const snapshot = await query.get();
+
+    console.log("Query results:", {
+      empty: snapshot.empty,
+      size: snapshot.size,
+    });
+
+    if (snapshot.empty) {
+      console.log("=== No records found ===");
+      return {
+        success: true,
+        records: [],
+      };
+    }
+
+    // Convert to plain objects
+    const records: ManRecord[] = snapshot.docs.map((doc) => {
+      const data = doc.data();
+      return serializeFirestoreData({
+        docId: doc.id,
+        ...data,
+      }) as ManRecord;
+    });
+
+    console.log(`Found ${records.length} man records`);
+
+    return {
+      success: true,
+      records,
+    };
+  } catch (error) {
+    console.error("Error fetching man records by ID:", error);
+    return {
+      success: false,
+      error: `Failed to fetch man records: ${error instanceof Error ? error.message : "Unknown error"}`,
+    };
+  }
+}
+
 export async function getManWithRecordsAction(
   bu: string,
   site: string,

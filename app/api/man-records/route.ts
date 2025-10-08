@@ -10,7 +10,11 @@ export async function GET(request: NextRequest) {
     const startDateStr = searchParams.get("startDate");
     const endDateStr = searchParams.get("endDate");
 
+    console.log("=== Man Records API Route ===");
+    console.log("Request params:", { bu, site, type, startDateStr, endDateStr });
+
     if (!bu || !startDateStr || !endDateStr) {
+      console.log("Missing required parameters");
       return NextResponse.json(
         { error: "Missing required parameters" },
         { status: 400 }
@@ -20,35 +24,83 @@ export async function GET(request: NextRequest) {
     const startDate = new Date(startDateStr);
     const endDate = new Date(endDateStr);
 
-    // Build query
+    console.log("Parsed dates:", {
+      startDate: startDate.toISOString(),
+      endDate: endDate.toISOString()
+    });
+
+    // Query by bu first (most selective filter)
     let query = firestore
       .collection("mantr")
-      .where("bu", "==", bu)
-      .where("timestamp", ">=", startDate)
-      .where("timestamp", "<=", endDate);
+      .where("bu", "==", bu);
 
-    // Add optional filters
-    if (site && site !== "all") {
-      query = query.where("site", "==", site);
-    }
-
-    if (type && type !== "all") {
-      query = query.where("type", "==", type);
-    }
+    console.log("Base query built (bu filter)");
 
     // Execute query
     const snapshot = await query.get();
 
-    // Convert to plain objects
-    const records = snapshot.docs.map((doc) => {
+    console.log("Query executed, docs found:", snapshot.docs.length);
+
+    // Convert all records and handle both Timestamp and string dates
+    const allRecords = snapshot.docs.map((doc) => {
       const data = doc.data();
+
+      // Handle timestamp - could be Firestore Timestamp, Date, or string
+      let timestampISO = data.timestamp;
+      if (data.timestamp?.toDate) {
+        // Firestore Timestamp
+        timestampISO = data.timestamp.toDate().toISOString();
+      } else if (data.timestamp instanceof Date) {
+        // Date object
+        timestampISO = data.timestamp.toISOString();
+      } else if (typeof data.timestamp === 'string') {
+        // Already a string
+        timestampISO = data.timestamp;
+      }
+
+      // Handle createdAt similarly
+      let createdAtISO = data.createdAt;
+      if (data.createdAt?.toDate) {
+        createdAtISO = data.createdAt.toDate().toISOString();
+      } else if (data.createdAt instanceof Date) {
+        createdAtISO = data.createdAt.toISOString();
+      }
+
       return {
         docId: doc.id,
         ...data,
-        timestamp: data.timestamp?.toDate?.()?.toISOString() || data.timestamp,
-        createdAt: data.createdAt?.toDate?.()?.toISOString() || data.createdAt,
+        timestamp: timestampISO,
+        createdAt: createdAtISO,
       };
     });
+
+    console.log("All records before filtering:", allRecords.length);
+
+    // Apply filters including date range
+    let records = allRecords.filter((record) => {
+      const buMatch = record.bu === bu;
+      const siteMatch = !site || site === "all" || record.site === site;
+      const typeMatch = !type || type === "all" || record.type === type;
+
+      // Date range check - convert timestamp string to Date for comparison
+      const recordDate = new Date(record.timestamp || record.createdAt);
+      const dateMatch = recordDate >= startDate && recordDate <= endDate;
+
+      const match = buMatch && siteMatch && typeMatch && dateMatch;
+
+      if (!match && buMatch && siteMatch && typeMatch) {
+        console.log("Date filter excluded:", {
+          recordDate: recordDate.toISOString(),
+          startDate: startDate.toISOString(),
+          endDate: endDate.toISOString(),
+          id: record.id
+        });
+      }
+
+      return match;
+    });
+
+    console.log("Records after filtering:", records.length);
 
     // Sort by timestamp descending (most recent first)
     records.sort((a, b) => {
@@ -57,11 +109,20 @@ export async function GET(request: NextRequest) {
       return dateB.getTime() - dateA.getTime();
     });
 
+    console.log("Returning records:", records.length);
+
     return NextResponse.json({ success: true, records, count: records.length });
   } catch (error) {
     console.error("Error fetching man records:", error);
+    console.error("Error details:", {
+      message: error instanceof Error ? error.message : "Unknown error",
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     return NextResponse.json(
-      { error: "Failed to fetch records" },
+      {
+        error: "Failed to fetch records",
+        details: error instanceof Error ? error.message : "Unknown error"
+      },
       { status: 500 }
     );
   }

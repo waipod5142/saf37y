@@ -66,10 +66,10 @@ const COUNTRIES = [
 export default function KPIPage() {
   return (
     <div className="container mx-auto p-6">
-      <Breadcrumbs items={[{ label: "KPI" }]} />
+      <Breadcrumbs items={[{ label: "MAN KPI" }]} />
 
       <div className="mt-6 mb-8">
-        <h1 className="text-3xl font-bold mb-4">Safety Inspection Dashboard</h1>
+        <h1 className="text-3xl font-bold mb-4">Man Activity Dashboard</h1>
         <p className="text-gray-600">
           Select a country to view detailed inspection reports and statistics.
         </p>
