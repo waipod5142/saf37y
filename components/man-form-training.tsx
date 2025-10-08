@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useForm, FieldValues, SubmitHandler } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { Button } from "./ui/button";
@@ -8,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { submitTrainingForm } from "@/lib/actions/man";
+import { submitTrainingForm, getEmployeeByIdAction } from "@/lib/actions/man";
 import QRCodeComponent from "@/components/qr-code";
 
 interface ManFormTrainingProps {
@@ -43,7 +44,24 @@ export default function ManFormTraining({
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
+    watch,
   } = useForm<TrainingFormData>();
+
+  const [employeeSite, setEmployeeSite] = useState<string | undefined>(undefined);
+
+  // Watch empId field
+  const empId = watch('empId');
+
+  // Fetch employee data when empId changes
+  useEffect(() => {
+    if (empId && empId.trim() !== '') {
+      getEmployeeByIdAction(bu, empId).then((result) => {
+        if (result.success && result.employee) {
+          setEmployeeSite(result.employee.site);
+        }
+      });
+    }
+  }, [empId, bu]);
 
   // Generate QR code URL
   const qrUrl = `https://www.saf37y.com/ManForm/${bu}/${type}/${trainingCourse}/${trainingDate}/${expirationDate}/${courseId}`;
@@ -64,6 +82,7 @@ export default function ManFormTraining({
         courseId,
         trainingDate,
         expirationDate,
+        site: employeeSite || undefined,
         remark: formData.remark || "",
         timestamp: new Date().toISOString(),
       };

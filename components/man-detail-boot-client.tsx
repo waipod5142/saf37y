@@ -22,6 +22,7 @@ import {
   ToggleRightIcon,
   Trash2Icon,
   ClipboardCheck,
+  Factory as FactoryIcon,
 } from "lucide-react";
 import { useManFormTranslation } from "@/lib/i18n/man-forms";
 
@@ -194,6 +195,12 @@ export default function BootManDetailClient({
                       <div className="text-sm text-gray-600">
                         ID: {record.id}
                       </div>
+                      {record.site && (
+                        <div className="flex items-center gap-1 text-sm text-gray-600">
+                          <FactoryIcon className="h-4 w-4" />
+                          Site: {record.site}
+                        </div>
+                      )}
                     </div>
                     <div className="flex items-center gap-3">
                       <div className="flex items-center gap-2 text-sm text-gray-600">

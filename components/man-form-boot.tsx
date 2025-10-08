@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm, FieldValues, SubmitHandler } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { Button } from "./ui/button";
@@ -15,7 +15,7 @@ import MultiImageUploader, {
 import { auth, storage } from "@/firebase/client";
 import { signInAnonymously } from "firebase/auth";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-import { submitManForm } from "@/lib/actions/man";
+import { submitManForm, getEmployeeByIdAction } from "@/lib/actions/man";
 import QRCodeComponent from "@/components/qr-code";
 
 interface ManFormBootProps {
@@ -308,9 +308,25 @@ export default function ManFormBoot({
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
+    watch,
   } = useForm<BootFormData>();
 
   const [images, setImages] = useState<ImageUpload[]>([]);
+  const [employeeSite, setEmployeeSite] = useState<string | undefined>(undefined);
+
+  // Watch staff ID field
+  const staffId = watch('id');
+
+  // Fetch employee data when staff ID changes
+  useEffect(() => {
+    if (staffId && staffId.trim() !== '') {
+      getEmployeeByIdAction(bu, staffId).then((result) => {
+        if (result.success && result.employee) {
+          setEmployeeSite(result.employee.site);
+        }
+      });
+    }
+  }, [staffId, bu]);
 
   // Generate QR code URL
   const qrUrl = `https://www.saf37y.com/ManForm/${bu}/${type}/${id}`;
@@ -389,6 +405,7 @@ export default function ManFormBoot({
         area: id, // URL parameter as area
         bu,
         type: "bootform",
+        site: employeeSite || undefined,
         images: imageUrls,
         timestamp: new Date().toISOString(),
       };

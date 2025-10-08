@@ -24,6 +24,7 @@ import {
   ToggleLeftIcon,
   ToggleRightIcon,
   Trash2Icon,
+  Factory as FactoryIcon,
 } from "lucide-react";
 import { useManFormTranslation } from "@/lib/i18n/man-forms";
 
@@ -299,6 +300,12 @@ export default function SotManDetailClient({
                         <Badge className="bg-gray-700 text-white px-2 py-1 text-xs">
                           ID: {record.id}
                         </Badge>
+                        {record.site && (
+                          <div className="flex items-center gap-1 text-sm text-gray-700 bg-white px-2 py-1 rounded-md shadow-sm">
+                            <FactoryIcon className="h-4 w-4" />
+                            Site: {record.site}
+                          </div>
+                        )}
                       </div>
                       <div className="flex items-center gap-2">
                         <div className="flex items-center gap-2 text-sm text-gray-700 bg-white px-3 py-1.5 rounded-md shadow-sm">

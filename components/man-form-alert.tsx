@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm, FieldValues, SubmitHandler } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { Button } from "./ui/button";
@@ -13,7 +13,7 @@ import MultiImageUploader, { ImageUpload } from "@/components/multi-image-upload
 import { auth, storage } from "@/firebase/client";
 import { signInAnonymously } from "firebase/auth";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-import { submitManForm } from "@/lib/actions/man";
+import { submitManForm, getEmployeeByIdAction } from "@/lib/actions/man";
 import QRCodeComponent from "@/components/qr-code";
 
 interface ManFormAlertProps {
@@ -208,10 +208,23 @@ export default function ManFormAlert({ bu, type, id, isInDialog = false }: ManFo
   } = useForm<AlertFormData>();
 
   const [images, setImages] = useState<ImageUpload[]>([]);
+  const [employeeSite, setEmployeeSite] = useState<string | undefined>(undefined);
 
   // Watch form values
   const typeAccident = watch('typeAccident');
   const acknowledge = watch('acknowledge');
+  const staffId = watch('id');
+
+  // Fetch employee data when staff ID changes
+  useEffect(() => {
+    if (staffId && staffId.trim() !== '') {
+      getEmployeeByIdAction(bu, staffId).then((result) => {
+        if (result.success && result.employee) {
+          setEmployeeSite(result.employee.site);
+        }
+      });
+    }
+  }, [staffId, bu]);
 
   // Generate QR code URL
   const qrUrl = `https://www.saf37y.com/ManForm/${bu}/${type}/${id}`;
@@ -291,6 +304,7 @@ export default function ManFormAlert({ bu, type, id, isInDialog = false }: ManFo
         alertNo: id, // URL parameter as alertNo
         bu,
         type: "alertform",
+        site: employeeSite || undefined,
         images: imageUrls,
         timestamp: new Date().toISOString(),
       };
