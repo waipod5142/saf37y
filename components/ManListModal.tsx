@@ -36,6 +36,7 @@ interface ManRecord {
   timestamp: string;
   createdAt?: string;
   remark?: string;
+  employeeName?: string;
   [key: string]: any;
 }
 
@@ -120,6 +121,7 @@ export function ManListModal({
       const filtered = records.filter(
         (record) =>
           record.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          record.employeeName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
           record.remark?.toLowerCase().includes(searchTerm.toLowerCase())
       );
       setFilteredRecords(filtered);
@@ -164,7 +166,15 @@ export function ManListModal({
   const handleRecordClick = (record: ManRecord) => {
     setSelectedRecordId(record.id);
     setSelectedRecordBu(record.bu);
-    setSelectedRecordType(record.type);
+
+    // Transform record type: remove "form" suffix
+    let transformedType = record.type;
+    if (record.type === "bootform") transformedType = "boot";
+    else if (record.type === "meetingform") transformedType = "meeting";
+    else if (record.type === "alertform") transformedType = "alert";
+    else if (record.type === "trainingform") transformedType = "training";
+
+    setSelectedRecordType(transformedType);
     setShowManDetail(true);
     // Hide main modal to prevent overlay conflicts
     setIsMainModalVisible(false);
@@ -282,6 +292,11 @@ export function ManListModal({
                                   onClick={() => handleRecordClick(record)}
                                 >
                                   {record.id}
+                                  {record.employeeName && (
+                                    <span className="ml-2 text-gray-700">
+                                      ({record.employeeName})
+                                    </span>
+                                  )}
                                 </Button>
                               </p>
                               {record.timestamp && (

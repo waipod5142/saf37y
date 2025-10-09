@@ -45,37 +45,59 @@ export async function GET(request: NextRequest) {
     console.log("Query executed, docs found:", snapshot.docs.length);
 
     // Convert all records and handle both Timestamp and string dates
-    const allRecords = snapshot.docs.map((doc) => {
-      const data = doc.data();
+    const allRecords = await Promise.all(
+      snapshot.docs.map(async (doc) => {
+        const data = doc.data();
 
-      // Handle timestamp - could be Firestore Timestamp, Date, or string
-      let timestampISO: any = data.timestamp;
-      if (data.timestamp?.toDate) {
-        // Firestore Timestamp
-        timestampISO = data.timestamp.toDate().toISOString();
-      } else if (data.timestamp instanceof Date) {
-        // Date object
-        timestampISO = data.timestamp.toISOString();
-      } else if (typeof data.timestamp === 'string') {
-        // Already a string
-        timestampISO = data.timestamp;
-      }
+        // Handle timestamp - could be Firestore Timestamp, Date, or string
+        let timestampISO: any = data.timestamp;
+        if (data.timestamp?.toDate) {
+          // Firestore Timestamp
+          timestampISO = data.timestamp.toDate().toISOString();
+        } else if (data.timestamp instanceof Date) {
+          // Date object
+          timestampISO = data.timestamp.toISOString();
+        } else if (typeof data.timestamp === 'string') {
+          // Already a string
+          timestampISO = data.timestamp;
+        }
 
-      // Handle createdAt similarly
-      let createdAtISO: any = data.createdAt;
-      if (data.createdAt?.toDate) {
-        createdAtISO = data.createdAt.toDate().toISOString();
-      } else if (data.createdAt instanceof Date) {
-        createdAtISO = data.createdAt.toISOString();
-      }
+        // Handle createdAt similarly
+        let createdAtISO: any = data.createdAt;
+        if (data.createdAt?.toDate) {
+          createdAtISO = data.createdAt.toDate().toISOString();
+        } else if (data.createdAt instanceof Date) {
+          createdAtISO = data.createdAt.toISOString();
+        }
 
-      return {
-        ...data,
-        docId: doc.id,
-        timestamp: timestampISO,
-        createdAt: createdAtISO,
-      } as any;
-    });
+        // Fetch employee name from employees collection
+        let employeeName: string | undefined = undefined;
+        if (data.id) {
+          try {
+            const employeeSnapshot = await firestore
+              .collection("employees")
+              .where("empId", "==", data.id)
+              .limit(1)
+              .get();
+
+            if (!employeeSnapshot.empty) {
+              const employeeData = employeeSnapshot.docs[0].data();
+              employeeName = employeeData.fullName;
+            }
+          } catch (error) {
+            console.error(`Error fetching employee name for ${data.id}:`, error);
+          }
+        }
+
+        return {
+          ...data,
+          docId: doc.id,
+          timestamp: timestampISO,
+          createdAt: createdAtISO,
+          employeeName,
+        } as any;
+      })
+    );
 
     console.log("All records before filtering:", allRecords.length);
 
