@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
       const data = doc.data();
 
       // Handle timestamp - could be Firestore Timestamp, Date, or string
-      let timestampISO = data.timestamp;
+      let timestampISO: any = data.timestamp;
       if (data.timestamp?.toDate) {
         // Firestore Timestamp
         timestampISO = data.timestamp.toDate().toISOString();
@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
       }
 
       // Handle createdAt similarly
-      let createdAtISO = data.createdAt;
+      let createdAtISO: any = data.createdAt;
       if (data.createdAt?.toDate) {
         createdAtISO = data.createdAt.toDate().toISOString();
       } else if (data.createdAt instanceof Date) {
@@ -67,11 +67,11 @@ export async function GET(request: NextRequest) {
       }
 
       return {
-        docId: doc.id,
         ...data,
+        docId: doc.id,
         timestamp: timestampISO,
         createdAt: createdAtISO,
-      };
+      } as any;
     });
 
     console.log("All records before filtering:", allRecords.length);

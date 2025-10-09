@@ -80,11 +80,9 @@ export function ManListModal({
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [showManDetail, setShowManDetail] = useState(false);
-  const [selectedRecord, setSelectedRecord] = useState<{
-    bu: string;
-    type: string;
-    id: string;
-  } | null>(null);
+  const [selectedRecordId, setSelectedRecordId] = useState("");
+  const [selectedRecordBu, setSelectedRecordBu] = useState("");
+  const [selectedRecordType, setSelectedRecordType] = useState("");
   const [isMainModalVisible, setIsMainModalVisible] = useState(true);
 
   useEffect(() => {
@@ -98,7 +96,9 @@ export function ManListModal({
     } else {
       // Close detail dialog when main modal is closed
       setShowManDetail(false);
-      setSelectedRecord(null);
+      setSelectedRecordId("");
+      setSelectedRecordBu("");
+      setSelectedRecordType("");
     }
   }, [isOpen, bu, site, type, startDate, endDate]);
 
@@ -152,11 +152,9 @@ export function ManListModal({
   };
 
   const handleRecordClick = (record: ManRecord) => {
-    setSelectedRecord({
-      bu: record.bu,
-      type: record.type,
-      id: record.id,
-    });
+    setSelectedRecordId(record.id);
+    setSelectedRecordBu(record.bu);
+    setSelectedRecordType(record.type);
     setShowManDetail(true);
     // Hide main modal to prevent overlay conflicts
     setIsMainModalVisible(false);
@@ -164,7 +162,9 @@ export function ManListModal({
 
   const handleManDetailClose = () => {
     setShowManDetail(false);
-    setSelectedRecord(null);
+    setSelectedRecordId("");
+    setSelectedRecordBu("");
+    setSelectedRecordType("");
     // Show main modal again
     setIsMainModalVisible(true);
   };
@@ -298,15 +298,13 @@ export function ManListModal({
     </Dialog>
 
       {/* Man Detail Dialog */}
-      {selectedRecord && (
-        <ManDetailDialog
-          isOpen={showManDetail}
-          onClose={handleManDetailClose}
-          bu={selectedRecord.bu}
-          type={selectedRecord.type}
-          id={selectedRecord.id}
-        />
-      )}
+      <ManDetailDialog
+        isOpen={showManDetail}
+        onClose={handleManDetailClose}
+        bu={selectedRecordBu}
+        type={selectedRecordType}
+        id={selectedRecordId}
+      />
     </>
   );
 }
