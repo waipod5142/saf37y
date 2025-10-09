@@ -121,7 +121,9 @@ export function ManListModal({
       const filtered = records.filter(
         (record) =>
           record.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          record.employeeName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          record.employeeName
+            ?.toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
           record.remark?.toLowerCase().includes(searchTerm.toLowerCase())
       );
       setFilteredRecords(filtered);
@@ -294,7 +296,7 @@ export function ManListModal({
                                   {record.id}
                                   {record.employeeName && (
                                     <span className="ml-2 text-gray-700">
-                                      ({record.employeeName})
+                                      {record.employeeName}
                                     </span>
                                   )}
                                 </Button>
