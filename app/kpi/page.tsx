@@ -14,7 +14,7 @@ const COUNTRIES = [
     siteCount: 1,
   },
   {
-    code: "cmic",
+    code: "kh",
     name: "Cambodia",
     flag: "🇰🇭",
     sites: ["CMIC"],

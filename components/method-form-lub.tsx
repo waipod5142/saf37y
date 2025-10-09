@@ -59,7 +59,7 @@ const translations = {
     error: "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง",
   },
   vn: {
-    title: "Xác nhận hiểu Cảnh báo An toàn",
+    title: "Phương pháp bơm mỡ / Greasing Method",
     alertNo: "Số Cảnh báo:",
     staffId: "Mã nhân viên Staff ID",
     staffIdPlaceholder: "Mã nhân viên",

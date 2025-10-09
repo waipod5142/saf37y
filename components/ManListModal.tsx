@@ -260,7 +260,7 @@ export function ManListModal({
             ) : (
               <div className="overflow-y-auto max-h-[50vh]">
                 <div className="space-y-3">
-                  {filteredRecords.map((record) => (
+                  {filteredRecords.map((record, idx) => (
                     <Card
                       key={record.docId || record.id}
                       className="hover:shadow-md transition-shadow"
@@ -313,6 +313,9 @@ export function ManListModal({
                                 </p>
                               )}
                             </div>
+                          </div>
+                          <div className="text-xs text-gray-400">
+                            Type: {record.type} : {idx + 1}
                           </div>
                         </div>
                       </CardContent>

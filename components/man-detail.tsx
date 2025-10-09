@@ -8,6 +8,7 @@ import {
   BootManRecord,
   MeetingManRecord,
   TrainingManRecord,
+  GreaseRecord,
 } from "@/types/man";
 import SotManDetailClient from "./man-detail-sot-client";
 import TalkManDetailClient from "./man-detail-talk-client";
@@ -16,6 +17,7 @@ import AlertManDetailClient from "./man-detail-alert-client";
 import BootManDetailClient from "./man-detail-boot-client";
 import MeetingManDetailClient from "./man-detail-meeting-client";
 import TrainingManDetailClient from "./man-detail-training-client";
+import GreaseManDetailClient from "./man-detail-grease-client";
 
 interface ManDetailProps {
   bu: string;
@@ -84,6 +86,10 @@ const isTrainingRecord = (record: ManRecord): record is TrainingManRecord => {
   );
 };
 
+const isGreaseRecord = (record: ManRecord): record is GreaseRecord => {
+  return record.type === "greaseform";
+};
+
 const isSotOrVflRecord = (record: ManRecord): record is SotManRecord => {
   return record.type === "sot";
 };
@@ -92,7 +98,7 @@ export default async function ManDetail({ bu, type, id }: ManDetailProps) {
   // Return null if type is undefined
   if (!type) return null;
 
-  // Fetch man records from the mantr collection
+  // Fetch man records (handles both mantr and methodtr collections)
   const records = await getManRecords(bu, type, id);
 
   // Normalize type to lowercase for proper matching
@@ -113,6 +119,7 @@ export default async function ManDetail({ bu, type, id }: ManDetailProps) {
   const bootRecords = serializedRecords.filter(isBootRecord);
   const meetingRecords = serializedRecords.filter(isMeetingRecord);
   const trainingRecords = serializedRecords.filter(isTrainingRecord);
+  const greaseRecords = serializedRecords.filter(isGreaseRecord);
 
   // Render only the specific type based on the normalized type parameter
   if (normalizedType === "talk") {
@@ -154,6 +161,12 @@ export default async function ManDetail({ bu, type, id }: ManDetailProps) {
   if (normalizedType === "training") {
     return trainingRecords.length > 0 ? (
       <TrainingManDetailClient records={trainingRecords} bu={bu} />
+    ) : null;
+  }
+
+  if (normalizedType === "grease" || normalizedType === "greaseform") {
+    return greaseRecords.length > 0 ? (
+      <GreaseManDetailClient records={greaseRecords} bu={bu} />
     ) : null;
   }
 

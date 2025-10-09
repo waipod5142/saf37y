@@ -87,6 +87,49 @@ export const getManRecords = async (
       return records;
     }
 
+    // Handle grease records differently - fetch from methodtr collection
+    if (type.toLowerCase() === "grease" || type.toLowerCase() === "greaseform") {
+      console.log(`Fetching grease records from methodtr collection where id: ${decodedId}`);
+
+      let greaseQuery = firestore
+        .collection("methodtr")
+        .where("id", "==", decodedId)
+        .where("type", "==", "greaseform");
+
+      // Add bu filter if provided
+      if (bu) {
+        greaseQuery = greaseQuery.where("bu", "==", bu);
+      }
+
+      const greaseSnapshot = await greaseQuery.get();
+
+      if (greaseSnapshot.empty) {
+        console.log(`No grease records found for id: ${decodedId}`);
+        return [];
+      }
+
+      const records: ManRecord[] = [];
+      greaseSnapshot.forEach((doc) => {
+        const data = doc.data();
+        console.log(`Found grease record:`, data);
+        const serializedRecord = serializeManRecord({
+          ...data,
+          docId: doc.id, // Include Firestore document ID
+        });
+        records.push(serializedRecord);
+      });
+
+      // Sort by timestamp client-side
+      records.sort((a, b) => {
+        const dateA = new Date(a.timestamp || a.createdAt);
+        const dateB = new Date(b.timestamp || b.createdAt);
+        return dateB.getTime() - dateA.getTime();
+      });
+
+      console.log(`Found ${records.length} grease records for id: ${decodedId}`);
+      return records;
+    }
+
     // For all other types, use the existing mantr collection logic
     // First, try with the exact parameters but without orderBy to avoid index issues
     let manQuery = firestore

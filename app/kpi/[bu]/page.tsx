@@ -18,7 +18,7 @@ import {
   Calendar,
   Eye,
   CheckCircle2,
-  AlertTriangle
+  AlertTriangle,
 } from "lucide-react";
 
 interface InspectionData {
@@ -27,13 +27,16 @@ interface InspectionData {
   total: number;
   percentage: number;
   defectPercentage: number;
-  bySite?: Record<string, {
-    inspected: number;
-    defected: number;
-    total: number;
-    percentage: number;
-    defectPercentage: number;
-  }>;
+  bySite?: Record<
+    string,
+    {
+      inspected: number;
+      defected: number;
+      total: number;
+      percentage: number;
+      defectPercentage: number;
+    }
+  >;
 }
 
 interface KPIInspectionData {
@@ -54,7 +57,7 @@ const BU_NAMES: Record<string, string> = {
   th: "Thailand",
   lk: "Sri Lanka",
   bd: "Bangladesh",
-  cmic: "Cambodia",
+  kh: "Cambodia",
 };
 
 // Business Unit flags
@@ -63,7 +66,7 @@ const BU_FLAGS: Record<string, string> = {
   th: "🇹🇭",
   lk: "🇱🇰",
   bd: "🇧🇩",
-  cmic: "🇰🇭",
+  kh: "🇰🇭",
 };
 
 // Equipment type icons
@@ -80,7 +83,7 @@ const EQUIPMENT_ICONS: Record<string, string> = {
   equipment: "🔧",
   harness: "🦺",
   rescue: "🆘",
-  firstaid: "🏥"
+  firstaid: "🏥",
 };
 
 function getPercentageColor(percentage: number): string {
@@ -107,7 +110,13 @@ interface InspectionTableProps {
   machineTypeMapping: Record<string, string>;
 }
 
-function InspectionTable({ data, frequency, showDefects, bu, machineTypeMapping }: InspectionTableProps) {
+function InspectionTable({
+  data,
+  frequency,
+  showDefects,
+  bu,
+  machineTypeMapping,
+}: InspectionTableProps) {
   const [modalState, setModalState] = useState<{
     isOpen: boolean;
     bu: string;
@@ -120,7 +129,12 @@ function InspectionTable({ data, frequency, showDefects, bu, machineTypeMapping 
     type: "",
   });
 
-  const handleCellClick = (bu: string, site: string, type: string, hasData: boolean) => {
+  const handleCellClick = (
+    bu: string,
+    site: string,
+    type: string,
+    hasData: boolean
+  ) => {
     if (hasData) {
       setModalState({
         isOpen: true,
@@ -132,7 +146,7 @@ function InspectionTable({ data, frequency, showDefects, bu, machineTypeMapping 
   };
 
   const handleModalClose = () => {
-    setModalState(prev => ({ ...prev, isOpen: false }));
+    setModalState((prev) => ({ ...prev, isOpen: false }));
   };
   if (!data.success) {
     return (
@@ -147,9 +161,9 @@ function InspectionTable({ data, frequency, showDefects, bu, machineTypeMapping 
 
   // Get all unique sites across all equipment types
   const allSites = new Set<string>();
-  Object.values(byType).forEach(equipment => {
+  Object.values(byType).forEach((equipment) => {
     if (equipment.bySite) {
-      Object.keys(equipment.bySite).forEach(site => allSites.add(site));
+      Object.keys(equipment.bySite).forEach((site) => allSites.add(site));
     }
   });
 
@@ -176,8 +190,12 @@ function InspectionTable({ data, frequency, showDefects, bu, machineTypeMapping 
               <AlertTriangle className="h-5 w-5 text-red-600" />
               <div>
                 <p className="text-sm text-gray-600">Total Defects</p>
-                <p className="text-2xl font-bold text-red-600">{total.defected}</p>
-                <p className="text-xs text-gray-500">{total.defectPercentage}% of inspected</p>
+                <p className="text-2xl font-bold text-red-600">
+                  {total.defected}
+                </p>
+                <p className="text-xs text-gray-500">
+                  {total.defectPercentage}% of inspected
+                </p>
               </div>
             </div>
           </CardContent>
@@ -196,7 +214,9 @@ function InspectionTable({ data, frequency, showDefects, bu, machineTypeMapping 
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <div className={`h-5 w-5 rounded ${getPercentageColor(total.percentage)}`}></div>
+              <div
+                className={`h-5 w-5 rounded ${getPercentageColor(total.percentage)}`}
+              ></div>
               <div>
                 <p className="text-sm text-gray-600">Completion Rate</p>
                 <p className="text-2xl font-bold">{total.percentage}%</p>
@@ -210,7 +230,8 @@ function InspectionTable({ data, frequency, showDefects, bu, machineTypeMapping 
       <Card>
         <CardHeader>
           <CardTitle className="text-xl">
-            {frequency.charAt(0).toUpperCase() + frequency.slice(1)} Inspection Report
+            {frequency.charAt(0).toUpperCase() + frequency.slice(1)} Inspection
+            Report
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -219,8 +240,11 @@ function InspectionTable({ data, frequency, showDefects, bu, machineTypeMapping 
               <thead>
                 <tr className="border-b bg-gray-50">
                   <th className="text-left p-3 font-semibold">Type</th>
-                  {siteList.map(site => (
-                    <th key={site} className="text-center p-3 font-semibold uppercase">
+                  {siteList.map((site) => (
+                    <th
+                      key={site}
+                      className="text-center p-3 font-semibold uppercase"
+                    >
                       {site}
                     </th>
                   ))}
@@ -236,15 +260,21 @@ function InspectionTable({ data, frequency, showDefects, bu, machineTypeMapping 
                           {getMachineEmoji(type) || "🔧"}
                         </span>
                         <span className="font-medium capitalize">
-                          {machineTypeMapping[type] || type.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
+                          {machineTypeMapping[type] ||
+                            type
+                              .replace(/([A-Z])/g, " $1")
+                              .replace(/^./, (str) => str.toUpperCase())}
                         </span>
                       </div>
                     </td>
-                    {siteList.map(site => {
+                    {siteList.map((site) => {
                       const siteData = equipment.bySite?.[site];
                       if (!siteData || siteData.total === 0) {
                         return (
-                          <td key={site} className="text-center p-3 text-gray-400">
+                          <td
+                            key={site}
+                            className="text-center p-3 text-gray-400"
+                          >
                             0
                           </td>
                         );
@@ -253,18 +283,23 @@ function InspectionTable({ data, frequency, showDefects, bu, machineTypeMapping 
                       return (
                         <td key={site} className="text-center p-3">
                           <div
-                            className={`flex flex-col items-center gap-1 ${hasData ? 'cursor-pointer' : ''}`}
-                            onClick={() => handleCellClick(bu, site, type, hasData)}
+                            className={`flex flex-col items-center gap-1 ${hasData ? "cursor-pointer" : ""}`}
+                            onClick={() =>
+                              handleCellClick(bu, site, type, hasData)
+                            }
                           >
                             <Badge
-                              className={`text-xs font-medium ${hasData ? 'hover:opacity-80 transition-opacity' : ''} ${getPercentageBadgeColor(siteData.percentage)}`}
+                              className={`text-xs font-medium ${hasData ? "hover:opacity-80 transition-opacity" : ""} ${getPercentageBadgeColor(siteData.percentage)}`}
                             >
-                              {siteData.inspected} / {siteData.total} ({siteData.percentage}%)
+                              {siteData.inspected} / {siteData.total} (
+                              {siteData.percentage}%)
                             </Badge>
                             {showDefects && siteData.defected > 0 && (
                               <Badge variant="destructive" className="text-xs">
                                 <AlertTriangle className="h-3 w-3 mr-1" />
-                                {siteData.defected} defect{siteData.defected !== 1 ? 's' : ''} ({siteData.defectPercentage}%)
+                                {siteData.defected} defect
+                                {siteData.defected !== 1 ? "s" : ""} (
+                                {siteData.defectPercentage}%)
                               </Badge>
                             )}
                           </div>
@@ -276,12 +311,15 @@ function InspectionTable({ data, frequency, showDefects, bu, machineTypeMapping 
                         <Badge
                           className={`font-semibold ${getPercentageBadgeColor(equipment.percentage)}`}
                         >
-                          {equipment.inspected} / {equipment.total} ({equipment.percentage}%)
+                          {equipment.inspected} / {equipment.total} (
+                          {equipment.percentage}%)
                         </Badge>
                         {showDefects && equipment.defected > 0 && (
                           <Badge variant="destructive" className="text-xs">
                             <AlertTriangle className="h-3 w-3 mr-1" />
-                            {equipment.defected} defect{equipment.defected !== 1 ? 's' : ''} ({equipment.defectPercentage}%)
+                            {equipment.defected} defect
+                            {equipment.defected !== 1 ? "s" : ""} (
+                            {equipment.defectPercentage}%)
                           </Badge>
                         )}
                       </div>
@@ -291,11 +329,14 @@ function InspectionTable({ data, frequency, showDefects, bu, machineTypeMapping 
                 {/* Total Row */}
                 <tr className="border-t-2 bg-gray-50 font-semibold">
                   <td className="p-3 font-bold">Total</td>
-                  {siteList.map(site => {
+                  {siteList.map((site) => {
                     const siteData = bySite[site];
                     if (!siteData || siteData.total === 0) {
                       return (
-                        <td key={site} className="text-center p-3 text-gray-400">
+                        <td
+                          key={site}
+                          className="text-center p-3 text-gray-400"
+                        >
                           0
                         </td>
                       );
@@ -306,12 +347,18 @@ function InspectionTable({ data, frequency, showDefects, bu, machineTypeMapping 
                           <Badge
                             className={`font-bold ${getPercentageBadgeColor(siteData.percentage)}`}
                           >
-                            {siteData.inspected} / {siteData.total} ({siteData.percentage}%)
+                            {siteData.inspected} / {siteData.total} (
+                            {siteData.percentage}%)
                           </Badge>
                           {showDefects && siteData.defected > 0 && (
-                            <Badge variant="destructive" className="text-xs font-bold">
+                            <Badge
+                              variant="destructive"
+                              className="text-xs font-bold"
+                            >
                               <AlertTriangle className="h-3 w-3 mr-1" />
-                              {siteData.defected} defect{siteData.defected !== 1 ? 's' : ''} ({siteData.defectPercentage}%)
+                              {siteData.defected} defect
+                              {siteData.defected !== 1 ? "s" : ""} (
+                              {siteData.defectPercentage}%)
                             </Badge>
                           )}
                         </div>
@@ -326,9 +373,14 @@ function InspectionTable({ data, frequency, showDefects, bu, machineTypeMapping 
                         {total.inspected} / {total.total} ({total.percentage}%)
                       </Badge>
                       {showDefects && total.defected > 0 && (
-                        <Badge variant="destructive" className="text-sm font-bold">
+                        <Badge
+                          variant="destructive"
+                          className="text-sm font-bold"
+                        >
                           <AlertTriangle className="h-4 w-4 mr-1" />
-                          {total.defected} defect{total.defected !== 1 ? 's' : ''} ({total.defectPercentage}%)
+                          {total.defected} defect
+                          {total.defected !== 1 ? "s" : ""} (
+                          {total.defectPercentage}%)
                         </Badge>
                       )}
                     </div>
@@ -347,7 +399,10 @@ function InspectionTable({ data, frequency, showDefects, bu, machineTypeMapping 
         site={modalState.site}
         type={modalState.type}
         siteName={modalState.site.toUpperCase()}
-        typeName={machineTypeMapping[modalState.type] || modalState.type.charAt(0).toUpperCase() + modalState.type.slice(1)}
+        typeName={
+          machineTypeMapping[modalState.type] ||
+          modalState.type.charAt(0).toUpperCase() + modalState.type.slice(1)
+        }
       />
     </div>
   );
@@ -358,8 +413,12 @@ export default function BUKPIPage() {
   const bu = params.bu as string;
 
   const [dailyData, setDailyData] = useState<KPIInspectionData | null>(null);
-  const [monthlyData, setMonthlyData] = useState<KPIInspectionData | null>(null);
-  const [quarterlyData, setQuarterlyData] = useState<KPIInspectionData | null>(null);
+  const [monthlyData, setMonthlyData] = useState<KPIInspectionData | null>(
+    null
+  );
+  const [quarterlyData, setQuarterlyData] = useState<KPIInspectionData | null>(
+    null
+  );
   const [annualData, setAnnualData] = useState<KPIInspectionData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -367,7 +426,9 @@ export default function BUKPIPage() {
   const [activeTab, setActiveTab] = useState("daily");
   const [showDefects, setShowDefects] = useState(false);
   const [vocabularyLoading, setVocabularyLoading] = useState(true);
-  const [machineTypeMapping, setMachineTypeMapping] = useState<Record<string, string>>({});
+  const [machineTypeMapping, setMachineTypeMapping] = useState<
+    Record<string, string>
+  >({});
 
   const fetchData = async (frequency: string) => {
     try {
@@ -390,10 +451,10 @@ export default function BUKPIPage() {
       setError(null);
 
       const [daily, monthly, quarterly, annual] = await Promise.all([
-        fetchData('daily'),
-        fetchData('monthly'),
-        fetchData('quarterly'),
-        fetchData('annual')
+        fetchData("daily"),
+        fetchData("monthly"),
+        fetchData("quarterly"),
+        fetchData("annual"),
       ]);
 
       setDailyData(daily);
@@ -402,8 +463,8 @@ export default function BUKPIPage() {
       setAnnualData(annual);
       setLastUpdated(new Date());
     } catch (err) {
-      console.error('Error fetching BU KPI data:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load data');
+      console.error("Error fetching BU KPI data:", err);
+      setError(err instanceof Error ? err.message : "Failed to load data");
     } finally {
       setLoading(false);
     }
@@ -419,10 +480,13 @@ export default function BUKPIPage() {
         if (result.success && result.machineTypeMapping) {
           setMachineTypeMapping(result.machineTypeMapping);
         } else {
-          console.warn('Failed to load vocabularies, using fallback data:', result.error);
+          console.warn(
+            "Failed to load vocabularies, using fallback data:",
+            result.error
+          );
         }
       } catch (error) {
-        console.error('Error fetching vocabularies:', error);
+        console.error("Error fetching vocabularies:", error);
       } finally {
         setVocabularyLoading(false);
       }
@@ -443,21 +507,23 @@ export default function BUKPIPage() {
   const buName = BU_NAMES[bu?.toLowerCase()] || bu?.toUpperCase();
   const buFlag = BU_FLAGS[bu?.toLowerCase()] || "🏢";
 
-
   if (loading && !dailyData) {
     return (
       <div className="container mx-auto p-6">
         <Breadcrumbs
           items={[
             { label: "KPI Dashboard", href: "/kpi" },
-            { label: `${buName} Inspection Report` }
+            { label: `${buName} Inspection Report` },
           ]}
         />
         <div className="mt-6 mb-8">
           <div className="flex items-center gap-3 mb-4">
             <div className="text-4xl">{buFlag}</div>
             <div>
-              <h1 className="text-3xl font-bold">{buName} - Click each tab to view daily, monthly, quarterly, annual</h1>
+              <h1 className="text-3xl font-bold">
+                {buName} - Click each tab to view daily, monthly, quarterly,
+                annual
+              </h1>
               <div className="w-64 h-4 bg-gray-200 rounded animate-pulse mt-2"></div>
             </div>
           </div>
@@ -476,13 +542,17 @@ export default function BUKPIPage() {
         <Breadcrumbs
           items={[
             { label: "KPI Dashboard", href: "/kpi" },
-            { label: `${buName} Inspection Report` }
+            { label: `${buName} Inspection Report` },
           ]}
         />
         <div className="mt-6 mb-8">
           <div className="flex items-center gap-4 mb-6">
             <Link href="/kpi">
-              <Button variant="outline" size="sm" className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2"
+              >
                 <ArrowLeft className="h-4 w-4" />
                 Back to Overview
               </Button>
@@ -491,14 +561,18 @@ export default function BUKPIPage() {
           <div className="flex items-center gap-3 mb-4">
             <div className="text-4xl">{buFlag}</div>
             <div>
-              <h1 className="text-3xl font-bold">{buName} - Inspection Report</h1>
+              <h1 className="text-3xl font-bold">
+                {buName} - Inspection Report
+              </h1>
             </div>
           </div>
         </div>
         <Card className="max-w-2xl mx-auto">
           <CardContent className="text-center py-12">
             <AlertCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Unable to Load {buName} Inspection Data</h3>
+            <h3 className="text-lg font-semibold mb-2">
+              Unable to Load {buName} Inspection Data
+            </h3>
             <p className="text-gray-600 mb-6">{error}</p>
             <Button onClick={fetchAllData} className="flex items-center gap-2">
               <RefreshCw className="h-4 w-4" />
@@ -513,10 +587,7 @@ export default function BUKPIPage() {
   return (
     <div className="container mx-auto p-6">
       <Breadcrumbs
-        items={[
-          { label: "KPI Dashboard", href: "/kpi" },
-          { label: buName }
-        ]}
+        items={[{ label: "KPI Dashboard", href: "/kpi" }, { label: buName }]}
       />
 
       {/* Header */}
@@ -536,7 +607,9 @@ export default function BUKPIPage() {
               disabled={loading}
               className="flex items-center gap-2"
             >
-              <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+              <RefreshCw
+                className={`h-4 w-4 ${loading ? "animate-spin" : ""}`}
+              />
               Refresh
             </Button>
           </div>
@@ -546,7 +619,8 @@ export default function BUKPIPage() {
           <div className="text-4xl">{buFlag}</div>
           <div>
             <h1 className="text-3xl font-bold">
-              {buName} - Click each tab to view daily, monthly, quarterly, annual
+              {buName} - Click each tab to view daily, monthly, quarterly,
+              annual
             </h1>
           </div>
         </div>
@@ -557,7 +631,9 @@ export default function BUKPIPage() {
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium mb-2">Inspected / Total Machines ( % )</p>
+              <p className="text-sm font-medium mb-2">
+                Inspected / Total Machines ( % )
+              </p>
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
                   <div className="w-4 h-4 bg-red-500 rounded"></div>
@@ -581,38 +657,82 @@ export default function BUKPIPage() {
               variant="outline"
               size="sm"
               onClick={() => setShowDefects(!showDefects)}
-              className={`flex items-center gap-2 ${showDefects ? 'border-green-500 hover:border-green-600' : 'border-red-500 hover:border-red-600'}`}
+              className={`flex items-center gap-2 ${showDefects ? "border-green-500 hover:border-green-600" : "border-red-500 hover:border-red-600"}`}
             >
               <Eye className="h-4 w-4" />
-              {showDefects ? 'HIDE' : 'SHOW'} DEFECTS
+              {showDefects ? "HIDE" : "SHOW"} DEFECTS
             </Button>
           </div>
         </CardContent>
       </Card>
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="space-y-6"
+      >
         <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="daily" className="font-semibold">DAILY</TabsTrigger>
-          <TabsTrigger value="monthly" className="font-semibold">MONTHLY</TabsTrigger>
-          <TabsTrigger value="quarterly" className="font-semibold">QUARTERLY</TabsTrigger>
-          <TabsTrigger value="annual" className="font-semibold">ANNUAL</TabsTrigger>
+          <TabsTrigger value="daily" className="font-semibold">
+            DAILY
+          </TabsTrigger>
+          <TabsTrigger value="monthly" className="font-semibold">
+            MONTHLY
+          </TabsTrigger>
+          <TabsTrigger value="quarterly" className="font-semibold">
+            QUARTERLY
+          </TabsTrigger>
+          <TabsTrigger value="annual" className="font-semibold">
+            ANNUAL
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="daily">
-          {dailyData && <InspectionTable data={dailyData} frequency="daily" showDefects={showDefects} bu={bu} machineTypeMapping={machineTypeMapping} />}
+          {dailyData && (
+            <InspectionTable
+              data={dailyData}
+              frequency="daily"
+              showDefects={showDefects}
+              bu={bu}
+              machineTypeMapping={machineTypeMapping}
+            />
+          )}
         </TabsContent>
 
         <TabsContent value="monthly">
-          {monthlyData && <InspectionTable data={monthlyData} frequency="monthly" showDefects={showDefects} bu={bu} machineTypeMapping={machineTypeMapping} />}
+          {monthlyData && (
+            <InspectionTable
+              data={monthlyData}
+              frequency="monthly"
+              showDefects={showDefects}
+              bu={bu}
+              machineTypeMapping={machineTypeMapping}
+            />
+          )}
         </TabsContent>
 
         <TabsContent value="quarterly">
-          {quarterlyData && <InspectionTable data={quarterlyData} frequency="quarterly" showDefects={showDefects} bu={bu} machineTypeMapping={machineTypeMapping} />}
+          {quarterlyData && (
+            <InspectionTable
+              data={quarterlyData}
+              frequency="quarterly"
+              showDefects={showDefects}
+              bu={bu}
+              machineTypeMapping={machineTypeMapping}
+            />
+          )}
         </TabsContent>
 
         <TabsContent value="annual">
-          {annualData && <InspectionTable data={annualData} frequency="annual" showDefects={showDefects} bu={bu} machineTypeMapping={machineTypeMapping} />}
+          {annualData && (
+            <InspectionTable
+              data={annualData}
+              frequency="annual"
+              showDefects={showDefects}
+              bu={bu}
+              machineTypeMapping={machineTypeMapping}
+            />
+          )}
         </TabsContent>
       </Tabs>
     </div>

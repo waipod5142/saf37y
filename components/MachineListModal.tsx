@@ -121,7 +121,7 @@ export function MachineListModal({
   const handleImageClick = (imgUrl: string) => {
     // Helper function to convert relative paths to full URLs (defined inline to access it here)
     const getImageUrl = (imgPath: string) => {
-      if (imgPath.startsWith('http')) {
+      if (imgPath.startsWith("http")) {
         return imgPath; // Already a full URL
       }
       // Convert relative path to Firebase Storage URL
@@ -235,7 +235,7 @@ export function MachineListModal({
             ) : (
               <div className="overflow-y-auto max-h-[50vh]">
                 <div className="space-y-2">
-                  {filteredMachines.map((machine) => (
+                  {filteredMachines.map((machine, idx) => (
                     <div
                       key={machine.docId || machine.id}
                       className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors"
@@ -293,45 +293,61 @@ export function MachineListModal({
                             {/* Images section - moved here from gray wrapper */}
                             {(() => {
                               // Check both machine.images and lastInspection.images
-                              const imageArray = machine.images || machine.image || machine.lastInspection?.images;
-                              console.log('Machine images for', machine.id, ':', imageArray);
+                              const imageArray =
+                                machine.images ||
+                                machine.image ||
+                                machine.lastInspection?.images;
+                              console.log(
+                                "Machine images for",
+                                machine.id,
+                                ":",
+                                imageArray
+                              );
 
                               // Helper function to convert relative paths to full URLs
                               const getImageUrl = (imgPath: string) => {
-                                if (imgPath.startsWith('http')) {
+                                if (imgPath.startsWith("http")) {
                                   return imgPath; // Already a full URL
                                 }
                                 // Convert relative path to Firebase Storage URL
                                 return `https://firebasestorage.googleapis.com/v0/b/sccc-inseesafety-prod.firebasestorage.app/o/${encodeURIComponent(imgPath)}?alt=media`;
                               };
 
-                              return imageArray && Array.isArray(imageArray) && imageArray.length > 0 && (
-                                <div className="mt-2">
-                                  <div className="text-xs text-gray-600 mb-1">
-                                    📷 Images ({imageArray.length}):
+                              return (
+                                imageArray &&
+                                Array.isArray(imageArray) &&
+                                imageArray.length > 0 && (
+                                  <div className="mt-2">
+                                    <div className="text-xs text-gray-600 mb-1">
+                                      📷 Images ({imageArray.length}):
+                                    </div>
+                                    <div className="flex gap-2 flex-wrap">
+                                      {imageArray.map(
+                                        (imgUrl: string, idx: number) => (
+                                          <img
+                                            key={idx}
+                                            src={getImageUrl(imgUrl)}
+                                            alt={`${machine.id} image ${idx + 1}`}
+                                            className="w-16 h-16 object-cover rounded border cursor-pointer hover:opacity-80"
+                                            onClick={() =>
+                                              handleImageClick(imgUrl)
+                                            }
+                                            onError={(e) => {
+                                              e.currentTarget.src =
+                                                'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><rect fill="%23ddd"/><text x="50%" y="50%" text-anchor="middle" dy=".3em" fill="%23999">✗</text></svg>';
+                                            }}
+                                          />
+                                        )
+                                      )}
+                                    </div>
                                   </div>
-                                  <div className="flex gap-2 flex-wrap">
-                                    {imageArray.map((imgUrl: string, idx: number) => (
-                                      <img
-                                        key={idx}
-                                        src={getImageUrl(imgUrl)}
-                                        alt={`${machine.id} image ${idx + 1}`}
-                                        className="w-16 h-16 object-cover rounded border cursor-pointer hover:opacity-80"
-                                        onClick={() => handleImageClick(imgUrl)}
-                                        onError={(e) => {
-                                          e.currentTarget.src =
-                                            'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><rect fill="%23ddd"/><text x="50%" y="50%" text-anchor="middle" dy=".3em" fill="%23999">✗</text></svg>';
-                                        }}
-                                      />
-                                    ))}
-                                  </div>
-                                </div>
+                                )
                               );
                             })()}
                           </div>
                         </div>
                         <div className="text-xs text-gray-400">
-                          Type: {machine.type}
+                          Type: {machine.type} : {idx + 1}
                         </div>
                       </div>
                     </div>
@@ -392,7 +408,8 @@ export function MachineListModal({
                   alt="Machine image"
                   className="max-w-full max-h-[70vh] object-contain rounded"
                   onError={(e) => {
-                    e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCA0MDAgMzAwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgogIDxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjRjNGNEY2Ii8+CiAgPHRleHQgeD0iMjAwIiB5PSIxNTAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM5Q0E0QUYiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNiI+SW1hZ2UgY291bGQgbm90IGJlIGxvYWRlZDwvdGV4dD4KPC9zdmc+';
+                    e.currentTarget.src =
+                      "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCA0MDAgMzAwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgogIDxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjRjNGNEY2Ii8+CiAgPHRleHQgeD0iMjAwIiB5PSIxNTAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM5Q0E0QUYiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNiI+SW1hZ2UgY291bGQgbm90IGJlIGxvYWRlZDwvdGV4dD4KPC9zdmc+";
                   }}
                 />
               </div>

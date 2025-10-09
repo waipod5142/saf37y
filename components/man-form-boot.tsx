@@ -220,7 +220,7 @@ const translations = {
     success: "ফর্ম সফলভাবে জমা হয়েছে!",
     error: "একটি ত্রুটি ঘটেছে। অনুগ্রহ করে আবার চেষ্টা করুন",
   },
-  cmic: {
+  kh: {
     title: "លេខសម្គាល់បុគ្គលិក Staff ID ?",
     titleQuestion: "លេខសម្គាល់បុគ្គលិក Staff ID ?",
     staffIdPlaceholder: "លេខសម្គាល់បុគ្គលិក Staff ID ?",

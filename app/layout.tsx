@@ -48,7 +48,7 @@ export default function RootLayout({
                   href="/kpi"
                   className="uppercase tracking-widest hover:underline"
                 >
-                  Dashboard-Machine
+                  Machine
                 </Link>
               </li>
               <li>
@@ -56,7 +56,7 @@ export default function RootLayout({
                   href="/kpiman"
                   className="uppercase tracking-widest hover:underline"
                 >
-                  Dashboard-Man
+                  Man
                 </Link>
               </li>
               {/* <li>

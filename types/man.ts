@@ -84,6 +84,12 @@ export interface TrainingManRecord extends BaseManRecord {
   updateBy: string; // Updated by
 }
 
+// Grease record interface (greasing method from methodtr collection)
+export interface GreaseRecord extends BaseManRecord {
+  type: "greaseform";
+  // No additional fields - uses base fields only
+}
+
 // Union type for all man records
 export type ManRecord =
   | SotManRecord
@@ -92,7 +98,8 @@ export type ManRecord =
   | AlertManRecord
   | BootManRecord
   | MeetingManRecord
-  | TrainingManRecord;
+  | TrainingManRecord
+  | GreaseRecord;
 
 // Legacy interface for backward compatibility
 export interface LegacyManRecord {
