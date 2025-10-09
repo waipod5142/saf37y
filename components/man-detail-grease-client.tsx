@@ -69,7 +69,7 @@ export default function GreaseManDetailClient({
       </h2>
 
       {records.map((record) => (
-        <Card key={record.docId || record.timestamp} className="relative">
+        <Card key={record.docId || record.timestamp.toString()} className="relative">
           <CardContent className="pt-6">
             {/* Delete Button */}
             {record.docId && (
