@@ -25,7 +25,7 @@ interface ManFormBootProps {
   isInDialog?: boolean;
 }
 
-type Language = "th" | "vn" | "lk" | "bd" | "cmic";
+type Language = "th" | "vn" | "lk" | "bd" | "kh";
 
 const translations = {
   th: {
@@ -296,7 +296,7 @@ export default function ManFormBoot({
     if (buLower === "vn" || buLower === "vietnam") return "vn";
     if (buLower === "lk" || buLower === "srilanka") return "lk";
     if (buLower === "bd" || buLower === "bangladesh") return "bd";
-    if (buLower === "cmic" || buLower === "cambodia") return "cmic";
+    if (buLower === "cmic" || buLower === "cambodia" || buLower === "kh") return "kh";
     return "th"; // Default to Thai
   };
 
