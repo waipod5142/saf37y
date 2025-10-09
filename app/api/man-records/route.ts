@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { firestore } from "@/firebase/server";
 
+// Force dynamic rendering - don't try to statically optimize this route during build
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;

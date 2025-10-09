@@ -40,27 +40,46 @@ function getServiceAccount(): ServiceAccount {
   } as ServiceAccount;
 }
 
-let firestore: Firestore;
-let auth: Auth;
+// Lazy initialization - only initialize when actually used
+let _firestore: Firestore | null = null;
+let _auth: Auth | null = null;
 
-// Initialize Firebase Admin
-const currentApps = getApps();
+function initializeFirebase() {
+  const currentApps = getApps();
 
-if (!currentApps.length) {
-  const serviceAccount = getServiceAccount();
+  if (!currentApps.length) {
+    const serviceAccount = getServiceAccount();
 
-  const app = admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-  });
-  firestore = getFirestore(app);
-  auth = getAuth(app);
-} else {
-  const app = currentApps[0];
-  firestore = getFirestore(app);
-  auth = getAuth(app);
+    const app = admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount),
+    });
+    _firestore = getFirestore(app);
+    _auth = getAuth(app);
+  } else {
+    const app = currentApps[0];
+    _firestore = getFirestore(app);
+    _auth = getAuth(app);
+  }
 }
 
-export { firestore, auth };
+// Getter functions that initialize on first access
+export const firestore: Firestore = new Proxy({} as Firestore, {
+  get(_target, prop) {
+    if (!_firestore) {
+      initializeFirebase();
+    }
+    return (_firestore as any)[prop];
+  }
+});
+
+export const auth: Auth = new Proxy({} as Auth, {
+  get(_target, prop) {
+    if (!_auth) {
+      initializeFirebase();
+    }
+    return (_auth as any)[prop];
+  }
+});
 
 export const getTotalPages = async (
   firestoreQuery: FirebaseFirestore.Query<

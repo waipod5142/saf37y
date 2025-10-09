@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { firestore } from "@/firebase/server";
 import { Query, DocumentData } from "firebase-admin/firestore";
 
+// Force dynamic rendering - don't try to statically optimize this route during build
+export const dynamic = 'force-dynamic';
+
 // Utility function for Firebase timestamp conversion
 function convertFirebaseTimestamp(timestamp: any): Date | null {
   if (!timestamp) return null;
