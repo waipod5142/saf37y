@@ -76,7 +76,11 @@ const FORM_TYPE_CONFIG: Record<
   bootform: { icon: "🥾", label: "Boot on the ground", color: "bg-green-500" },
   sot: { icon: "👁️", label: "Safety Observation", color: "bg-purple-500" },
   talk: { icon: "💬", label: "Safety Talk", color: "bg-yellow-500" },
-  meetingform: { icon: "📋", label: "Meeting Form", color: "bg-indigo-500" },
+  meetingform: {
+    icon: "📋",
+    label: "Safety Meeting Attention",
+    color: "bg-indigo-500",
+  },
 };
 
 function getTransactionBadgeColor(count: number): string {
@@ -137,7 +141,9 @@ function TransactionTable({
       case "weekly":
         // Weekly: from Monday to Sunday (current week in UTC)
         const daysFromMonday = day === 0 ? 6 : day - 1;
-        startDate = new Date(Date.UTC(year, month, date - daysFromMonday, 0, 0, 0, 0));
+        startDate = new Date(
+          Date.UTC(year, month, date - daysFromMonday, 0, 0, 0, 0)
+        );
         break;
       case "monthly":
         // Monthly: from 1st day of current month (UTC)
@@ -168,12 +174,12 @@ function TransactionTable({
       type,
       frequency: freq,
       startDate,
-      endDate
+      endDate,
     });
   };
 
   const handleModalClose = () => {
-    setModalState(prev => ({ ...prev, isOpen: false }));
+    setModalState((prev) => ({ ...prev, isOpen: false }));
   };
 
   if (!data.success) {
@@ -413,8 +419,14 @@ function TransactionTable({
         site={modalState.site}
         type={modalState.type}
         frequency={modalState.frequency}
-        siteName={modalState.site !== "all" ? modalState.site.toUpperCase() : undefined}
-        typeName={modalState.type !== "all" ? FORM_TYPE_CONFIG[modalState.type]?.label : undefined}
+        siteName={
+          modalState.site !== "all" ? modalState.site.toUpperCase() : undefined
+        }
+        typeName={
+          modalState.type !== "all"
+            ? FORM_TYPE_CONFIG[modalState.type]?.label
+            : undefined
+        }
         startDate={modalState.startDate}
         endDate={modalState.endDate}
       />

@@ -56,7 +56,7 @@ export default function RootLayout({
                   href="/kpiman"
                   className="uppercase tracking-widest hover:underline"
                 >
-                  DDashboard-Man
+                  Dashboard-Man
                 </Link>
               </li>
               {/* <li>

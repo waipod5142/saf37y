@@ -16,10 +16,16 @@ import { formatRelativeDateTime } from "@/components/ui/date-utils";
 import { FileText, Search } from "lucide-react";
 
 // Dynamic import to avoid server-side rendering issues
-const ManDetailDialog = dynamic(() => import("./ManDetailDialog").then(mod => ({ default: mod.ManDetailDialog })), {
-  ssr: false,
-  loading: () => <div>Loading...</div>
-});
+const ManDetailDialog = dynamic(
+  () =>
+    import("./ManDetailDialog").then((mod) => ({
+      default: mod.ManDetailDialog,
+    })),
+  {
+    ssr: false,
+    loading: () => <div>Loading...</div>,
+  }
+);
 
 interface ManRecord {
   docId: string;
@@ -60,7 +66,11 @@ const FORM_TYPE_CONFIG: Record<
   bootform: { icon: "🥾", label: "Boot on the ground", color: "bg-green-500" },
   sot: { icon: "👁️", label: "Safety Observation", color: "bg-purple-500" },
   talk: { icon: "💬", label: "Safety Talk", color: "bg-yellow-500" },
-  meetingform: { icon: "📋", label: "Meeting Form", color: "bg-indigo-500" },
+  meetingform: {
+    icon: "📋",
+    label: "Safety Meeting Attention",
+    color: "bg-indigo-500",
+  },
 };
 
 export function ManListModal({
@@ -169,9 +179,16 @@ export function ManListModal({
     setIsMainModalVisible(true);
   };
 
-  const displaySiteName = siteName || (site === "all" ? "All Sites" : site.toUpperCase());
-  const displayTypeName = typeName || (type === "all" ? "All Forms" : FORM_TYPE_CONFIG[type]?.label || type.charAt(0).toUpperCase() + type.slice(1));
-  const displayFrequency = frequency.charAt(0).toUpperCase() + frequency.slice(1);
+  const displaySiteName =
+    siteName || (site === "all" ? "All Sites" : site.toUpperCase());
+  const displayTypeName =
+    typeName ||
+    (type === "all"
+      ? "All Forms"
+      : FORM_TYPE_CONFIG[type]?.label ||
+        type.charAt(0).toUpperCase() + type.slice(1));
+  const displayFrequency =
+    frequency.charAt(0).toUpperCase() + frequency.slice(1);
 
   const getStats = () => {
     const total = filteredRecords.length;
@@ -184,118 +201,118 @@ export function ManListModal({
     <>
       <Dialog open={isOpen && isMainModalVisible} onOpenChange={onClose}>
         <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden">
-        <DialogHeader>
-          <DialogTitle className="text-lg font-semibold">
-            {displayTypeName} - {displaySiteName} ({displayFrequency})
-          </DialogTitle>
-        </DialogHeader>
+          <DialogHeader>
+            <DialogTitle className="text-lg font-semibold">
+              {displayTypeName} - {displaySiteName} ({displayFrequency})
+            </DialogTitle>
+          </DialogHeader>
 
-        <div className="mt-4">
-          {/* Stats and Controls */}
-          <div className="mb-4 space-y-3">
-            {/* Stats Summary */}
-            <div className="p-3 bg-gray-50 rounded-lg">
-              <div className="text-sm text-gray-600">
-                Total Records: {stats.total}
+          <div className="mt-4">
+            {/* Stats and Controls */}
+            <div className="mb-4 space-y-3">
+              {/* Stats Summary */}
+              <div className="p-3 bg-gray-50 rounded-lg">
+                <div className="text-sm text-gray-600">
+                  Total Records: {stats.total}
+                </div>
+              </div>
+
+              {/* Search */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="Search by ID or remark..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10"
+                />
               </div>
             </div>
 
-            {/* Search */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                placeholder="Search by ID or remark..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10"
-              />
-            </div>
-          </div>
-
-          {loading ? (
-            <div className="flex justify-center items-center py-8">
-              <div className="flex items-center gap-3">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-600"></div>
-                <div className="text-gray-600">Loading records...</div>
+            {loading ? (
+              <div className="flex justify-center items-center py-8">
+                <div className="flex items-center gap-3">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-600"></div>
+                  <div className="text-gray-600">Loading records...</div>
+                </div>
               </div>
-            </div>
-          ) : filteredRecords.length === 0 ? (
-            <div className="flex justify-center items-center py-8">
-              <div className="text-center text-gray-500">
-                <FileText className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-                {searchTerm
-                  ? `No records found matching "${searchTerm}"`
-                  : "No records found for this selection."}
+            ) : filteredRecords.length === 0 ? (
+              <div className="flex justify-center items-center py-8">
+                <div className="text-center text-gray-500">
+                  <FileText className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                  {searchTerm
+                    ? `No records found matching "${searchTerm}"`
+                    : "No records found for this selection."}
+                </div>
               </div>
-            </div>
-          ) : (
-            <div className="overflow-y-auto max-h-[50vh]">
-              <div className="space-y-3">
-                {filteredRecords.map((record) => (
-                  <Card
-                    key={record.docId || record.id}
-                    className="hover:shadow-md transition-shadow"
-                  >
-                    <CardContent className="p-4">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <Badge
-                              className={
-                                FORM_TYPE_CONFIG[record.type]?.color ||
-                                "bg-gray-500"
-                              }
-                            >
-                              {FORM_TYPE_CONFIG[record.type]?.icon || "📄"}{" "}
-                              {FORM_TYPE_CONFIG[record.type]?.label ||
-                                record.type}
-                            </Badge>
-                            {record.site && (
-                              <Badge variant="outline" className="text-xs">
-                                {record.site.toUpperCase()}
-                              </Badge>
-                            )}
-                          </div>
-                          <div className="text-sm text-gray-600 space-y-1">
-                            <p>
-                              <strong>ID:</strong>{" "}
-                              <Button
-                                variant="link"
-                                className="p-0 h-auto font-semibold text-blue-600 hover:text-blue-800"
-                                onClick={() => handleRecordClick(record)}
+            ) : (
+              <div className="overflow-y-auto max-h-[50vh]">
+                <div className="space-y-3">
+                  {filteredRecords.map((record) => (
+                    <Card
+                      key={record.docId || record.id}
+                      className="hover:shadow-md transition-shadow"
+                    >
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Badge
+                                className={
+                                  FORM_TYPE_CONFIG[record.type]?.color ||
+                                  "bg-gray-500"
+                                }
                               >
-                                {record.id}
-                              </Button>
-                            </p>
-                            {record.timestamp && (
+                                {FORM_TYPE_CONFIG[record.type]?.icon || "📄"}{" "}
+                                {FORM_TYPE_CONFIG[record.type]?.label ||
+                                  record.type}
+                              </Badge>
+                              {record.site && (
+                                <Badge variant="outline" className="text-xs">
+                                  {record.site.toUpperCase()}
+                                </Badge>
+                              )}
+                            </div>
+                            <div className="text-sm text-gray-600 space-y-1">
                               <p>
-                                <strong>Date:</strong>{" "}
-                                {formatRelativeDateTime(record.timestamp)}
+                                <strong>ID:</strong>{" "}
+                                <Button
+                                  variant="link"
+                                  className="p-0 h-auto font-semibold text-blue-600 hover:text-blue-800"
+                                  onClick={() => handleRecordClick(record)}
+                                >
+                                  {record.id}
+                                </Button>
                               </p>
-                            )}
-                            {record.remark && (
-                              <p className="text-xs text-gray-500 mt-2">
-                                <strong>Remark:</strong> {record.remark}
-                              </p>
-                            )}
+                              {record.timestamp && (
+                                <p>
+                                  <strong>Date:</strong>{" "}
+                                  {formatRelativeDateTime(record.timestamp)}
+                                </p>
+                              )}
+                              {record.remark && (
+                                <p className="text-xs text-gray-500 mt-2">
+                                  <strong>Remark:</strong> {record.remark}
+                                </p>
+                              )}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
 
-        <div className="mt-6 flex justify-end">
-          <Button variant="outline" onClick={onClose}>
-            Close
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
+          <div className="mt-6 flex justify-end">
+            <Button variant="outline" onClick={onClose}>
+              Close
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Man Detail Dialog */}
       <ManDetailDialog
