@@ -100,11 +100,67 @@ export default function MachineHeaderClient({ bu, type, id }: MachineHeaderClien
                   <span className="text-gray-900">{normalizeTypeForDisplay(machine.type)}</span>
                 </div>
               )}
-            
+
               {machine.site && (
                 <div className="flex flex-col">
                   <span className="text-gray-500 font-medium">Site</span>
                   <span className="text-gray-900">{machine.site}</span>
+                </div>
+              )}
+
+              {machine.plantId && (
+                <div className="flex flex-col">
+                  <span className="text-gray-500 font-medium">Plant ID</span>
+                  <span className="text-gray-900">{machine.plantId}</span>
+                </div>
+              )}
+
+              {machine.status && (
+                <div className="flex flex-col">
+                  <span className="text-gray-500 font-medium">Status</span>
+                  <span className="text-gray-900">{machine.status}</span>
+                </div>
+              )}
+
+              {machine.kind && (
+                <div className="flex flex-col">
+                  <span className="text-gray-500 font-medium">Kind</span>
+                  <span className="text-gray-900">{machine.kind}</span>
+                </div>
+              )}
+
+              {machine.name && (
+                <div className="flex flex-col">
+                  <span className="text-gray-500 font-medium">Name</span>
+                  <span className="text-gray-900">{machine.name}</span>
+                </div>
+              )}
+
+              {machine.description && (
+                <div className="flex flex-col">
+                  <span className="text-gray-500 font-medium">Description</span>
+                  <span className="text-gray-900">{machine.description}</span>
+                </div>
+              )}
+
+              {machine.area && (
+                <div className="flex flex-col">
+                  <span className="text-gray-500 font-medium">Area</span>
+                  <span className="text-gray-900">{machine.area}</span>
+                </div>
+              )}
+
+              {machine.department && (
+                <div className="flex flex-col">
+                  <span className="text-gray-500 font-medium">Department</span>
+                  <span className="text-gray-900">{machine.department}</span>
+                </div>
+              )}
+
+              {machine.location && (
+                <div className="flex flex-col">
+                  <span className="text-gray-500 font-medium">Location</span>
+                  <span className="text-gray-900">{machine.location}</span>
                 </div>
               )}
 
@@ -115,63 +171,36 @@ export default function MachineHeaderClient({ bu, type, id }: MachineHeaderClien
                 </div>
               )}
 
-              {machine.area && (
+              {machine.ownerId && (
                 <div className="flex flex-col">
-                  <span className="text-gray-500 font-medium">Area</span>
-                  <span className="text-gray-900">{machine.area}</span>
+                  <span className="text-gray-500 font-medium">Owner ID</span>
+                  <span className="text-gray-900">{machine.ownerId}</span>
                 </div>
               )}
-              
-              {machine.department && (
-                <div className="flex flex-col">
-                  <span className="text-gray-500 font-medium">Department</span>
-                  <span className="text-gray-900">{machine.department}</span>
-                </div>
-              )}
-              
-              {machine.holder && (
-                <div className="flex flex-col">
-                  <span className="text-gray-500 font-medium">Holder</span>
-                  <span className="text-gray-900">{machine.holder}</span>
-                </div>
-              )}
-              
-              {machine.kind && (
-                <div className="flex flex-col">
-                  <span className="text-gray-500 font-medium">Kind</span>
-                  <span className="text-gray-900">{machine.kind}</span>
-                </div>
-              )}
-              
-              {machine.status && (
-                <div className="flex flex-col">
-                  <span className="text-gray-500 font-medium">Status</span>
-                  <span className="text-gray-900">{machine.status}</span>
-                </div>
-              )}
-              
+
               {machine.email && (
                 <div className="flex flex-col">
-                  <span className="text-gray-500 font-medium">Contact Email</span>
+                  <span className="text-gray-500 font-medium">Email</span>
                   <span className="text-gray-900">{machine.email}</span>
                 </div>
               )}
-            </div>
-            
-            {/* Details section */}
-            {machine.details && (
-              <div className="mt-4">
-                <span className="text-gray-500 font-medium text-sm">Details</span>
-                <div className="mt-1 text-gray-900 prose prose-sm max-w-none">
-                  <ReactMarkdown>{machine.details}</ReactMarkdown>
+
+              {machine.registerDate && (
+                <div className="flex flex-col">
+                  <span className="text-gray-500 font-medium">Register Date</span>
+                  <span className="text-gray-900">
+                    {typeof machine.registerDate === 'string'
+                      ? machine.registerDate
+                      : new Date(machine.registerDate).toLocaleDateString()}
+                  </span>
                 </div>
-              </div>
-            )}
-            
+              )}
+            </div>
+
             {/* Remark section */}
             {machine.remark && (
               <div className="mt-4">
-                <span className="text-gray-500 font-medium text-sm">Remarks</span>
+                <span className="text-gray-500 font-medium text-sm">Remark</span>
                 <div className="mt-1 text-gray-900 prose prose-sm max-w-none">
                   <ReactMarkdown>{machine.remark}</ReactMarkdown>
                 </div>

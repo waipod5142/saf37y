@@ -16,7 +16,7 @@ import { toast } from "sonner";
 import MultiImageUploader, { ImageUpload } from "@/components/multi-image-uploader";
 import { auth, storage } from "@/firebase/client";
 import { signInAnonymously } from "firebase/auth";
-import { ref, uploadBytesResumable, UploadTask } from "firebase/storage";
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { submitMachineForm } from "@/lib/actions/machines";
 import { useGeolocation } from "@/hooks/useGeolocation";
 
@@ -183,48 +183,64 @@ export default function MachineForm({ bu, type, id, isInDialog = false }: Machin
 
 
       // Upload images to Firebase Storage
-      const uploadTasks: UploadTask[] = [];
-      const imagePaths: string[] = [];
-      const questionImagePaths: { [questionName: string]: string[] } = {};
-      
+      const imageUrls: string[] = [];
+      const questionImageUrls: { [questionName: string]: string[] } = {};
+
       // Upload general images
-      images.forEach((image, index) => {
+      for (let index = 0; index < images.length; index++) {
+        const image = images[index];
         if (image.file) {
-          const path = `Machine/${bu}/${type}/${id}/${Date.now()}-${index}-${image.file.name}`;
-          imagePaths.push(path);
-          const storageRef = ref(storage, path);
-          uploadTasks.push(uploadBytesResumable(storageRef, image.file));
-        }
-      });
-
-      // Upload question-specific images
-      Object.keys(questionImages).forEach(questionName => {
-        const images = questionImages[questionName];
-        questionImagePaths[questionName] = [];
-        
-        images.forEach((image, index) => {
-          if (image.file) {
-            const path = `Machine/${bu}/${type}/${id}/${questionName}/${Date.now()}-${index}-${image.file.name}`;
-            questionImagePaths[questionName].push(path);
+          try {
+            const path = `Machine/${bu}/${type}/${id}/${Date.now()}-${index}-${image.file.name}`;
             const storageRef = ref(storage, path);
-            uploadTasks.push(uploadBytesResumable(storageRef, image.file));
-          }
-        });
-      });
 
-      // Wait for all uploads to complete
-      try {
-        await Promise.all(uploadTasks);
-      } catch (uploadError) {
-        console.error("Image upload error:", uploadError);
-        toast.error("Failed to upload images. Please try again.");
-        return;
+            // Upload file and wait for completion
+            const uploadTask = uploadBytesResumable(storageRef, image.file);
+            await uploadTask;
+
+            // Get download URL after upload completes
+            const downloadURL = await getDownloadURL(storageRef);
+            imageUrls.push(downloadURL);
+          } catch (uploadError) {
+            console.error(`Upload error for image ${index}:`, uploadError);
+            toast.error(`Failed to upload image ${index + 1}. Please try again.`);
+            return;
+          }
+        }
       }
 
-      // Add question-specific image paths to form data
-      Object.keys(questionImagePaths).forEach(questionName => {
-        if (questionImagePaths[questionName].length > 0) {
-          updatedData[questionName + "P"] = questionImagePaths[questionName];
+      // Upload question-specific images
+      for (const questionName of Object.keys(questionImages)) {
+        const images = questionImages[questionName];
+        questionImageUrls[questionName] = [];
+
+        for (let index = 0; index < images.length; index++) {
+          const image = images[index];
+          if (image.file) {
+            try {
+              const path = `Machine/${bu}/${type}/${id}/${questionName}/${Date.now()}-${index}-${image.file.name}`;
+              const storageRef = ref(storage, path);
+
+              // Upload file and wait for completion
+              const uploadTask = uploadBytesResumable(storageRef, image.file);
+              await uploadTask;
+
+              // Get download URL after upload completes
+              const downloadURL = await getDownloadURL(storageRef);
+              questionImageUrls[questionName].push(downloadURL);
+            } catch (uploadError) {
+              console.error(`Upload error for ${questionName} image ${index}:`, uploadError);
+              toast.error(`Failed to upload image for ${questionName}. Please try again.`);
+              return;
+            }
+          }
+        }
+      }
+
+      // Add question-specific image URLs to form data
+      Object.keys(questionImageUrls).forEach(questionName => {
+        if (questionImageUrls[questionName].length > 0) {
+          updatedData[questionName + "P"] = questionImageUrls[questionName];
         }
       });
 
@@ -232,7 +248,7 @@ export default function MachineForm({ bu, type, id, isInDialog = false }: Machin
       try {
         const result = await submitMachineForm({
           ...updatedData,
-          images: imagePaths,
+          images: imageUrls,
         });
 
         if (result.success) {
