@@ -95,9 +95,7 @@ export default function MachineForm({ bu, type, id, isInDialog = false }: Machin
           setQuestions([]);
           setFormTitle(null);
           setFormEmoji(null);
-          if (questionsResult.error) {
-            toast.error(questionsResult.error);
-          }
+          // Don't show error toast for missing questions, just log
         }
 
         // Handle vocabulary
@@ -313,28 +311,6 @@ export default function MachineForm({ bu, type, id, isInDialog = false }: Machin
     );
   }
 
-  // Show message if no questions are available
-  if (questions.length === 0) {
-    return (
-      <div className={isInDialog ? "" : "max-w-4xl mx-auto p-2"}>
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="text-center text-2xl font-bold">
-              {formEmoji && <span className="mr-2">{formEmoji}</span>}
-              {getTitle()}
-            </CardTitle>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <p>No questions available for this type.</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   return (
     <div>
