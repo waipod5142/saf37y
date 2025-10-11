@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ManListModal } from "@/components/ManListModal";
+import { FALLBACK_COUNTRIES } from "@/lib/constants/countries";
 import {
   ArrowLeft,
   RefreshCw,
@@ -44,23 +45,14 @@ interface KPITransactionData {
   timestamp: string;
 }
 
-// Business Unit display names
-const BU_NAMES: Record<string, string> = {
-  vn: "Vietnam",
-  th: "Thailand",
-  lk: "Sri Lanka",
-  bd: "Bangladesh",
-  cmic: "Cambodia",
-};
+// Business Unit display names and flags from constants
+const BU_NAMES: Record<string, string> = Object.fromEntries(
+  FALLBACK_COUNTRIES.map((c) => [c.code, c.name])
+);
 
-// Business Unit flags
-const BU_FLAGS: Record<string, string> = {
-  vn: "🇻🇳",
-  th: "🇹🇭",
-  lk: "🇱🇰",
-  bd: "🇧🇩",
-  cmic: "🇰🇭",
-};
+const BU_FLAGS: Record<string, string> = Object.fromEntries(
+  FALLBACK_COUNTRIES.map((c) => [c.code, c.flag])
+);
 
 // Form type icons and display names
 const FORM_TYPE_CONFIG: Record<

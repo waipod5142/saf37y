@@ -1,4 +1,4 @@
-export const cmic = {
+export const kh = {
   common: {
     optional: "(ជម្រើស)",
     submit: "ដាក់ស្នើ / Submit",

@@ -10,44 +10,55 @@ export interface Country {
 // Fallback data for backward compatibility
 export const FALLBACK_COUNTRIES: Country[] = [
   {
-    code: "th",
-    name: "Thailand",
-    flag: "🇹🇭",
-    sites: ["srb", "log", "office", "support", "driver", "sccc", "isup", "cwt", "mortar", "isubs", "ray", "cho", "quarry", "plant3", "skl", "plant2", "ebkk", "isubr", "icho"]
-  },
-  {
-    code: "vn", 
-    name: "Vietnam",
-    flag: "🇻🇳",
-    sites: ["honc", "thiv", "catl", "hiep", "nhon", "cant", "ho"]
+    code: "bd",
+    name: "Bangladesh",
+    flag: "🇧🇩",
+    sites: ["plant"],
   },
   {
     code: "lk",
-    name: "Sri Lanka", 
+    name: "Sri Lanka",
     flag: "🇱🇰",
-    sites: ["pcw", "rcw", "elc", "hbp", "quarry"]
+    sites: ["hbp", "pcw", "quarry", "rmx"],
   },
   {
-    code: "bd",
-    name: "Bangladesh",
-    flag: "🇧🇩", 
-    sites: ["plant"]
+    code: "th",
+    name: "Thailand",
+    flag: "🇹🇭",
+    sites: [
+      "cwt",
+      "iagg",
+      "log",
+      "office",
+      "rmx",
+      "sccc",
+      "srb",
+      "support",
+      "iecc",
+      "lbm",
+    ],
   },
   {
-    code: "cmic",
+    code: "vn",
+    name: "Vietnam",
+    flag: "🇻🇳",
+    sites: ["catl", "hiep", "honc", "thiv", "ho", "cant", "nhon"],
+  },
+  {
+    code: "kh",
     name: "Cambodia",
     flag: "🇰🇭",
-    sites: ["cmic"]
-  }
+    sites: ["cmic"],
+  },
 ];
 
 // Fallback site mapping for backward compatibility
 export const FALLBACK_SITE_MAPPING: Record<string, string[]> = {
-  "th": ["srb", "log", "office", "support", "driver", "sccc", "isup", "cwt", "mortar", "isubs", "ray", "cho", "quarry", "plant3", "skl", "plant2", "ebkk", "isubr", "icho"],
-  "vn": ["honc", "thiv", "catl", "hiep", "nhon", "cant", "ho"],
-  "lk": ["pcw", "rcw", "elc", "hbp", "quarry"],
-  "bd": ["plant"],
-  "cmic": ["cmic"]
+  bd: ["plant"],
+  lk: ["hbp", "pcw", "quarry", "rmx"],
+  th: ["iagg", "log", "office", "rmx", "sccc", "srb", "support", "ieco", "lbm"],
+  vn: ["catl", "hiep", "honc", "thiv", "ho", "cant", "nhon"],
+  kh: ["cmic"],
 };
 
 /**
@@ -56,19 +67,21 @@ export const FALLBACK_SITE_MAPPING: Record<string, string[]> = {
 export async function getCountries(): Promise<Country[]> {
   try {
     const result = await getAllVocabulariesAction();
-    
+
     if (result.success && result.siteMapping && result.buDisplay) {
       // Convert vocabulary data to Country format
-      const countries: Country[] = Object.keys(result.siteMapping).map(code => ({
-        code,
-        name: result.buDisplay![code]?.name || code.toUpperCase(),
-        flag: result.buDisplay![code]?.flag || "",
-        sites: result.siteMapping![code] || []
-      }));
-      
+      const countries: Country[] = Object.keys(result.siteMapping).map(
+        (code) => ({
+          code,
+          name: result.buDisplay![code]?.name || code.toUpperCase(),
+          flag: result.buDisplay![code]?.flag || "",
+          sites: result.siteMapping![code] || [],
+        })
+      );
+
       return countries.length > 0 ? countries : FALLBACK_COUNTRIES;
     }
-    
+
     return FALLBACK_COUNTRIES;
   } catch (error) {
     console.error("Error fetching countries from vocabulary:", error);
@@ -82,13 +95,13 @@ export async function getCountries(): Promise<Country[]> {
 export async function getSiteMapping(): Promise<Record<string, string[]>> {
   try {
     const result = await getAllVocabulariesAction();
-    
+
     if (result.success && result.siteMapping) {
-      return Object.keys(result.siteMapping).length > 0 
-        ? result.siteMapping 
+      return Object.keys(result.siteMapping).length > 0
+        ? result.siteMapping
         : FALLBACK_SITE_MAPPING;
     }
-    
+
     return FALLBACK_SITE_MAPPING;
   } catch (error) {
     console.error("Error fetching site mapping from vocabulary:", error);

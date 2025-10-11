@@ -2,7 +2,7 @@ import { th } from "./th";
 import { vn } from "./vn";
 import { lk } from "./lk";
 import { bd } from "./bd";
-import { cmic } from "./cmic";
+import { kh } from "./kh";
 
 // Type for all translations
 export type ManFormTranslations = typeof th;
@@ -13,7 +13,7 @@ const translations: Record<string, ManFormTranslations> = {
   vn,
   lk,
   bd,
-  cmic,
+  kh,
 };
 
 /**
@@ -31,4 +31,4 @@ export function useManFormTranslation(bu: string = "th") {
 }
 
 // Export individual translations for direct access if needed
-export { th, vn, lk, bd, cmic };
+export { th, vn, lk, bd, kh };

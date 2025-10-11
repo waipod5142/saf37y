@@ -1,69 +1,12 @@
-"use client";
-
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Breadcrumbs } from "@/components/ui/breadcrumb";
+import { Badge } from "@/components/ui/badge";
+import { getCountries } from "@/lib/constants/countries";
+import { Building2, MapPin } from "lucide-react";
 
-// Country data with BU codes, names, flags, and sites
-const COUNTRIES = [
-  {
-    code: "bd",
-    name: "Bangladesh",
-    flag: "🇧🇩",
-    sites: ["PLANT"],
-    siteCount: 1,
-  },
-  {
-    code: "cmic",
-    name: "Cambodia",
-    flag: "🇰🇭",
-    sites: ["CMIC"],
-    siteCount: 1,
-  },
-  {
-    code: "lk",
-    name: "Sri Lanka",
-    flag: "🇱🇰",
-    sites: ["PCW", "RCW", "ELC", "HBP", "QUARRY"],
-    siteCount: 5,
-  },
-  {
-    code: "th",
-    name: "Thailand",
-    flag: "🇹🇭",
-    sites: [
-      "SRB",
-      "LOG",
-      "OFFICE",
-      "SUPPORT",
-      "DRIVER",
-      "SCCC",
-      "ISUP",
-      "CWT",
-      "MORTAR",
-      "ISUBS",
-      "RAY",
-      "CHO",
-      "QUARRY",
-      "PLANT3",
-      "SKL",
-      "PLANT2",
-      "EBKK",
-      "ISUBR",
-      "ICHO",
-    ],
-    siteCount: 19,
-  },
-  {
-    code: "vn",
-    name: "Vietnam",
-    flag: "🇻🇳",
-    sites: ["HONC", "THIV", "CATL", "HIEP", "NHON", "CANT", "HO"],
-    siteCount: 7,
-  },
-];
-
-export default function KPIPage() {
+export default async function KPIPage() {
+  const countries = await getCountries();
   return (
     <div className="container mx-auto p-6">
       <Breadcrumbs items={[{ label: "MAN KPI" }]} />
@@ -71,35 +14,62 @@ export default function KPIPage() {
       <div className="mt-6 mb-8">
         <h1 className="text-3xl font-bold mb-4">Man Activity Dashboard</h1>
         <p className="text-gray-600">
-          Select a country to view detailed inspection reports and statistics.
+          Select a country to view all sites, or choose a specific site for faster queries.
         </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {COUNTRIES.map((country) => (
-          <Link key={country.code} href={`/kpiman/${country.code}`}>
-            <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer group hover:scale-105 border-2 hover:border-blue-200">
-              <CardHeader className="text-center pb-4">
-                <div className="text-8xl mb-3 group-hover:scale-110 transition-transform duration-200">
-                  {country.flag}
-                </div>
-                <CardTitle className="text-2xl font-bold group-hover:text-blue-600 transition-colors">
-                  {country.name}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="text-center">
+        {countries.map((country) => (
+          <Card key={country.code} className="hover:shadow-lg transition-all duration-200 border-2 hover:border-blue-200">
+            <CardHeader className="text-center pb-4">
+              <div className="text-8xl mb-3">
+                {country.flag}
+              </div>
+              <CardTitle className="text-2xl font-bold">
+                {country.name}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="text-center">
                 <div className="text-sm font-medium text-gray-800 mb-2">
-                  {country.siteCount} site{country.siteCount !== 1 ? "s" : ""}
+                  {country.sites.length} site{country.sites.length !== 1 ? "s" : ""}
                 </div>
-                <div className="text-xs text-gray-500 mb-4 leading-relaxed">
-                  {country.sites.join(", ")}
+              </div>
+
+              {/* View All Sites Button */}
+              <Link href={`/kpiman/${country.code}`} className="block">
+                <div className="w-full p-3 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors border border-blue-200 hover:border-blue-300">
+                  <div className="flex items-center justify-center gap-2 text-blue-700 font-medium">
+                    <Building2 className="h-4 w-4" />
+                    <span>View All Sites</span>
+                  </div>
                 </div>
-                <div className="mt-4 text-blue-600 text-sm font-medium group-hover:underline transition-all duration-200">
-                  View Dashboard →
+              </Link>
+
+              {/* Individual Site Links */}
+              <div className="pt-2 border-t">
+                <p className="text-xs text-gray-600 mb-3 text-center font-medium">
+                  Or select a specific site:
+                </p>
+                <div className="flex flex-wrap gap-2 justify-center">
+                  {country.sites.map((site) => (
+                    <Link
+                      key={site}
+                      href={`/kpiman/${country.code}/${site.toLowerCase()}`}
+                    >
+                      <Badge
+                        variant="outline"
+                        className="cursor-pointer hover:bg-green-50 hover:border-green-500 hover:text-green-700 transition-colors px-3 py-1"
+                      >
+                        <MapPin className="h-3 w-3 mr-1" />
+                        {site.toUpperCase()}
+                      </Badge>
+                    </Link>
+                  ))}
                 </div>
-              </CardContent>
-            </Card>
-          </Link>
+              </div>
+            </CardContent>
+          </Card>
         ))}
       </div>
     </div>

@@ -1,13 +1,19 @@
 "use client";
 
-import { useEffect, useState } from 'react';
-import { useForm, type FieldValues } from 'react-hook-form';
+import { useEffect, useState } from "react";
+import { useForm, type FieldValues } from "react-hook-form";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import QRCodeComponent from "@/components/qr-code";
 import { Loader2 } from "lucide-react";
 
@@ -25,11 +31,13 @@ export default function Home() {
     setValue,
   } = useForm();
 
-  const [localStorageData, setLocalStorageData] = useState<LocalStorageDataItem[]>([]);
+  const [localStorageData, setLocalStorageData] = useState<
+    LocalStorageDataItem[]
+  >([]);
 
   // Function to retrieve data from local storage and set it in state
   const getDataFromLocalStorage = () => {
-    const storedData = JSON.parse(localStorage.getItem('inseeId') || '[]');
+    const storedData = JSON.parse(localStorage.getItem("inseeId") || "[]");
     setLocalStorageData(storedData);
   };
 
@@ -42,7 +50,7 @@ export default function Home() {
   useEffect(() => {
     if (localStorageData.length > 0) {
       const redirectTo = `/Man/${localStorageData[0].bu}/${
-        localStorageData[0].bu === 'th' ? 'Sot' : 'Toolbox'
+        localStorageData[0].bu === "th" ? "Sot" : "Toolbox"
       }/${localStorageData[0].id}`;
       window.location.href = redirectTo;
     }
@@ -50,8 +58,8 @@ export default function Home() {
 
   const onSubmit = async (formData: FieldValues) => {
     const updatedData = {
-      bu: formData.bu.replace(/[/\s]/g, '-'),
-      id: formData.id.replace(/[/\s]/g, '-').toUpperCase(),
+      bu: formData.bu.replace(/[/\s]/g, "-"),
+      id: formData.id.replace(/[/\s]/g, "-").toUpperCase(),
     };
 
     try {
@@ -63,22 +71,22 @@ export default function Home() {
     }
     reset();
     window.location.href = `/Man/${formData.bu}/${
-      formData.bu === 'th' ? 'Sot' : 'Toolbox'
-    }/${formData.id.replace(/[/\s]/g, '-').toUpperCase()}`;
+      formData.bu === "th" ? "Sot" : "Toolbox"
+    }/${formData.id.replace(/[/\s]/g, "-").toUpperCase()}`;
   };
 
   // Function to save a single object as the value for 'inseeId' in local storage
   const saveToLocalStorage = (data: FieldValues) => {
-    localStorage.setItem('inseeId', JSON.stringify([data]));
+    localStorage.setItem("inseeId", JSON.stringify([data]));
   };
 
   const handleBuSelect = (value: string) => {
-    setValue('bu', value);
+    setValue("bu", value);
   };
 
   const handleStoredDataClick = (data: LocalStorageDataItem) => {
     window.location.href = `/Man/${data.bu}/${
-      data.bu === 'th' ? 'Coupon' : 'Toolbox'
+      data.bu === "th" ? "Coupon" : "Toolbox"
     }/${data.id}`;
   };
 
@@ -121,7 +129,10 @@ export default function Home() {
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               {/* Business Unit Selection */}
               <div className="space-y-3">
-                <Label htmlFor="bu" className="text-lg font-semibold text-slate-900">
+                <Label
+                  htmlFor="bu"
+                  className="text-lg font-semibold text-slate-900"
+                >
                   Business Unit
                 </Label>
                 <Select onValueChange={handleBuSelect} required>
@@ -129,14 +140,23 @@ export default function Home() {
                     <SelectValue placeholder="Select Business Unit" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="th">ประเทศไทย (Thailand - TH)</SelectItem>
+                    <SelectItem value="th">
+                      ประเทศไทย (Thailand - TH)
+                    </SelectItem>
                     <SelectItem value="vn">Việt Nam (Vietnam - VN)</SelectItem>
-                    <SelectItem value="lk">ශ්‍රී ලංකාව (Sri Lanka - LK)</SelectItem>
-                    <SelectItem value="bd">বাংলাদেশ (Bangladesh - BD)</SelectItem>
-                    <SelectItem value="cmic">កម្ពុជា (Cambodia - CMIC)</SelectItem>
+                    <SelectItem value="lk">
+                      ශ්‍රී ලංකාව (Sri Lanka - LK)
+                    </SelectItem>
+                    <SelectItem value="bd">
+                      বাংলাদেশ (Bangladesh - BD)
+                    </SelectItem>
+                    <SelectItem value="kh">កម្ពុជា (Cambodia - KH)</SelectItem>
                   </SelectContent>
                 </Select>
-                <input type="hidden" {...register('bu', { required: 'Business Unit is required' })} />
+                <input
+                  type="hidden"
+                  {...register("bu", { required: "Business Unit is required" })}
+                />
                 {errors.bu && (
                   <p className="text-red-500 text-sm">{`${errors.bu?.message}`}</p>
                 )}
@@ -144,11 +164,14 @@ export default function Home() {
 
               {/* Staff ID Input */}
               <div className="space-y-3">
-                <Label htmlFor="id" className="text-lg font-semibold text-slate-900">
+                <Label
+                  htmlFor="id"
+                  className="text-lg font-semibold text-slate-900"
+                >
                   Staff ID
                 </Label>
                 <Input
-                  {...register('id', { required: 'Staff ID is required' })}
+                  {...register("id", { required: "Staff ID is required" })}
                   type="text"
                   placeholder="Enter Staff ID"
                   className="w-full h-12 text-base"
@@ -164,7 +187,9 @@ export default function Home() {
                 type="submit"
                 className="w-full h-12 bg-green-600 hover:bg-green-700 text-white text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
               >
-                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {isSubmitting && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
                 Submit
               </Button>
             </form>
@@ -214,7 +239,8 @@ export default function Home() {
           <Card className="w-full bg-white/95 backdrop-blur-sm shadow-xl border-0">
             <CardContent className="text-center py-6">
               <p className="text-slate-600">
-                No saved Staff ID found.<br />
+                No saved Staff ID found.
+                <br />
                 Please enter your details above and click Submit.
               </p>
             </CardContent>

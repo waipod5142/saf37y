@@ -28,25 +28,15 @@ interface InspectionData {
   total: number;
   percentage: number;
   defectPercentage: number;
-  bySite?: Record<
-    string,
-    {
-      inspected: number;
-      defected: number;
-      total: number;
-      percentage: number;
-      defectPercentage: number;
-    }
-  >;
 }
 
 interface KPIInspectionData {
   success: boolean;
   bu: string;
+  site?: string;
   frequency: string;
   data: {
     byType: Record<string, InspectionData>;
-    bySite: Record<string, InspectionData>;
     total: InspectionData;
   };
   timestamp: string;
@@ -60,23 +50,6 @@ const BU_NAMES: Record<string, string> = Object.fromEntries(
 const BU_FLAGS: Record<string, string> = Object.fromEntries(
   FALLBACK_COUNTRIES.map((c) => [c.code, c.flag])
 );
-
-// Equipment type icons
-const EQUIPMENT_ICONS: Record<string, string> = {
-  forklift: "🚜",
-  lifting: "🏗️",
-  liftinggear: "⚙️",
-  mobile: "📱",
-  vehicle: "🚗",
-  extinguisher: "🧯",
-  hydrant: "🚰",
-  electrical: "⚡",
-  cable: "🔌",
-  equipment: "🔧",
-  harness: "🦺",
-  rescue: "🆘",
-  firstaid: "🏥",
-};
 
 function getPercentageColor(percentage: number): string {
   if (percentage === 0) return "text-gray-500";
@@ -99,6 +72,7 @@ interface InspectionTableProps {
   frequency: string;
   showDefects: boolean;
   bu: string;
+  site: string;
   machineTypeMapping: Record<string, string>;
 }
 
@@ -107,6 +81,7 @@ function InspectionTable({
   frequency,
   showDefects,
   bu,
+  site,
   machineTypeMapping,
 }: InspectionTableProps) {
   const [modalState, setModalState] = useState<{
@@ -140,6 +115,7 @@ function InspectionTable({
   const handleModalClose = () => {
     setModalState((prev) => ({ ...prev, isOpen: false }));
   };
+
   if (!data.success) {
     return (
       <div className="text-center py-8">
@@ -149,17 +125,7 @@ function InspectionTable({
     );
   }
 
-  const { byType, bySite, total } = data.data;
-
-  // Get all unique sites across all equipment types
-  const allSites = new Set<string>();
-  Object.values(byType).forEach((equipment) => {
-    if (equipment.bySite) {
-      Object.keys(equipment.bySite).forEach((site) => allSites.add(site));
-    }
-  });
-
-  const siteList = Array.from(allSites).sort();
+  const { byType, total } = data.data;
 
   return (
     <div className="space-y-6">
@@ -223,7 +189,7 @@ function InspectionTable({
         <CardHeader>
           <CardTitle className="text-xl">
             {frequency.charAt(0).toUpperCase() + frequency.slice(1)} Inspection
-            Report
+            Report - {site.toUpperCase()}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -232,151 +198,115 @@ function InspectionTable({
               <thead>
                 <tr className="border-b bg-gray-50">
                   <th className="text-left p-3 font-semibold">Type</th>
-                  {siteList.map((site) => (
-                    <th
-                      key={site}
-                      className="text-center p-3 font-semibold uppercase"
-                    >
-                      {site}
-                    </th>
-                  ))}
+                  <th className="text-center p-3 font-semibold">Inspected</th>
                   <th className="text-center p-3 font-semibold">Total</th>
+                  <th className="text-center p-3 font-semibold">Percentage</th>
+                  {showDefects && (
+                    <th className="text-center p-3 font-semibold">Defects</th>
+                  )}
                 </tr>
               </thead>
               <tbody>
-                {Object.entries(byType).map(([type, equipment]) => (
-                  <tr key={type} className="border-b hover:bg-gray-50">
-                    <td className="p-3">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xl">
-                          {getMachineEmoji(type) || "🔧"}
-                        </span>
-                        <span className="font-medium capitalize">
-                          {machineTypeMapping[type] ||
-                            type
-                              .replace(/([A-Z])/g, " $1")
-                              .replace(/^./, (str) => str.toUpperCase())}
-                        </span>
-                      </div>
-                    </td>
-                    {siteList.map((site) => {
-                      const siteData = equipment.bySite?.[site];
-                      if (!siteData || siteData.total === 0) {
-                        return (
-                          <td
-                            key={site}
-                            className="text-center p-3 text-gray-400"
-                          >
-                            0
-                          </td>
-                        );
-                      }
-                      const hasData = siteData.total > 0;
-                      return (
-                        <td key={site} className="text-center p-3">
-                          <div
-                            className={`flex flex-col items-center gap-1 ${hasData ? "cursor-pointer" : ""}`}
-                            onClick={() =>
-                              handleCellClick(bu, site, type, hasData)
-                            }
-                          >
-                            <Badge
-                              className={`text-xs font-medium ${hasData ? "hover:opacity-80 transition-opacity" : ""} ${getPercentageBadgeColor(siteData.percentage)}`}
-                            >
-                              {siteData.inspected} / {siteData.total} (
-                              {siteData.percentage}%)
-                            </Badge>
-                            {showDefects && siteData.defected > 0 && (
-                              <Badge variant="destructive" className="text-xs">
-                                <AlertTriangle className="h-3 w-3 mr-1" />
-                                {siteData.defected} defect
-                                {siteData.defected !== 1 ? "s" : ""} (
-                                {siteData.defectPercentage}%)
-                              </Badge>
-                            )}
-                          </div>
-                        </td>
-                      );
-                    })}
-                    <td className="text-center p-3">
-                      <div className="flex flex-col items-center gap-1">
-                        <Badge
-                          className={`font-semibold ${getPercentageBadgeColor(equipment.percentage)}`}
+                {Object.entries(byType).map(([type, equipment]) => {
+                  const hasData = equipment.total > 0;
+                  return (
+                    <tr key={type} className="border-b hover:bg-gray-50">
+                      <td className="p-3">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xl">
+                            {getMachineEmoji(type) || "🔧"}
+                          </span>
+                          <span className="font-medium capitalize">
+                            {machineTypeMapping[type] ||
+                              type
+                                .replace(/([A-Z])/g, " $1")
+                                .replace(/^./, (str) => str.toUpperCase())}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="text-center p-3">
+                        <span
+                          className={`font-semibold ${hasData ? "cursor-pointer hover:underline" : ""}`}
+                          onClick={() =>
+                            handleCellClick(bu, site, type, hasData)
+                          }
                         >
-                          {equipment.inspected} / {equipment.total} (
-                          {equipment.percentage}%)
+                          {equipment.inspected}
+                        </span>
+                      </td>
+                      <td className="text-center p-3">
+                        <span
+                          className={`font-semibold ${hasData ? "cursor-pointer hover:underline" : ""}`}
+                          onClick={() =>
+                            handleCellClick(bu, site, type, hasData)
+                          }
+                        >
+                          {equipment.total}
+                        </span>
+                      </td>
+                      <td className="text-center p-3">
+                        <Badge
+                          className={`font-semibold ${getPercentageBadgeColor(equipment.percentage)} ${hasData ? "cursor-pointer hover:ring-2 hover:ring-offset-1" : ""}`}
+                          onClick={() =>
+                            handleCellClick(bu, site, type, hasData)
+                          }
+                        >
+                          {equipment.percentage}%
                         </Badge>
-                        {showDefects && equipment.defected > 0 && (
-                          <Badge variant="destructive" className="text-xs">
-                            <AlertTriangle className="h-3 w-3 mr-1" />
-                            {equipment.defected} defect
-                            {equipment.defected !== 1 ? "s" : ""} (
-                            {equipment.defectPercentage}%)
-                          </Badge>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      {showDefects && (
+                        <td className="text-center p-3">
+                          {equipment.defected > 0 ? (
+                            <Badge
+                              variant="destructive"
+                              className={`text-xs ${hasData ? "cursor-pointer hover:ring-2 hover:ring-offset-1 hover:ring-red-300" : ""}`}
+                              onClick={() =>
+                                handleCellClick(bu, site, type, hasData)
+                              }
+                            >
+                              <AlertTriangle className="h-3 w-3 mr-1" />
+                              {equipment.defected} ({equipment.defectPercentage}
+                              %)
+                            </Badge>
+                          ) : (
+                            <span className="text-gray-400">-</span>
+                          )}
+                        </td>
+                      )}
+                    </tr>
+                  );
+                })}
                 {/* Total Row */}
                 <tr className="border-t-2 bg-gray-50 font-semibold">
                   <td className="p-3 font-bold">Total</td>
-                  {siteList.map((site) => {
-                    const siteData = bySite[site];
-                    if (!siteData || siteData.total === 0) {
-                      return (
-                        <td
-                          key={site}
-                          className="text-center p-3 text-gray-400"
-                        >
-                          0
-                        </td>
-                      );
-                    }
-                    return (
-                      <td key={site} className="text-center p-3">
-                        <div className="flex flex-col items-center gap-1">
-                          <Badge
-                            className={`font-bold ${getPercentageBadgeColor(siteData.percentage)}`}
-                          >
-                            {siteData.inspected} / {siteData.total} (
-                            {siteData.percentage}%)
-                          </Badge>
-                          {showDefects && siteData.defected > 0 && (
-                            <Badge
-                              variant="destructive"
-                              className="text-xs font-bold"
-                            >
-                              <AlertTriangle className="h-3 w-3 mr-1" />
-                              {siteData.defected} defect
-                              {siteData.defected !== 1 ? "s" : ""} (
-                              {siteData.defectPercentage}%)
-                            </Badge>
-                          )}
-                        </div>
-                      </td>
-                    );
-                  })}
                   <td className="text-center p-3">
-                    <div className="flex flex-col items-center gap-1">
-                      <Badge
-                        className={`font-bold text-base px-3 py-1 ${getPercentageBadgeColor(total.percentage)}`}
-                      >
-                        {total.inspected} / {total.total} ({total.percentage}%)
-                      </Badge>
-                      {showDefects && total.defected > 0 && (
+                    <span className="font-bold">{total.inspected}</span>
+                  </td>
+                  <td className="text-center p-3">
+                    <span className="font-bold">{total.total}</span>
+                  </td>
+                  <td className="text-center p-3">
+                    <Badge
+                      className={`font-bold text-base px-3 py-1 ${getPercentageBadgeColor(total.percentage)}`}
+                    >
+                      {total.percentage}%
+                    </Badge>
+                  </td>
+                  {showDefects && (
+                    <td className="text-center p-3">
+                      {total.defected > 0 ? (
                         <Badge
                           variant="destructive"
                           className="text-sm font-bold"
                         >
                           <AlertTriangle className="h-4 w-4 mr-1" />
-                          {total.defected} defect
-                          {total.defected !== 1 ? "s" : ""} (
-                          {total.defectPercentage}%)
+                          {total.defected} ({total.defectPercentage}%)
                         </Badge>
+                      ) : (
+                        <span className="text-gray-400">-</span>
                       )}
-                    </div>
-                  </td>
+                    </td>
+                  )}
                 </tr>
               </tbody>
             </table>
@@ -400,9 +330,10 @@ function InspectionTable({
   );
 }
 
-export default function BUKPIPage() {
+export default function SiteKPIPage() {
   const params = useParams();
   const bu = params.bu as string;
+  const site = params.site as string;
 
   const [dailyData, setDailyData] = useState<KPIInspectionData | null>(null);
   const [monthlyData, setMonthlyData] = useState<KPIInspectionData | null>(
@@ -417,7 +348,6 @@ export default function BUKPIPage() {
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [activeTab, setActiveTab] = useState("daily");
   const [showDefects, setShowDefects] = useState(false);
-  const [vocabularyLoading, setVocabularyLoading] = useState(true);
   const [machineTypeMapping, setMachineTypeMapping] = useState<
     Record<string, string>
   >({});
@@ -425,7 +355,7 @@ export default function BUKPIPage() {
   const fetchData = async (frequency: string) => {
     try {
       const response = await fetch(
-        `https://dashboard-874085997493.asia-southeast1.run.app/kpi?bu=${bu}&frequency=${frequency}`
+        `https://dashboard-874085997493.asia-southeast1.run.app/kpi?bu=${bu}&site=${site}&frequency=${frequency}`
       );
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -455,7 +385,7 @@ export default function BUKPIPage() {
       setAnnualData(annual);
       setLastUpdated(new Date());
     } catch (err) {
-      console.error("Error fetching BU KPI data:", err);
+      console.error("Error fetching site KPI data:", err);
       setError(err instanceof Error ? err.message : "Failed to load data");
     } finally {
       setLoading(false);
@@ -466,21 +396,13 @@ export default function BUKPIPage() {
   useEffect(() => {
     async function fetchVocabularies() {
       try {
-        setVocabularyLoading(true);
         const result = await getAllVocabulariesAction();
 
         if (result.success && result.machineTypeMapping) {
           setMachineTypeMapping(result.machineTypeMapping);
-        } else {
-          console.warn(
-            "Failed to load vocabularies, using fallback data:",
-            result.error
-          );
         }
       } catch (error) {
         console.error("Error fetching vocabularies:", error);
-      } finally {
-        setVocabularyLoading(false);
       }
     }
 
@@ -488,24 +410,26 @@ export default function BUKPIPage() {
   }, []);
 
   useEffect(() => {
-    if (bu) {
+    if (bu && site) {
       fetchAllData();
       // Refresh data every 5 minutes
       const interval = setInterval(fetchAllData, 5 * 60 * 1000);
       return () => clearInterval(interval);
     }
-  }, [bu]);
+  }, [bu, site]);
 
   const buName = BU_NAMES[bu?.toLowerCase()] || bu?.toUpperCase();
   const buFlag = BU_FLAGS[bu?.toLowerCase()] || "🏢";
+  const siteName = site?.toUpperCase() || site;
 
   if (loading && !dailyData) {
     return (
       <div className="container mx-auto p-6">
         <Breadcrumbs
           items={[
-            { label: "KPI Dashboard", href: "/kpi" },
-            { label: `${buName} Inspection Report` },
+            { label: "Machine KPI", href: "/kpi" },
+            { label: buName, href: `/kpi/${bu}` },
+            { label: siteName },
           ]}
         />
         <div className="mt-6 mb-8">
@@ -513,8 +437,7 @@ export default function BUKPIPage() {
             <div className="text-4xl">{buFlag}</div>
             <div>
               <h1 className="text-3xl font-bold">
-                {buName} - Click each tab to view daily, monthly, quarterly,
-                annual
+                {buName} - {siteName}
               </h1>
               <div className="w-64 h-4 bg-gray-200 rounded animate-pulse mt-2"></div>
             </div>
@@ -533,20 +456,21 @@ export default function BUKPIPage() {
       <div className="container mx-auto p-6">
         <Breadcrumbs
           items={[
-            { label: "KPI Dashboard", href: "/kpi" },
-            { label: `${buName} Inspection Report` },
+            { label: "Machine KPI", href: "/kpi" },
+            { label: buName, href: `/kpi/${bu}` },
+            { label: siteName },
           ]}
         />
         <div className="mt-6 mb-8">
           <div className="flex items-center gap-4 mb-6">
-            <Link href="/kpi">
+            <Link href={`/kpi/${bu}`}>
               <Button
                 variant="outline"
                 size="sm"
                 className="flex items-center gap-2"
               >
                 <ArrowLeft className="h-4 w-4" />
-                Back to Overview
+                Back to {buName}
               </Button>
             </Link>
           </div>
@@ -554,7 +478,7 @@ export default function BUKPIPage() {
             <div className="text-4xl">{buFlag}</div>
             <div>
               <h1 className="text-3xl font-bold">
-                {buName} - Inspection Report
+                {buName} - {siteName}
               </h1>
             </div>
           </div>
@@ -563,7 +487,7 @@ export default function BUKPIPage() {
           <CardContent className="text-center py-12">
             <AlertCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">
-              Unable to Load {buName} Inspection Data
+              Unable to Load {siteName} Inspection Data
             </h3>
             <p className="text-gray-600 mb-6">{error}</p>
             <Button onClick={fetchAllData} className="flex items-center gap-2">
@@ -579,13 +503,27 @@ export default function BUKPIPage() {
   return (
     <div className="container mx-auto p-6">
       <Breadcrumbs
-        items={[{ label: "KPI Dashboard", href: "/kpi" }, { label: buName }]}
+        items={[
+          { label: "Machine KPI", href: "/kpi" },
+          { label: buName, href: `/kpi/${bu}` },
+          { label: siteName },
+        ]}
       />
 
       {/* Header */}
       <div className="mt-6 mb-8">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
+            <Link href={`/kpi/${bu}`}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Back to {buName}
+              </Button>
+            </Link>
             {lastUpdated && (
               <div className="text-sm text-gray-500 flex items-center gap-2">
                 <Calendar className="h-4 w-4" />
@@ -611,9 +549,11 @@ export default function BUKPIPage() {
           <div className="text-4xl">{buFlag}</div>
           <div>
             <h1 className="text-3xl font-bold">
-              {buName} - Click each tab to view daily, monthly, quarterly,
-              annual
+              {buName} - {siteName}
             </h1>
+            <p className="text-gray-600">
+              Site-specific inspection dashboard
+            </p>
           </div>
         </div>
       </div>
@@ -624,7 +564,7 @@ export default function BUKPIPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium mb-2">
-                Inspected / Total Machines ( % )
+                Inspection Completion Rate
               </p>
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
@@ -686,6 +626,7 @@ export default function BUKPIPage() {
               frequency="daily"
               showDefects={showDefects}
               bu={bu}
+              site={site}
               machineTypeMapping={machineTypeMapping}
             />
           )}
@@ -698,6 +639,7 @@ export default function BUKPIPage() {
               frequency="monthly"
               showDefects={showDefects}
               bu={bu}
+              site={site}
               machineTypeMapping={machineTypeMapping}
             />
           )}
@@ -710,6 +652,7 @@ export default function BUKPIPage() {
               frequency="quarterly"
               showDefects={showDefects}
               bu={bu}
+              site={site}
               machineTypeMapping={machineTypeMapping}
             />
           )}
@@ -722,6 +665,7 @@ export default function BUKPIPage() {
               frequency="annual"
               showDefects={showDefects}
               bu={bu}
+              site={site}
               machineTypeMapping={machineTypeMapping}
             />
           )}
