@@ -4,6 +4,7 @@ import { Breadcrumbs } from "@/components/ui/breadcrumb";
 import { Badge } from "@/components/ui/badge";
 import { getCountries } from "@/lib/constants/countries";
 import { Building2, MapPin } from "lucide-react";
+import QRCodeComponent from "@/components/qr-code";
 
 export default async function KPIPage() {
   const countries = await getCountries();
@@ -11,13 +12,18 @@ export default async function KPIPage() {
     <div className="container mx-auto p-6">
       <Breadcrumbs items={[{ label: "MACHINE KPI" }]} />
 
-      <div className="mt-6 mb-8">
-        <h1 className="text-3xl font-bold mb-4">
-          Machine Inspection Dashboard
-        </h1>
-        <p className="text-gray-600">
-          Select a country to view all sites, or choose a specific site for faster queries.
-        </p>
+      <div className="mt-6 mb-8 flex items-start justify-between gap-6">
+        <div className="flex-1">
+          <h1 className="text-3xl font-bold mb-4">
+            Machine Inspection Dashboard
+          </h1>
+          <p className="text-gray-600">
+            Select a country to view all sites, or choose a specific site for faster queries.
+          </p>
+        </div>
+        <div className="flex-shrink-0">
+          <QRCodeComponent value="https://www.saf37y.com/kpi" />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

@@ -12,6 +12,7 @@ import { MachineListModal } from "@/components/MachineListModal";
 import { getAllVocabulariesAction } from "@/lib/actions/vocabulary";
 import { getMachineEmoji } from "@/lib/machine-types";
 import { FALLBACK_COUNTRIES } from "@/lib/constants/countries";
+import QRCodeComponent from "@/components/qr-code";
 import {
   ArrowLeft,
   RefreshCw,
@@ -609,11 +610,14 @@ export default function BUKPIPage() {
 
         <div className="flex items-center gap-3 mb-4">
           <div className="text-4xl">{buFlag}</div>
-          <div>
+          <div className="flex-1">
             <h1 className="text-3xl font-bold">
               {buName} - Click each tab to view daily, monthly, quarterly,
               annual
             </h1>
+          </div>
+          <div className="ml-6 flex-shrink-0">
+            <QRCodeComponent value={`https://www.saf37y.com/kpi/${bu}`} />
           </div>
         </div>
       </div>

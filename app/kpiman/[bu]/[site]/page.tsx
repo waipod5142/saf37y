@@ -89,6 +89,7 @@ interface TransactionTableProps {
   data: KPITransactionData;
   frequency: string;
   bu: string;
+  site: string;
   onTabChange?: (tab: string) => void;
 }
 
@@ -96,6 +97,7 @@ function TransactionTable({
   data,
   frequency,
   bu,
+  site,
   onTabChange,
 }: TransactionTableProps) {
   const [modalState, setModalState] = useState<{
@@ -128,22 +130,18 @@ function TransactionTable({
 
     switch (freq) {
       case "daily":
-        // Daily: from midnight today to now (UTC time)
         startDate = new Date(Date.UTC(year, month, date, 0, 0, 0, 0));
         break;
       case "weekly":
-        // Weekly: from Monday to Sunday (current week in UTC)
         const daysFromMonday = day === 0 ? 6 : day - 1;
         startDate = new Date(
           Date.UTC(year, month, date - daysFromMonday, 0, 0, 0, 0)
         );
         break;
       case "monthly":
-        // Monthly: from 1st day of current month (UTC)
         startDate = new Date(Date.UTC(year, month, 1, 0, 0, 0, 0));
         break;
       case "annual":
-        // Annual: from 1st of January of current year (UTC)
         startDate = new Date(Date.UTC(year, 0, 1, 0, 0, 0, 0));
         break;
       default:
@@ -184,17 +182,23 @@ function TransactionTable({
     );
   }
 
-  const { byType, bySite, total } = data.data;
+  const { byType } = data.data;
 
-  // Get all unique sites across all form types
-  const allSites = new Set<string>();
-  Object.values(byType).forEach((formType) => {
-    if (formType.bySite) {
-      Object.keys(formType.bySite).forEach((site) => allSites.add(site));
+  // Filter byType to only show data for the specific site
+  const siteFilteredByType: Record<string, TransactionData> = {};
+  Object.entries(byType).forEach(([type, formTypeData]) => {
+    const siteData = formTypeData.bySite?.[site];
+    if (siteData) {
+      siteFilteredByType[type] = siteData;
     }
   });
 
-  const siteList = Array.from(allSites).sort();
+  // Calculate site total
+  const siteTotal = data.data.bySite?.[site] || {
+    transactionCount: 0,
+    defectCount: 0,
+    defectPercentage: 0,
+  };
 
   return (
     <div className="space-y-6">
@@ -214,7 +218,7 @@ function TransactionTable({
                   Total Transactions
                 </p>
                 <p className="text-3xl font-bold text-gray-900">
-                  {total.transactionCount}
+                  {siteTotal.transactionCount}
                 </p>
               </div>
             </div>
@@ -232,7 +236,7 @@ function TransactionTable({
               <div>
                 <p className="text-sm text-gray-600 font-medium">Form Types</p>
                 <p className="text-3xl font-bold text-gray-900">
-                  {Object.keys(byType).length}
+                  {Object.keys(siteFilteredByType).length}
                 </p>
               </div>
             </div>
@@ -248,11 +252,9 @@ function TransactionTable({
                 <Calendar className="h-6 w-6 text-green-600" />
               </div>
               <div>
-                <p className="text-sm text-gray-600 font-medium">
-                  Active Sites
-                </p>
-                <p className="text-3xl font-bold text-gray-900">
-                  {siteList.length}
+                <p className="text-sm text-gray-600 font-medium">Site</p>
+                <p className="text-2xl font-bold text-gray-900 uppercase">
+                  {site}
                 </p>
               </div>
             </div>
@@ -265,7 +267,7 @@ function TransactionTable({
         <CardHeader>
           <CardTitle className="text-xl">
             {frequency.charAt(0).toUpperCase() + frequency.slice(1)} Safety
-            Activity Report
+            Activity Report - {site.toUpperCase()}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -276,21 +278,13 @@ function TransactionTable({
                   <th className="text-left p-3 font-semibold min-w-[180px]">
                     Form Type
                   </th>
-                  {siteList.map((site) => (
-                    <th
-                      key={site}
-                      className="text-center p-3 font-semibold uppercase min-w-[100px]"
-                    >
-                      {site}
-                    </th>
-                  ))}
-                  <th className="text-center p-3 font-semibold bg-gray-100 min-w-[100px]">
-                    Total
+                  <th className="text-center p-3 font-semibold min-w-[100px]">
+                    Transactions
                   </th>
                 </tr>
               </thead>
               <tbody>
-                {Object.entries(byType).map(([type, formTypeData]) => {
+                {Object.entries(siteFilteredByType).map(([type, siteData]) => {
                   const config = FORM_TYPE_CONFIG[type] || {
                     icon: "📄",
                     label: type.charAt(0).toUpperCase() + type.slice(1),
@@ -315,41 +309,16 @@ function TransactionTable({
                           </div>
                         </div>
                       </td>
-                      {siteList.map((site) => {
-                        const siteData = formTypeData.bySite?.[site];
-                        if (!siteData || siteData.transactionCount === 0) {
-                          return (
-                            <td
-                              key={site}
-                              className="text-center p-3 text-gray-400"
-                            >
-                              -
-                            </td>
-                          );
-                        }
-                        return (
-                          <td key={site} className="text-center p-3">
-                            <Badge
-                              className={`text-sm font-semibold px-3 py-1 cursor-pointer hover:opacity-80 transition-opacity ${getTransactionBadgeColor(
-                                siteData.transactionCount
-                              )}`}
-                              onClick={() =>
-                                handleBadgeClick(bu, site, type, frequency)
-                              }
-                            >
-                              {siteData.transactionCount}
-                            </Badge>
-                          </td>
-                        );
-                      })}
-                      <td className="text-center p-3 bg-gray-50">
+                      <td className="text-center p-3">
                         <Badge
-                          className="bg-blue-600 text-white text-sm font-bold px-4 py-1 cursor-pointer hover:opacity-80 transition-opacity"
+                          className={`text-sm font-semibold px-3 py-1 cursor-pointer hover:opacity-80 transition-opacity ${getTransactionBadgeColor(
+                            siteData.transactionCount
+                          )}`}
                           onClick={() =>
-                            handleBadgeClick(bu, "all", type, frequency)
+                            handleBadgeClick(bu, site, type, frequency)
                           }
                         >
-                          {formTypeData.transactionCount}
+                          {siteData.transactionCount}
                         </Badge>
                       </td>
                     </tr>
@@ -362,39 +331,14 @@ function TransactionTable({
                       Total Transactions
                     </span>
                   </td>
-                  {siteList.map((site) => {
-                    const siteData = bySite[site];
-                    if (!siteData || siteData.transactionCount === 0) {
-                      return (
-                        <td
-                          key={site}
-                          className="text-center p-3 text-gray-400"
-                        >
-                          -
-                        </td>
-                      );
-                    }
-                    return (
-                      <td key={site} className="text-center p-3">
-                        <Badge
-                          className="bg-purple-600 text-white font-bold text-sm px-3 py-1 cursor-pointer hover:opacity-80 transition-opacity"
-                          onClick={() =>
-                            handleBadgeClick(bu, site, "all", frequency)
-                          }
-                        >
-                          {siteData.transactionCount}
-                        </Badge>
-                      </td>
-                    );
-                  })}
-                  <td className="text-center p-3 bg-gray-100">
+                  <td className="text-center p-3">
                     <Badge
                       className="bg-gradient-to-r from-purple-600 to-blue-600 text-white font-bold text-base px-5 py-2 cursor-pointer hover:opacity-80 transition-opacity"
                       onClick={() =>
-                        handleBadgeClick(bu, "all", "all", frequency)
+                        handleBadgeClick(bu, site, "all", frequency)
                       }
                     >
-                      {total.transactionCount}
+                      {siteTotal.transactionCount}
                     </Badge>
                   </td>
                 </tr>
@@ -427,9 +371,10 @@ function TransactionTable({
   );
 }
 
-export default function ManKPIPage() {
+export default function SiteManKPIPage() {
   const params = useParams();
   const bu = params.bu as string;
+  const site = params.site as string;
 
   const [dailyData, setDailyData] = useState<KPITransactionData | null>(null);
   const [weeklyData, setWeeklyData] = useState<KPITransactionData | null>(null);
@@ -514,6 +459,7 @@ export default function ManKPIPage() {
 
   const buName = BU_NAMES[bu?.toLowerCase()] || bu?.toUpperCase();
   const buFlag = BU_FLAGS[bu?.toLowerCase()] || "🏢";
+  const siteName = site?.toUpperCase() || site;
 
   if (loading && !dailyData) {
     return (
@@ -521,7 +467,8 @@ export default function ManKPIPage() {
         <Breadcrumbs
           items={[
             { label: "Man KPI Dashboard", href: "/kpiman" },
-            { label: `${buName} Safety Activities` },
+            // { label: buName, href: `/kpiman/${bu}` },
+            { label: siteName },
           ]}
         />
         <div className="mt-6 mb-8">
@@ -529,7 +476,7 @@ export default function ManKPIPage() {
             <div className="text-4xl">{buFlag}</div>
             <div className="flex-1">
               <h1 className="text-3xl font-bold">
-                {buName} Safety Activities Report
+                {buName} - {siteName}
               </h1>
               <div className="w-64 h-4 bg-gray-200 rounded animate-pulse mt-2"></div>
             </div>
@@ -549,27 +496,28 @@ export default function ManKPIPage() {
         <Breadcrumbs
           items={[
             { label: "Man KPI Dashboard", href: "/kpiman" },
-            { label: `${buName} Safety Activities` },
+            // { label: buName, href: `/kpiman/${bu}` },
+            { label: siteName },
           ]}
         />
         <div className="mt-6 mb-8">
-          <div className="flex items-center gap-4 mb-6">
-            <Link href="/kpiman">
+          {/* <div className="flex items-center gap-4 mb-6">
+            <Link href={`/kpiman/${bu}`}>
               <Button
                 variant="outline"
                 size="sm"
                 className="flex items-center gap-2"
               >
                 <ArrowLeft className="h-4 w-4" />
-                Back to Overview
+                Back to {buName}
               </Button>
             </Link>
-          </div>
+          </div> */}
           <div className="flex items-center gap-3 mb-4">
             <div className="text-4xl">{buFlag}</div>
             <div>
               <h1 className="text-3xl font-bold">
-                {buName} Safety Activities Report
+                {buName} - {siteName}
               </h1>
             </div>
           </div>
@@ -578,7 +526,7 @@ export default function ManKPIPage() {
           <CardContent className="text-center py-12">
             <AlertCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">
-              Unable to Load {buName} Data
+              Unable to Load {siteName} Data
             </h3>
             <p className="text-gray-600 mb-6">{error}</p>
             <Button onClick={fetchAllData} className="flex items-center gap-2">
@@ -596,7 +544,8 @@ export default function ManKPIPage() {
       <Breadcrumbs
         items={[
           { label: "Man KPI Dashboard", href: "/kpiman" },
-          { label: buName },
+          // { label: buName, href: `/kpiman/${bu}` },
+          { label: siteName },
         ]}
       />
 
@@ -604,6 +553,16 @@ export default function ManKPIPage() {
       <div className="mt-6 mb-8">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
+            {/* <Link href={`/kpiman/${bu}`}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Back to {buName}
+              </Button>
+            </Link> */}
             {lastUpdated && (
               <div className="text-sm text-gray-500 flex items-center gap-2">
                 <Calendar className="h-4 w-4" />
@@ -629,14 +588,16 @@ export default function ManKPIPage() {
           <div className="text-4xl">{buFlag}</div>
           <div className="flex-1">
             <h1 className="text-3xl font-bold">
-              {buName} Safety Activities Report
+              {buName} - {siteName}
             </h1>
             <p className="text-sm text-gray-600 mt-1">
-              Track safety forms, observations, and activities across all sites
+              Site-specific safety activities report
             </p>
           </div>
           <div className="ml-6 flex-shrink-0">
-            <QRCodeComponent value={`https://www.saf37y.com/kpiman/${bu}`} />
+            <QRCodeComponent
+              value={`https://www.saf37y.com/kpiman/${bu}/${site}`}
+            />
           </div>
         </div>
       </div>
@@ -714,6 +675,7 @@ export default function ManKPIPage() {
               data={dailyData}
               frequency="daily"
               bu={bu}
+              site={site}
               onTabChange={setActiveTab}
             />
           )}
@@ -725,6 +687,7 @@ export default function ManKPIPage() {
               data={weeklyData}
               frequency="weekly"
               bu={bu}
+              site={site}
               onTabChange={setActiveTab}
             />
           )}
@@ -736,6 +699,7 @@ export default function ManKPIPage() {
               data={monthlyData}
               frequency="monthly"
               bu={bu}
+              site={site}
               onTabChange={setActiveTab}
             />
           )}
@@ -747,6 +711,7 @@ export default function ManKPIPage() {
               data={annualData}
               frequency="annual"
               bu={bu}
+              site={site}
               onTabChange={setActiveTab}
             />
           )}

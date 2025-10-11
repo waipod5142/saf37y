@@ -12,6 +12,7 @@ import { MachineListModal } from "@/components/MachineListModal";
 import { getAllVocabulariesAction } from "@/lib/actions/vocabulary";
 import { getMachineEmoji } from "@/lib/machine-types";
 import { FALLBACK_COUNTRIES } from "@/lib/constants/countries";
+import QRCodeComponent from "@/components/qr-code";
 import {
   ArrowLeft,
   RefreshCw,
@@ -226,7 +227,14 @@ function InspectionTable({
                       </td>
                       <td className="text-center p-3">
                         <span
-                          className={`font-semibold ${hasData ? "cursor-pointer hover:underline" : ""}`}
+                          className={`${
+                            equipment.inspected === 0
+                              ? "text-gray-400"
+                              : "font-semibold" +
+                                (hasData
+                                  ? " cursor-pointer hover:underline"
+                                  : "")
+                          }`}
                           onClick={() =>
                             handleCellClick(bu, site, type, hasData)
                           }
@@ -236,7 +244,14 @@ function InspectionTable({
                       </td>
                       <td className="text-center p-3">
                         <span
-                          className={`font-semibold ${hasData ? "cursor-pointer hover:underline" : ""}`}
+                          className={`${
+                            equipment.total === 0
+                              ? "text-gray-400"
+                              : "font-semibold" +
+                                (hasData
+                                  ? " cursor-pointer hover:underline"
+                                  : "")
+                          }`}
                           onClick={() =>
                             handleCellClick(bu, site, type, hasData)
                           }
@@ -428,7 +443,7 @@ export default function SiteKPIPage() {
         <Breadcrumbs
           items={[
             { label: "Machine KPI", href: "/kpi" },
-            { label: buName, href: `/kpi/${bu}` },
+            // { label: buName, href: `/kpi/${bu}` },
             { label: siteName },
           ]}
         />
@@ -457,12 +472,12 @@ export default function SiteKPIPage() {
         <Breadcrumbs
           items={[
             { label: "Machine KPI", href: "/kpi" },
-            { label: buName, href: `/kpi/${bu}` },
+            // { label: buName, href: `/kpi/${bu}` },
             { label: siteName },
           ]}
         />
         <div className="mt-6 mb-8">
-          <div className="flex items-center gap-4 mb-6">
+          {/* <div className="flex items-center gap-4 mb-6">
             <Link href={`/kpi/${bu}`}>
               <Button
                 variant="outline"
@@ -473,7 +488,7 @@ export default function SiteKPIPage() {
                 Back to {buName}
               </Button>
             </Link>
-          </div>
+          </div> */}
           <div className="flex items-center gap-3 mb-4">
             <div className="text-4xl">{buFlag}</div>
             <div>
@@ -505,7 +520,7 @@ export default function SiteKPIPage() {
       <Breadcrumbs
         items={[
           { label: "Machine KPI", href: "/kpi" },
-          { label: buName, href: `/kpi/${bu}` },
+          // { label: buName, href: `/kpi/${bu}` },
           { label: siteName },
         ]}
       />
@@ -514,7 +529,7 @@ export default function SiteKPIPage() {
       <div className="mt-6 mb-8">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
-            <Link href={`/kpi/${bu}`}>
+            {/* <Link href={`/kpi/${bu}`}>
               <Button
                 variant="outline"
                 size="sm"
@@ -523,7 +538,7 @@ export default function SiteKPIPage() {
                 <ArrowLeft className="h-4 w-4" />
                 Back to {buName}
               </Button>
-            </Link>
+            </Link> */}
             {lastUpdated && (
               <div className="text-sm text-gray-500 flex items-center gap-2">
                 <Calendar className="h-4 w-4" />
@@ -547,13 +562,16 @@ export default function SiteKPIPage() {
 
         <div className="flex items-center gap-3 mb-4">
           <div className="text-4xl">{buFlag}</div>
-          <div>
+          <div className="flex-1">
             <h1 className="text-3xl font-bold">
               {buName} - {siteName}
             </h1>
-            <p className="text-gray-600">
-              Site-specific inspection dashboard
-            </p>
+            <p className="text-gray-600">Site-specific inspection dashboard</p>
+          </div>
+          <div className="ml-6 flex-shrink-0">
+            <QRCodeComponent
+              value={`https://www.saf37y.com/kpi/${bu}/${site}`}
+            />
           </div>
         </div>
       </div>
