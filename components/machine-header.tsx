@@ -15,7 +15,11 @@ interface MachineHeaderClientProps {
   id: string;
 }
 
-export default function MachineHeaderClient({ bu, type, id }: MachineHeaderClientProps) {
+export default function MachineHeaderClient({
+  bu,
+  type,
+  id,
+}: MachineHeaderClientProps) {
   const [machine, setMachine] = useState<Machine | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -32,7 +36,11 @@ export default function MachineHeaderClient({ bu, type, id }: MachineHeaderClien
     const fetchMachine = async () => {
       try {
         setLoading(true);
-        const result = await getMachineByIdAction(bu, normalizeTypeForDisplay(type), id);
+        const result = await getMachineByIdAction(
+          bu,
+          normalizeTypeForDisplay(type),
+          id
+        );
 
         if (result.success && result.machine) {
           setMachine(result.machine);
@@ -84,7 +92,7 @@ export default function MachineHeaderClient({ bu, type, id }: MachineHeaderClien
             >
               {machine.id}
             </button>
-            
+
             {/* Dynamic machine information */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
               {machine.bu && (
@@ -97,7 +105,9 @@ export default function MachineHeaderClient({ bu, type, id }: MachineHeaderClien
               {machine.type && (
                 <div className="flex flex-col">
                   <span className="text-gray-500 font-medium">Type</span>
-                  <span className="text-gray-900">{normalizeTypeForDisplay(machine.type)}</span>
+                  <span className="text-gray-900">
+                    {normalizeTypeForDisplay(machine.type)}
+                  </span>
                 </div>
               )}
 
@@ -187,9 +197,11 @@ export default function MachineHeaderClient({ bu, type, id }: MachineHeaderClien
 
               {machine.registerDate && (
                 <div className="flex flex-col">
-                  <span className="text-gray-500 font-medium">Register Date</span>
+                  <span className="text-gray-500 font-medium">
+                    Register Date
+                  </span>
                   <span className="text-gray-900">
-                    {typeof machine.registerDate === 'string'
+                    {typeof machine.registerDate === "string"
                       ? machine.registerDate
                       : new Date(machine.registerDate).toLocaleDateString()}
                   </span>
@@ -200,17 +212,21 @@ export default function MachineHeaderClient({ bu, type, id }: MachineHeaderClien
             {/* Remark section */}
             {machine.remark && (
               <div className="mt-4">
-                <span className="text-gray-500 font-medium text-sm">Remark</span>
+                <span className="text-gray-500 font-medium text-sm">
+                  Remark
+                </span>
                 <div className="mt-1 text-gray-900 prose prose-sm max-w-none">
                   <ReactMarkdown>{machine.remark}</ReactMarkdown>
                 </div>
               </div>
             )}
           </div>
-          
+
           {/* QR Code */}
           <div className="ml-6 flex-shrink-0">
-            <QRCodeComponent value={`https://www.saf37y.com/Machine/${bu}/${type.charAt(0).toUpperCase() + type.slice(1)}/${encodeURIComponent(machine.id)}`} />
+            <QRCodeComponent
+              value={`https://www.saf37y.com/Machine/${bu}/${type.charAt(0).toUpperCase() + type.slice(1)}/${encodeURIComponent(machine.id)}`}
+            />
           </div>
         </div>
       </div>

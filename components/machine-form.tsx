@@ -13,7 +13,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import MultiImageUploader, { ImageUpload } from "@/components/multi-image-uploader";
+import MultiImageUploader, {
+  ImageUpload,
+} from "@/components/multi-image-uploader";
 import { auth, storage } from "@/firebase/client";
 import { signInAnonymously } from "firebase/auth";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
@@ -29,8 +31,20 @@ interface MachineFormProps {
 
 interface FormData extends FieldValues {
   inspector: string;
-  mileage?: string;
+  admix1?: string;
+  admixR1?: string;
+  admix2?: string;
+  admixR2?: string;
+  admix3?: string;
+  admixR3?: string;
+  admix4?: string;
+  admixR4?: string;
+  admix5?: string;
+  admixR5?: string;
+  admix6?: string;
+  admixR6?: string;
   tag?: string;
+  mileage?: string;
   certificate?: string;
   remark?: string;
   latitude?: number;
@@ -40,7 +54,12 @@ interface FormData extends FieldValues {
   [key: string]: any;
 }
 
-export default function MachineForm({ bu, type, id, isInDialog = false }: MachineFormProps) {
+export default function MachineForm({
+  bu,
+  type,
+  id,
+  isInDialog = false,
+}: MachineFormProps) {
   const {
     register,
     handleSubmit,
@@ -59,17 +78,19 @@ export default function MachineForm({ bu, type, id, isInDialog = false }: Machin
     [key: string]: string | null;
   }>({});
   const [images, setImages] = useState<ImageUpload[]>([]);
-  const [questionImages, setQuestionImages] = useState<{ [questionName: string]: ImageUpload[] }>({});
-  
+  const [questionImages, setQuestionImages] = useState<{
+    [questionName: string]: ImageUpload[];
+  }>({});
+
   // Use geolocation hook for automatic location capture
-  const { 
-    latitude, 
-    longitude, 
-    accuracy, 
-    error: locationError, 
-    loading: locationLoading, 
+  const {
+    latitude,
+    longitude,
+    accuracy,
+    error: locationError,
+    loading: locationLoading,
     getCurrentLocation,
-    hasLocation 
+    hasLocation,
   } = useGeolocation();
 
   useEffect(() => {
@@ -79,11 +100,12 @@ export default function MachineForm({ bu, type, id, isInDialog = false }: Machin
         setIsLoadingVocabulary(true);
 
         // Fetch questions, vocabulary, and machine data in parallel
-        const [questionsResult, vocabularyResult, machineResult] = await Promise.all([
-          getMachineQuestions(bu, type),
-          getVocabulary(bu),
-          getMachineByIdAction(bu, type, id)
-        ]);
+        const [questionsResult, vocabularyResult, machineResult] =
+          await Promise.all([
+            getMachineQuestions(bu, type),
+            getVocabulary(bu),
+            getMachineByIdAction(bu, type, id),
+          ]);
 
         // Handle questions
         if (questionsResult.success && questionsResult.questions) {
@@ -133,21 +155,28 @@ export default function MachineForm({ bu, type, id, isInDialog = false }: Machin
     setSelectedValues((prev) => ({ ...prev, [questionName]: value }));
   };
 
-  const handleQuestionImagesChange = (questionName: string, images: ImageUpload[]) => {
+  const handleQuestionImagesChange = (
+    questionName: string,
+    images: ImageUpload[]
+  ) => {
     setQuestionImages((prev) => ({ ...prev, [questionName]: images }));
   };
-
 
   const onSubmit: SubmitHandler<FormData> = async (formData) => {
     try {
       // Validate that all failed questions have at least one image
       const failedQuestions = Object.keys(selectedValues).filter(
-        questionName => selectedValues[questionName] === "fail"
+        (questionName) => selectedValues[questionName] === "fail"
       );
-      
+
       for (const questionName of failedQuestions) {
-        if (!questionImages[questionName] || questionImages[questionName].length === 0) {
-          toast.error(`Please attach at least one image for the failed question: ${questionName}`);
+        if (
+          !questionImages[questionName] ||
+          questionImages[questionName].length === 0
+        ) {
+          toast.error(
+            `Please attach at least one image for the failed question: ${questionName}`
+          );
           return;
         }
       }
@@ -158,8 +187,10 @@ export default function MachineForm({ bu, type, id, isInDialog = false }: Machin
           await signInAnonymously(auth);
         } catch (authError: any) {
           console.error("Authentication error:", authError);
-          if (authError?.code === 'auth/api-key-expired') {
-            toast.error("Firebase API key has expired. Please contact administrator to renew the key.");
+          if (authError?.code === "auth/api-key-expired") {
+            toast.error(
+              "Firebase API key has expired. Please contact administrator to renew the key."
+            );
           } else {
             toast.error("Authentication failed. Please try again.");
           }
@@ -180,7 +211,6 @@ export default function MachineForm({ bu, type, id, isInDialog = false }: Machin
         locationTimestamp: hasLocation ? new Date() : undefined,
         locationAccuracy: accuracy || undefined,
       };
-
 
       // Upload images to Firebase Storage
       const imageUrls: string[] = [];
@@ -203,7 +233,9 @@ export default function MachineForm({ bu, type, id, isInDialog = false }: Machin
             imageUrls.push(downloadURL);
           } catch (uploadError) {
             console.error(`Upload error for image ${index}:`, uploadError);
-            toast.error(`Failed to upload image ${index + 1}. Please try again.`);
+            toast.error(
+              `Failed to upload image ${index + 1}. Please try again.`
+            );
             return;
           }
         }
@@ -229,8 +261,13 @@ export default function MachineForm({ bu, type, id, isInDialog = false }: Machin
               const downloadURL = await getDownloadURL(storageRef);
               questionImageUrls[questionName].push(downloadURL);
             } catch (uploadError) {
-              console.error(`Upload error for ${questionName} image ${index}:`, uploadError);
-              toast.error(`Failed to upload image for ${questionName}. Please try again.`);
+              console.error(
+                `Upload error for ${questionName} image ${index}:`,
+                uploadError
+              );
+              toast.error(
+                `Failed to upload image for ${questionName}. Please try again.`
+              );
               return;
             }
           }
@@ -238,7 +275,7 @@ export default function MachineForm({ bu, type, id, isInDialog = false }: Machin
       }
 
       // Add question-specific image URLs to form data
-      Object.keys(questionImageUrls).forEach(questionName => {
+      Object.keys(questionImageUrls).forEach((questionName) => {
         if (questionImageUrls[questionName].length > 0) {
           updatedData[questionName + "P"] = questionImageUrls[questionName];
         }
@@ -257,7 +294,7 @@ export default function MachineForm({ bu, type, id, isInDialog = false }: Machin
           setSelectedValues({});
           setImages([]);
           setQuestionImages({});
-          
+
           // Scroll to top and reload the page to show updated data in machine-detail
           window.scrollTo(0, 0);
           window.location.reload();
@@ -290,12 +327,12 @@ export default function MachineForm({ bu, type, id, isInDialog = false }: Machin
     }
     // Fallback to default choices if vocabulary not loaded
     return [
-      { value: 'pass', text: 'Pass', colorClass: 'bg-green-400' },
-      { value: 'fail', text: 'Fail', colorClass: 'bg-red-400' },
-      { value: 'na', text: 'N/A', colorClass: 'bg-yellow-400' },
+      { value: "pass", text: "Pass", colorClass: "bg-green-400" },
+      { value: "fail", text: "Fail", colorClass: "bg-red-400" },
+      { value: "na", text: "N/A", colorClass: "bg-yellow-400" },
     ];
   };
-  
+
   // Get translation text with fallback
   const getTranslation = (key: string, fallback: string): string => {
     if (vocabulary && vocabulary[key as keyof Vocabulary]) {
@@ -327,7 +364,6 @@ export default function MachineForm({ bu, type, id, isInDialog = false }: Machin
     );
   }
 
-
   return (
     <div>
       <Card className="mb-6">
@@ -348,7 +384,9 @@ export default function MachineForm({ bu, type, id, isInDialog = false }: Machin
               <div className="text-green-700 bg-green-50 px-3 py-1 rounded-md inline-block">
                 📍 Location: {latitude!.toFixed(6)}, {longitude!.toFixed(6)}
                 {accuracy && (
-                  <span className="block text-xs mt-1">Accuracy: ±{Math.round(accuracy)}m</span>
+                  <span className="block text-xs mt-1">
+                    Accuracy: ±{Math.round(accuracy)}m
+                  </span>
                 )}
               </div>
             )}
@@ -369,7 +407,8 @@ export default function MachineForm({ bu, type, id, isInDialog = false }: Machin
                   </Button>
                 </div>
                 <p className="text-xs text-red-500 mt-1">
-                  Please enable location services in your browser and click "Try Again"
+                  Please enable location services in your browser and click "Try
+                  Again"
                 </p>
               </div>
             )}
@@ -380,244 +419,589 @@ export default function MachineForm({ bu, type, id, isInDialog = false }: Machin
       {/* Show form only when location is available */}
       {hasLocation ? (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        {/* Inspector Field */}
-        <Card>
-          <CardContent className="pt-6">
-            <div className="space-y-2">
-              <Label htmlFor="inspector" className="text-lg font-semibold">
-                {getTranslation('inspector', 'Inspector')}
-              </Label>
-              {type.toLowerCase() === "mixertrainer" ? (
-                <select
-                  {...register("inspector", { required: "Inspector is required" })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                >
-                  <option value="">กรอกชื่อ Trainer</option>
-                  <option value="CW">Chamnan Wichit (Driver Trainer)</option>
-                  <option value="KN">Kasemsak Nuengkhamin (Driver Trainer)</option>
-                  <option value="SN">Samansuk Ngeonjun (Driver Trainer)</option>
-                  <option value="TW">Theerawud Wattanaruangchai (Driver Trainer)</option>
-                  <option value="KS">Kriangkrai Sangsook (Driver Trainer)</option>
-                  <option value="NK">Nakorn Kamthong (Driver Trainer)</option>
-                  <option value="TS">Teerawath Saengsilawuthikul (Driver Trainer)</option>
-                </select>
-              ) : type.toLowerCase() === "mixertsm" ? (
-                <select
-                  {...register("inspector", { required: "Inspector is required" })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                >
-                  <option value="">กรอกชื่อ Trainer / TSM</option>
-                  <option value="CAEC">CAEC MACHINERY CO.,LTD</option>
-                  <option value="CC">Chatchaiphuket Transport (2006) Co.,Ltd.</option>
-                  <option value="DO">D.O.K Co.,Ltd.</option>
-                  <option value="FT">F Transport Co.,Ltd.</option>
-                  <option value="IS">Insee logistic Co.,Ltd.</option>
-                  <option value="KC">Kijcharoen Transport Ltd.,Part</option>
-                  <option value="KJ">KJJ Development Co. ltd.</option>
-                  <option value="KM">Khemarat Transport Co.,Ltd.</option>
-                  <option value="MN">Mena Transport Public Co.,Ltd.</option>
-                  <option value="PI">Pechinsee Transport Co.,Ltd.</option>
-                  <option value="PT">Patarachatra Transport Co.,Ltd.</option>
-                  <option value="PU">Phupattanar Transport Co.,Ltd.</option>
-                  <option value="QC">QCarrier Co.,Ltd.</option>
-                  <option value="SH">Sahathanaseth Engineering Co.,Ltd.</option>
-                  <option value="SS">Sermsinpaiboon Co.,Ltd.</option>
-                  <option value="TR">TR.9 Ltd.,Part</option>
-                  <option value="TP">บริษัท ไทยภักดี การโยธา จำกัด (THAIPHAKDEE KAN YOTHA)</option>
-                </select>
-              ) : (
-                <Input
-                  {...register("inspector", { required: "Inspector is required" })}
-                  placeholder="Inspector"
-                  className="w-full"
-                />
-              )}
-              {errors.inspector && (
-                <p className="text-red-500 text-sm">{errors.inspector.message}</p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Mileage Field for Thai cars */}
-        {(["th"].includes(bu)) && type.toLowerCase() === "car" && (
+          {/* Inspector Field */}
           <Card>
             <CardContent className="pt-6">
               <div className="space-y-2">
-                <Label htmlFor="mileage" className="text-lg font-semibold">
-                  เลขไมล์ Mileage
+                <Label htmlFor="inspector" className="text-lg font-semibold">
+                  {getTranslation("inspector", "Inspector")}
                 </Label>
-                <Input
-                  {...register("mileage", { required: "Mileage is required" })}
-                  type="text"
-                  placeholder="Mileage"
-                  className="w-full"
-                />
-                {errors.mileage && (
-                  <p className="text-red-500 text-sm">{errors.mileage.message}</p>
+                {type.toLowerCase() === "mixertrainer" ? (
+                  <select
+                    {...register("inspector", {
+                      required: "Inspector is required",
+                    })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                  >
+                    <option value="">กรอกชื่อ Trainer</option>
+                    <option value="CW">Chamnan Wichit (Driver Trainer)</option>
+                    <option value="KN">
+                      Kasemsak Nuengkhamin (Driver Trainer)
+                    </option>
+                    <option value="SN">
+                      Samansuk Ngeonjun (Driver Trainer)
+                    </option>
+                    <option value="TW">
+                      Theerawud Wattanaruangchai (Driver Trainer)
+                    </option>
+                    <option value="KS">
+                      Kriangkrai Sangsook (Driver Trainer)
+                    </option>
+                    <option value="NK">Nakorn Kamthong (Driver Trainer)</option>
+                    <option value="TS">
+                      Teerawath Saengsilawuthikul (Driver Trainer)
+                    </option>
+                  </select>
+                ) : type.toLowerCase() === "mixertsm" ? (
+                  <select
+                    {...register("inspector", {
+                      required: "Inspector is required",
+                    })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                  >
+                    <option value="">กรอกชื่อ Trainer / TSM</option>
+                    <option value="CAEC">CAEC MACHINERY CO.,LTD</option>
+                    <option value="CC">
+                      Chatchaiphuket Transport (2006) Co.,Ltd.
+                    </option>
+                    <option value="DO">D.O.K Co.,Ltd.</option>
+                    <option value="FT">F Transport Co.,Ltd.</option>
+                    <option value="IS">Insee logistic Co.,Ltd.</option>
+                    <option value="KC">Kijcharoen Transport Ltd.,Part</option>
+                    <option value="KJ">KJJ Development Co. ltd.</option>
+                    <option value="KM">Khemarat Transport Co.,Ltd.</option>
+                    <option value="MN">Mena Transport Public Co.,Ltd.</option>
+                    <option value="PI">Pechinsee Transport Co.,Ltd.</option>
+                    <option value="PT">Patarachatra Transport Co.,Ltd.</option>
+                    <option value="PU">Phupattanar Transport Co.,Ltd.</option>
+                    <option value="QC">QCarrier Co.,Ltd.</option>
+                    <option value="SH">
+                      Sahathanaseth Engineering Co.,Ltd.
+                    </option>
+                    <option value="SS">Sermsinpaiboon Co.,Ltd.</option>
+                    <option value="TR">TR.9 Ltd.,Part</option>
+                    <option value="TP">
+                      บริษัท ไทยภักดี การโยธา จำกัด (THAIPHAKDEE KAN YOTHA)
+                    </option>
+                  </select>
+                ) : (
+                  <Input
+                    {...register("inspector", {
+                      required: "Inspector is required",
+                    })}
+                    placeholder="Inspector"
+                    className="w-full"
+                  />
+                )}
+                {errors.inspector && (
+                  <p className="text-red-500 text-sm">
+                    {errors.inspector.message}
+                  </p>
                 )}
               </div>
             </CardContent>
           </Card>
-        )}
 
-        {/* Tag Number for Vietnam quarterly equipment */}
-        {quarterlyEquipment.some((item) => item.id === type.toLowerCase()) && bu === "vn" && (
-          <Card>
-            <CardContent className="pt-6">
-              <div className="space-y-2">
-                <Label htmlFor="tag" className="text-lg font-semibold">
-                  Tag number
-                </Label>
-                <Input
-                  {...register("tag", { required: "Tag number is required" })}
-                  type="text"
-                  placeholder="Tag number"
-                  className="w-full"
-                />
-                {errors.tag && (
-                  <p className="text-red-500 text-sm">{errors.tag.message}</p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Certificate Field for Vietnam */}
-        {["lifting", "vehicle", "mobile"].includes(type.toLowerCase()) && bu === "vn" && (
-          <Card>
-            <CardContent className="pt-6">
-              <div className="space-y-2">
-                <Label htmlFor="certificate" className="text-lg font-semibold">
-                  Chứng nhận kiểm định/đăng kiểm còn hiệu lực đến ngày
-                </Label>
-                <Input
-                  {...register("certificate", { required: "Certificate is required" })}
-                  type="text"
-                  placeholder="Certificate valid to"
-                  className="w-full"
-                />
-                {errors.certificate && (
-                  <p className="text-red-500 text-sm">{errors.certificate.message}</p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Questions */}
-        {questions.map((question, index) => (
-          <Card key={index}>
-            <CardContent className="pt-6">
-              <div className="space-y-4">
-                <div className="text-xl font-semibold">
-                  {index + 1}. {question.question}
-                </div>
-                
-                <div className="text-sm text-gray-400 drop-shadow-sm opacity-75">
-                  {question.howto && (
-                  <p><strong>{getTranslation('howto', 'How to check')}:</strong> {question.howto}</p>
-                  )}
-                  {question.accept && (
-                    <p><strong>{getTranslation('accept', 'Acceptance criteria')}:</strong> {question.accept}</p>
+          {/* Mileage Field for Thai cars */}
+          {["th"].includes(bu) && type.toLowerCase() === "car" && (
+            <Card>
+              <CardContent className="pt-6">
+                <div className="space-y-2">
+                  <Label htmlFor="mileage" className="text-lg font-semibold">
+                    เลขไมล์ Mileage
+                  </Label>
+                  <Input
+                    {...register("mileage", {
+                      required: "Mileage is required",
+                    })}
+                    type="text"
+                    placeholder="Mileage"
+                    className="w-full"
+                  />
+                  {errors.mileage && (
+                    <p className="text-red-500 text-sm">
+                      {errors.mileage.message}
+                    </p>
                   )}
                 </div>
-                
-                <RadioButtonGroup
-                  register={register}
-                  questionName={question.name}
-                  handleRadioChange={handleRadioChange}
-                  choices={getChoices()}
-                />
+              </CardContent>
+            </Card>
+          )}
 
-                {/* Remark and Picture upload for fail */}
-                {(selectedValues[question.name] === "fail" ||
-                  (question.name &&
-                    selectedValues[question.name] !== "na" &&
-                    question.name.includes("LogoAndColor"))) && (
-                  <div className="space-y-4 mt-4">
+          {/* Tag Number for Vietnam quarterly equipment */}
+          {quarterlyEquipment.some((item) => item.id === type.toLowerCase()) &&
+            bu === "vn" && (
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="tag" className="text-lg font-semibold">
+                      Tag number
+                    </Label>
                     <Input
-                      {...register(question.name + "R", { required: true })}
+                      {...register("tag", {
+                        required: "Tag number is required",
+                      })}
                       type="text"
-                      placeholder={getTranslation('remarkr', 'Please provide a remark')}
+                      placeholder="Tag number"
                       className="w-full"
                     />
-                    
-                    <div>
-                      <Label className="text-sm font-medium mb-2 block">
-                        Upload Images for {question.question}
-                      </Label>
-                      <MultiImageUploader
-                        images={questionImages[question.name] || []}
-                        onImagesChange={(images) => handleQuestionImagesChange(question.name, images)}
-                        urlFormatter={(image) => image.url}
-                        compressionType="defect"
-                      />
-                    </div>
-
-                    {errors[question.name + "R"] && (
-                      <p className="text-red-500 text-sm">Please write a comment</p>
-                    )}
-                    {(questionImages[question.name] || []).length === 0 && (
-                      <p className="text-red-500 text-sm">Please attach at least one picture</p>
+                    {errors.tag && (
+                      <p className="text-red-500 text-sm">
+                        {errors.tag.message}
+                      </p>
                     )}
                   </div>
-                )}
+                </CardContent>
+              </Card>
+            )}
+
+          {/* Certificate Field for Vietnam */}
+          {["lifting", "vehicle", "mobile"].includes(type.toLowerCase()) &&
+            bu === "vn" && (
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="certificate"
+                      className="text-lg font-semibold"
+                    >
+                      Chứng nhận kiểm định/đăng kiểm còn hiệu lực đến ngày
+                    </Label>
+                    <Input
+                      {...register("certificate", {
+                        required: "Certificate is required",
+                      })}
+                      type="text"
+                      placeholder="Certificate valid to"
+                      className="w-full"
+                    />
+                    {errors.certificate && (
+                      <p className="text-red-500 text-sm">
+                        {errors.certificate.message}
+                      </p>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+          {/* Questions */}
+          {questions.map((question, index) => (
+            <Card key={index}>
+              <CardContent className="pt-6">
+                <div className="space-y-4">
+                  <div className="text-xl font-semibold">
+                    {index + 1}. {question.question}
+                  </div>
+
+                  <div className="text-sm text-gray-400 drop-shadow-sm opacity-75">
+                    {question.howto && (
+                      <p>
+                        <strong>
+                          {getTranslation("howto", "How to check")}:
+                        </strong>{" "}
+                        {question.howto}
+                      </p>
+                    )}
+                    {question.accept && (
+                      <p>
+                        <strong>
+                          {getTranslation("accept", "Acceptance criteria")}:
+                        </strong>{" "}
+                        {question.accept}
+                      </p>
+                    )}
+                  </div>
+
+                  <RadioButtonGroup
+                    register={register}
+                    questionName={question.name}
+                    handleRadioChange={handleRadioChange}
+                    choices={getChoices()}
+                  />
+
+                  {/* Remark and Picture upload for fail */}
+                  {(selectedValues[question.name] === "fail" ||
+                    (question.name &&
+                      selectedValues[question.name] !== "na" &&
+                      question.name.includes("LogoAndColor"))) && (
+                    <div className="space-y-4 mt-4">
+                      <Input
+                        {...register(question.name + "R", { required: true })}
+                        type="text"
+                        placeholder={getTranslation(
+                          "remarkr",
+                          "Please provide a remark"
+                        )}
+                        className="w-full"
+                      />
+
+                      <div>
+                        <Label className="text-sm font-medium mb-2 block">
+                          Upload Images for {question.question}
+                        </Label>
+                        <MultiImageUploader
+                          images={questionImages[question.name] || []}
+                          onImagesChange={(images) =>
+                            handleQuestionImagesChange(question.name, images)
+                          }
+                          urlFormatter={(image) => image.url}
+                          compressionType="defect"
+                        />
+                      </div>
+
+                      {errors[question.name + "R"] && (
+                        <p className="text-red-500 text-sm">
+                          Please write a comment
+                        </p>
+                      )}
+                      {(questionImages[question.name] || []).length === 0 && (
+                        <p className="text-red-500 text-sm">
+                          Please attach at least one picture
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+
+          {/* Images Upload */}
+          <Card>
+            <CardContent className="pt-6">
+              <div className="space-y-4">
+                <Label className="text-lg font-semibold">
+                  {getTranslation("picture", "Attach Images")} (Optional)
+                </Label>
+
+                <MultiImageUploader
+                  images={images}
+                  onImagesChange={setImages}
+                  urlFormatter={(image) => {
+                    if (!image.file) {
+                      return `https://firebasestorage.googleapis.com/v0/b/sccc-inseesafety-prod.firebasestorage.app/o/${encodeURIComponent(
+                        image.url
+                      )}?alt=media`;
+                    }
+                    return image.url;
+                  }}
+                  compressionType="general"
+                />
               </div>
             </CardContent>
           </Card>
-        ))}
 
-        {/* Images Upload */}
-        <Card>
-          <CardContent className="pt-6">
-            <div className="space-y-4">
-              <Label className="text-lg font-semibold">
-                {getTranslation('picture', 'Attach Images')} (Optional)
-              </Label>
-              
-              <MultiImageUploader
-                images={images}
-                onImagesChange={setImages}
-                urlFormatter={(image) => {
-                  if (!image.file) {
-                    return `https://firebasestorage.googleapis.com/v0/b/sccc-inseesafety-prod.firebasestorage.app/o/${encodeURIComponent(
-                      image.url
-                    )}?alt=media`;
-                  }
-                  return image.url;
-                }}
-                compressionType="general"
-              />
-            </div>
-          </CardContent>
-        </Card>
+          {/* Admix and SG Fields for Thai plantweek and plantmonth */}
+          {["th"].includes(bu) &&
+            (type.toLowerCase() === "plantweek" ||
+              type.toLowerCase() === "plantmonth") && (
+              <>
+                {/* Admix 1 and AdmixR 1 */}
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label
+                          htmlFor="admix1"
+                          className="text-lg font-semibold"
+                        >
+                          น้ำยา 1
+                        </Label>
+                        <Input
+                          {...register("admix1")}
+                          type="text"
+                          placeholder="น้ำยา 1..."
+                          className="w-full"
+                        />
+                        {errors.admix1 && (
+                          <p className="text-red-500 text-sm">
+                            {errors.admix1.message}
+                          </p>
+                        )}
+                      </div>
+                      <div className="space-y-2">
+                        <Label
+                          htmlFor="admixR1"
+                          className="text-lg font-semibold"
+                        >
+                          ค่าความถ่วงจำเพาะ
+                        </Label>
+                        <Input
+                          {...register("admixR1")}
+                          type="text"
+                          placeholder="ค่าความถ่วงจำเพาะ"
+                          className="w-full"
+                        />
+                        {errors.admixR1 && (
+                          <p className="text-red-500 text-sm">
+                            {errors.admixR1.message}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
 
-        {/* Optional Remark */}
-        <Card>
-          <CardContent className="pt-6">
-            <div className="space-y-2">
-              <Label htmlFor="remark" className="text-lg font-semibold">
-                {getTranslation('remark', 'Remark')} (Optional)
-              </Label>
-              <Input
-                {...register("remark")}
-                type="text"
-                placeholder="Remark (Optional)"
-                className="w-full"
-              />
-            </div>
-          </CardContent>
-        </Card>
+                {/* Admix 2 and AdmixR 2 */}
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label
+                          htmlFor="admix2"
+                          className="text-lg font-semibold"
+                        >
+                          น้ำยา 2
+                        </Label>
+                        <Input
+                          {...register("admix2")}
+                          type="text"
+                          placeholder="น้ำยา 2..."
+                          className="w-full"
+                        />
+                        {errors.admix2 && (
+                          <p className="text-red-500 text-sm">
+                            {errors.admix2.message}
+                          </p>
+                        )}
+                      </div>
+                      <div className="space-y-2">
+                        <Label
+                          htmlFor="admixR2"
+                          className="text-lg font-semibold"
+                        >
+                          ค่าความถ่วงจำเพาะ
+                        </Label>
+                        <Input
+                          {...register("admixR2")}
+                          type="text"
+                          placeholder="ค่าความถ่วงจำเพาะ"
+                          className="w-full"
+                        />
+                        {errors.admixR2 && (
+                          <p className="text-red-500 text-sm">
+                            {errors.admixR2.message}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
 
-        {/* Submit Button */}
-        <Button
-          type="submit"
-          disabled={isSubmitting}
-          className="w-full h-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-full shadow-lg"
-        >
-          {isSubmitting ? "Submitting..." : getTranslation('submit', 'Submit')}
-        </Button>
+                {/* Admix 3 and AdmixR 3 */}
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label
+                          htmlFor="admix3"
+                          className="text-lg font-semibold"
+                        >
+                          น้ำยา 3
+                        </Label>
+                        <Input
+                          {...register("admix3")}
+                          type="text"
+                          placeholder="น้ำยา 3..."
+                          className="w-full"
+                        />
+                        {errors.admix3 && (
+                          <p className="text-red-500 text-sm">
+                            {errors.admix3.message}
+                          </p>
+                        )}
+                      </div>
+                      <div className="space-y-2">
+                        <Label
+                          htmlFor="admixR3"
+                          className="text-lg font-semibold"
+                        >
+                          ค่าความถ่วงจำเพาะ
+                        </Label>
+                        <Input
+                          {...register("admixR3")}
+                          type="text"
+                          placeholder="ค่าความถ่วงจำเพาะ"
+                          className="w-full"
+                        />
+                        {errors.admixR3 && (
+                          <p className="text-red-500 text-sm">
+                            {errors.admixR3.message}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Admix 4 and AdmixR 4 */}
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label
+                          htmlFor="admix4"
+                          className="text-lg font-semibold"
+                        >
+                          น้ำยา 4
+                        </Label>
+                        <Input
+                          {...register("admix4")}
+                          type="text"
+                          placeholder="น้ำยา 4..."
+                          className="w-full"
+                        />
+                        {errors.admix4 && (
+                          <p className="text-red-500 text-sm">
+                            {errors.admix4.message}
+                          </p>
+                        )}
+                      </div>
+                      <div className="space-y-2">
+                        <Label
+                          htmlFor="admixR4"
+                          className="text-lg font-semibold"
+                        >
+                          ค่าความถ่วงจำเพาะ
+                        </Label>
+                        <Input
+                          {...register("admixR4")}
+                          type="text"
+                          placeholder="ค่าความถ่วงจำเพาะ"
+                          className="w-full"
+                        />
+                        {errors.admixR4 && (
+                          <p className="text-red-500 text-sm">
+                            {errors.admixR4.message}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Admix 5 and AdmixR 5 */}
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label
+                          htmlFor="admix5"
+                          className="text-lg font-semibold"
+                        >
+                          น้ำยา 5
+                        </Label>
+                        <Input
+                          {...register("admix5")}
+                          type="text"
+                          placeholder="น้ำยา 5..."
+                          className="w-full"
+                        />
+                        {errors.admix5 && (
+                          <p className="text-red-500 text-sm">
+                            {errors.admix5.message}
+                          </p>
+                        )}
+                      </div>
+                      <div className="space-y-2">
+                        <Label
+                          htmlFor="admixR5"
+                          className="text-lg font-semibold"
+                        >
+                          ค่าความถ่วงจำเพาะ
+                        </Label>
+                        <Input
+                          {...register("admixR5")}
+                          type="text"
+                          placeholder="ค่าความถ่วงจำเพาะ"
+                          className="w-full"
+                        />
+                        {errors.admixR5 && (
+                          <p className="text-red-500 text-sm">
+                            {errors.admixR5.message}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Admix 6 and AdmixR 6 */}
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label
+                          htmlFor="admix6"
+                          className="text-lg font-semibold"
+                        >
+                          น้ำยา 6
+                        </Label>
+                        <Input
+                          {...register("admix6")}
+                          type="text"
+                          placeholder="น้ำยา 6..."
+                          className="w-full"
+                        />
+                        {errors.admix6 && (
+                          <p className="text-red-500 text-sm">
+                            {errors.admix6.message}
+                          </p>
+                        )}
+                      </div>
+                      <div className="space-y-2">
+                        <Label
+                          htmlFor="admixR6"
+                          className="text-lg font-semibold"
+                        >
+                          ค่าความถ่วงจำเพาะ
+                        </Label>
+                        <Input
+                          {...register("admixR6")}
+                          type="text"
+                          placeholder="ค่าความถ่วงจำเพาะ"
+                          className="w-full"
+                        />
+                        {errors.admixR6 && (
+                          <p className="text-red-500 text-sm">
+                            {errors.admixR6.message}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </>
+            )}
+
+          {/* Optional Remark */}
+          <Card>
+            <CardContent className="pt-6">
+              <div className="space-y-2">
+                <Label htmlFor="remark" className="text-lg font-semibold">
+                  {getTranslation("remark", "Remark")} (Optional)
+                </Label>
+                <Input
+                  {...register("remark")}
+                  type="text"
+                  placeholder="Remark (Optional)"
+                  className="w-full"
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Submit Button */}
+          <Button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full h-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-full shadow-lg"
+          >
+            {isSubmitting
+              ? "Submitting..."
+              : getTranslation("submit", "Submit")}
+          </Button>
         </form>
       ) : (
         /* Show location requirement when form is hidden */
@@ -629,8 +1013,9 @@ export default function MachineForm({ bu, type, id, isInDialog = false }: Machin
                 Location Required for Machine Inspection
               </h3>
               <p className="text-red-700 mb-6 max-w-md mx-auto">
-                Machine inspection requires your current location for accurate record keeping.
-                Please enable location sharing to continue with the inspection form.
+                Machine inspection requires your current location for accurate
+                record keeping. Please enable location sharing to continue with
+                the inspection form.
               </p>
               <div className="space-y-3">
                 <Button
@@ -649,7 +1034,8 @@ export default function MachineForm({ bu, type, id, isInDialog = false }: Machin
                   )}
                 </Button>
                 <p className="text-sm text-red-600">
-                  Make sure location services are enabled in your browser settings
+                  Make sure location services are enabled in your browser
+                  settings
                 </p>
               </div>
             </div>

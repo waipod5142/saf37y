@@ -146,13 +146,13 @@ export const machineEmojis: { [key: string]: string } = {
   truck: "🚛",
   bulk: "🚛",
   bag: "📦",
-  mixer: "🔄",
+  mixer: "🌀",
   motorbike: "🏍️",
   loader: "🚜",
   excavator: "🚜",
   dump: "🚛",
   frontend: "🚜",
-  
+
   // Fire Safety
   extinguisher: "🧯",
   hydrant: "🧯",
@@ -162,7 +162,7 @@ export const machineEmojis: { [key: string]: string } = {
   firealarm: "🚨",
   firepump: "💧",
   fireexit: "🚪",
-  
+
   // Safety Equipment
   harness: "🦺",
   fullbodyharness: "🦺",
@@ -172,7 +172,7 @@ export const machineEmojis: { [key: string]: string } = {
   lifering: "🛟",
   lifevest: "🦺",
   ladder: "🪜",
-  
+
   // Tools & Equipment
   welding: "🔥",
   cable: "🔌",
@@ -181,17 +181,17 @@ export const machineEmojis: { [key: string]: string } = {
   light: "💡",
   compressor: "🔧",
   waterjet: "💧",
-  
+
   // Medical & Emergency
   aed: "🚑",
   firstaid: "🏥",
   firstaidbox: "🚑",
   emergency: "🚨",
   shower: "🚿",
-  
+
   // Security & Monitoring
   cctv: "📹",
-  
+
   // Other Equipment
   equipment: "🔧",
   rescue: "🛟",
@@ -201,7 +201,7 @@ export const machineEmojis: { [key: string]: string } = {
   stock: "📋",
   thermal: "🌡️",
   slope: "⛰️",
-  quarry: "⛏️"
+  quarry: "⛏️",
 };
 
 export const getMachineEmoji = (type: string): string | null => {
@@ -209,21 +209,30 @@ export const getMachineEmoji = (type: string): string | null => {
   if (machineEmojis[type.toLowerCase()]) {
     return machineEmojis[type.toLowerCase()];
   }
-  
+
   // Try to find a partial match for compound types (e.g., "vnforklift" -> "forklift")
   for (const [key, emoji] of Object.entries(machineEmojis)) {
     if (type.toLowerCase().includes(key)) {
       return emoji;
     }
   }
-  
+
   return null;
 };
 
 export const normalizeTypeForDisplay = (type: string): string => {
   const lowerType = type.toLowerCase();
-  if (['mixer', 'mixerweek', 'mixertrainer', 'mixertsm', 'mixerphoto'].includes(lowerType)) {
-    return 'Mixer';
+  if (
+    ["mixer", "mixerweek", "mixertrainer", "mixertsm", "mixerphoto"].includes(
+      lowerType
+    )
+  ) {
+    return "Mixer";
+  }
+  if (
+    ["plant", "plantweek", "plantmonth", "plantmaintenance"].includes(lowerType)
+  ) {
+    return "Plant";
   }
   return type;
 };
@@ -260,8 +269,10 @@ export const machineTitles: { [key: string]: string } = {
   cmicdump: "ការត្រួតពិនិត្យរថយន្តមុនពេលប្រើប្រាស់ប្រចាំថ្ងៃ",
   cmicexcavator: "ការត្រួតពិនិត្យរថយន្តមុនពេលប្រើប្រាស់ប្រចាំថ្ងៃ",
   cmiccrane: "ការត្រួតពិនិត្យឧបករណ៍ជើងយកឬក្រេនមុនពេលប្រើប្រាស់ប្រចាំថ្ងៃ",
-  cmicextinguisher: "ការត្រួតពិនិត្យបំពង់ពន្លត់អគ្គីភ័យមុនពេលប្រើប្រាស់ប្រចាំថ្ងៃ",
-  cmichydrant: "ការត្រួតពិនិត្យប្រព័ន្ធទឹកបាញ់អគ្គីភ័យមុនពេលប្រើប្រាស់ប្រចាំថ្ងៃ",
+  cmicextinguisher:
+    "ការត្រួតពិនិត្យបំពង់ពន្លត់អគ្គីភ័យមុនពេលប្រើប្រាស់ប្រចាំថ្ងៃ",
+  cmichydrant:
+    "ការត្រួតពិនិត្យប្រព័ន្ធទឹកបាញ់អគ្គីភ័យមុនពេលប្រើប្រាស់ប្រចាំថ្ងៃ",
   cmicvehicle: "ការត្រួតពិនិត្យយានជំនិះស្រាលមុនពេលប្រើប្រាស់ប្រចាំថ្ងៃ",
 
   // BD

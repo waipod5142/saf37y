@@ -13,6 +13,14 @@ export const isMixerType = (type: string): boolean => {
 // Define all mixer type variants
 export const MIXER_TYPES = ['mixer', 'mixertsm', 'mixertrainer', 'mixerweek', 'mixerphoto'];
 
+// Helper function to check if a machine type is a plant type
+export const isPlantType = (type: string): boolean => {
+  return type.toLowerCase().startsWith('plant');
+};
+
+// Define all plant type variants
+export const PLANT_TYPES = ['plant', 'plantweek', 'plantmonth', 'plantmaintenance'];
+
 // Utility function for Firebase timestamp conversion
 function convertFirebaseTimestamp(timestamp: any): Date | null {
   if (!timestamp) return null;
@@ -184,6 +192,70 @@ export const getMachineInspectionRecordsForMixers = async (
     return allRecords;
   } catch (error) {
     console.error("Error fetching machine inspection records for mixers:", error);
+    return [];
+  }
+};
+
+export const getMachineInspectionRecordsForPlants = async (
+  bu: string,
+  id: string
+): Promise<MachineInspectionRecord[]> => {
+  try {
+    // Decode URL parameters to handle special characters (including Thai characters)
+    const decodedId = decodeURIComponent(id);
+
+    // Create queries for all plant types
+    const queryPromises = PLANT_TYPES.map(plantType => {
+      return firestore
+        .collection("machinetr")
+        .where("bu", "==", bu)
+        .where("type", "==", plantType.toLowerCase())
+        .where("id", "==", decodedId)
+        .get();
+    });
+
+    // Execute all queries in parallel
+    const snapshots = await Promise.all(queryPromises);
+
+    // Collect all records from all plant types
+    const allRecords: MachineInspectionRecord[] = [];
+
+    snapshots.forEach((snapshot) => {
+      if (!snapshot.empty) {
+        const records = snapshot.docs.map((doc) => {
+          const recordData = doc.data();
+          return {
+            id: recordData.id,
+            bu: recordData.bu,
+            type: recordData.type,
+            inspector: recordData.inspector,
+            timestamp: convertFirebaseTimestamp(recordData.timestamp),
+            createdAt: convertFirebaseTimestamp(recordData.createdAt),
+            remark: recordData.remark,
+            images: recordData.images,
+            docId: doc.id,
+            ...recordData,
+            // Explicitly convert timestamp fields that might exist in ...recordData
+            locationTimestamp: convertFirebaseTimestamp(recordData.locationTimestamp),
+          } as MachineInspectionRecord;
+        });
+        allRecords.push(...records);
+      }
+    });
+
+    // Sort by timestamp in descending order (latest first)
+    allRecords.sort((a, b) => {
+      const aDate = convertFirebaseTimestamp(a.timestamp);
+      const bDate = convertFirebaseTimestamp(b.timestamp);
+
+      if (!aDate || !bDate) return 0;
+
+      return bDate.getTime() - aDate.getTime();
+    });
+
+    return allRecords;
+  } catch (error) {
+    console.error("Error fetching machine inspection records for plants:", error);
     return [];
   }
 };

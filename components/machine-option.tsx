@@ -23,8 +23,12 @@ export default function MachineOption({ bu, type, id }: MachineOptionProps) {
     }
   };
 
-  // Only show dropdown for rmx business unit with specific machine types
-  if (!['Mixer', 'Mixerweek', 'Mixertrainer', 'Mixertsm', 'Mixerphoto'].includes(type)) {
+  // Check if it's a Mixer or Plant type
+  const isMixerType = ['Mixer', 'Mixerweek', 'Mixertrainer', 'Mixertsm', 'Mixerphoto'].includes(type);
+  const isPlantType = ['Plant', 'Plantweek', 'Plantmonth', 'Plantmaintenance'].includes(type);
+
+  // Only show dropdown for specific machine types
+  if (!isMixerType && !isPlantType) {
     return null;
   }
 
@@ -45,36 +49,70 @@ export default function MachineOption({ bu, type, id }: MachineOptionProps) {
         <option value="" className="text-gray-500">
           -- ตัวเลือกทั้งหมด --
         </option>
-        <option
-          value={`/Machine/${bu}/Mixer/${id}`}
-          className="odd:bg-gray-100 even:bg-gray-200"
-        >
-          แบบตรวจเช็ครถโม่ก่อนใช้งานประจำวัน
-        </option>
-        <option
-          value={`/Machine/${bu}/Mixerweek/${id}`}
-          className="odd:bg-gray-100 even:bg-gray-200"
-        >
-          แบบตรวจเช็ครถโม่ก่อนใช้งานประจำสัปดาห์
-        </option>
-        <option
-          value={`/Machine/${bu}/Mixertrainer/${id}`}
-          className="odd:bg-gray-100 even:bg-gray-200"
-        >
-          แบบตรวจเช็ครถโม่สำหรับครูฝึกอบรม SCCO
-        </option>
-        <option
-          value={`/Machine/${bu}/Mixertsm/${id}`}
-          className="odd:bg-gray-100 even:bg-gray-200"
-        >
-          แบบตรวจเช็ครถโม่สำหรับ TSM ของ ผจส
-        </option>
-        <option
-          value={`/Machine/${bu}/Mixerphoto/${id}`}
-          className="odd:bg-gray-100 even:bg-gray-200"
-        >
-          แบบถ่ายรูปรถโม่ 4 ด้าน
-        </option>
+
+        {isMixerType && (
+          <>
+            <option
+              value={`/Machine/${bu}/Mixer/${id}`}
+              className="odd:bg-gray-100 even:bg-gray-200"
+            >
+              แบบตรวจเช็ครถโม่ก่อนใช้งานประจำวัน
+            </option>
+            <option
+              value={`/Machine/${bu}/Mixerweek/${id}`}
+              className="odd:bg-gray-100 even:bg-gray-200"
+            >
+              แบบตรวจเช็ครถโม่ก่อนใช้งานประจำสัปดาห์
+            </option>
+            <option
+              value={`/Machine/${bu}/Mixertrainer/${id}`}
+              className="odd:bg-gray-100 even:bg-gray-200"
+            >
+              แบบตรวจเช็ครถโม่สำหรับครูฝึกอบรม SCCO
+            </option>
+            <option
+              value={`/Machine/${bu}/Mixertsm/${id}`}
+              className="odd:bg-gray-100 even:bg-gray-200"
+            >
+              แบบตรวจเช็ครถโม่สำหรับ TSM ของ ผจส
+            </option>
+            <option
+              value={`/Machine/${bu}/Mixerphoto/${id}`}
+              className="odd:bg-gray-100 even:bg-gray-200"
+            >
+              แบบถ่ายรูปรถโม่ 4 ด้าน
+            </option>
+          </>
+        )}
+
+        {isPlantType && (
+          <>
+            <option
+              value={`/Machine/${bu}/Plant/${id}`}
+              className="odd:bg-gray-100 even:bg-gray-200"
+            >
+              แบบตรวจหน่วยผลิตคอนกรีตประจำวัน
+            </option>
+            <option
+              value={`/Machine/${bu}/Plantweek/${id}`}
+              className="odd:bg-gray-100 even:bg-gray-200"
+            >
+              แบบตรวจหน่วยผลิตคอนกรีตประจำสัปดาห์
+            </option>
+            <option
+              value={`/Machine/${bu}/Plantmonth/${id}`}
+              className="odd:bg-gray-100 even:bg-gray-200"
+            >
+              แบบตรวจหน่วยผลิตคอนกรีตประจำเดือน
+            </option>
+            <option
+              value={`/Machine/${bu}/Plantmaintenance/${id}`}
+              className="odd:bg-gray-100 even:bg-gray-200"
+            >
+              แบบตรวจหน่วยผลิตคอนกรีตสำหรับช่าง
+            </option>
+          </>
+        )}
       </select>
     </div>
   );
