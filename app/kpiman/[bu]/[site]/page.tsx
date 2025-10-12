@@ -60,13 +60,14 @@ const FORM_TYPE_CONFIG: Record<
   string,
   { icon: string; label: string; color: string }
 > = {
-  toolbox: { icon: "🧰", label: "Toolbox Talk", color: "bg-blue-500" },
+  toolbox: { icon: "📢", label: "Toolbox Talk", color: "bg-blue-500" },
   alertform: {
     icon: "⚠️",
     label: "Red Alert Acknowledgement",
     color: "bg-red-500",
   },
   bootform: { icon: "🥾", label: "Boot on the ground", color: "bg-green-500" },
+  raform: { icon: "🔍", label: "Risk Assessment", color: "bg-red-500" },
   sot: { icon: "👁️", label: "Safety Observation", color: "bg-purple-500" },
   talk: { icon: "💬", label: "Safety Talk", color: "bg-yellow-500" },
   meetingform: {

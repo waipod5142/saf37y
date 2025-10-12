@@ -235,7 +235,6 @@ export const normalizeTypeForDisplay = (type: string): string => {
       "plantweek",
       "plantmonth",
       "plantmaintenance",
-      "plantmaintenance",
       "planttalk",
       "plantstat",
     ].includes(lowerType)
