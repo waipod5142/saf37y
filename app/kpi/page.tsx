@@ -18,7 +18,8 @@ export default async function KPIPage() {
             Machine Inspection Dashboard
           </h1>
           <p className="text-gray-600">
-            Select a country to view all sites, or choose a specific site for faster queries.
+            Select a country to view all sites, or choose a specific site for
+            faster queries.
           </p>
         </div>
         <div className="flex-shrink-0">
@@ -28,11 +29,12 @@ export default async function KPIPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {countries.map((country) => (
-          <Card key={country.code} className="hover:shadow-lg transition-all duration-200 border-2 hover:border-blue-200">
+          <Card
+            key={country.code}
+            className="hover:shadow-lg transition-all duration-200 border-2 hover:border-blue-200"
+          >
             <CardHeader className="text-center pb-4">
-              <div className="text-8xl mb-3">
-                {country.flag}
-              </div>
+              <div className="text-8xl mb-3">{country.flag}</div>
               <CardTitle className="text-2xl font-bold">
                 {country.name}
               </CardTitle>
@@ -40,7 +42,8 @@ export default async function KPIPage() {
             <CardContent className="space-y-4">
               <div className="text-center">
                 <div className="text-sm font-medium text-gray-800 mb-2">
-                  {country.sites.length} site{country.sites.length !== 1 ? "s" : ""}
+                  {country.sites.length} site
+                  {country.sites.length !== 1 ? "s" : ""}
                 </div>
               </div>
 
@@ -79,6 +82,27 @@ export default async function KPIPage() {
             </CardContent>
           </Card>
         ))}
+      </div>
+
+      <div className="flex py-4">
+        <Link href={`/kpilog/th/rmx`}>
+          <Badge
+            variant="outline"
+            className="cursor-pointer hover:bg-green-50 hover:border-green-500 hover:text-green-700 transition-colors px-3 py-1"
+          >
+            <MapPin className="h-3 w-3 mr-1" />
+            RMX - daily only
+          </Badge>
+        </Link>
+        <Link href={`/kpilog/th/log`}>
+          <Badge
+            variant="outline"
+            className="cursor-pointer hover:bg-green-50 hover:border-green-500 hover:text-green-700 transition-colors px-3 py-1"
+          >
+            <MapPin className="h-3 w-3 mr-1" />
+            LOG - daily only
+          </Badge>
+        </Link>
       </div>
     </div>
   );

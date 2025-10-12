@@ -128,7 +128,7 @@ export async function getAllVocabulariesAction(): Promise<{
       mixer: "Mixer Truck",
       mixerweek: "Mixer Truck Weekly Inspection",
       mixertrainer: "Mixer Truck Inspection by Driver Trainer",
-      mixertsm: "Mixer Truck Inspection by Driver TSM",
+      mixertsm: "Mixer Truck Inspection by TSM",
       mixerphoto: "RMX truck photo taken",
 
       plant: "RMX Plant Inspection",
