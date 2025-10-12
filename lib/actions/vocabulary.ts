@@ -74,7 +74,6 @@ export async function getAllVocabulariesAction(): Promise<{
       crane: "Crane",
       overheadcrane: "Overhead Crane",
       hoist: "Hoist",
-      mixer: "Mixer Truck",
       motorbike: "Motorbike",
       bag: "Bag Truck",
       frontend: "Frontend Loader",
@@ -118,13 +117,26 @@ export async function getAllVocabulariesAction(): Promise<{
       // Other Equipment
       equipment: "Portable Equipment",
       rescue: "Rescue Equipment",
-      plant: "Plant Inspection",
       waste: "Waste Transport",
       stock: "Stockpile Inspection",
       thermal: "Thermal PPE",
       slope: "Road, Slope, Hopper Inspection",
       liftinggear: "Lifting Gear",
       mobile: "Mobile Equipment",
+
+      // RMX  inspection
+      mixer: "Mixer Truck",
+      mixerweek: "Mixer Truck Weekly Inspection",
+      mixertrainer: "Mixer Truck Inspection by Driver Trainer",
+      mixertsm: "Mixer Truck Inspection by Driver TSM",
+      mixerphoto: "RMX truck photo taken",
+
+      plant: "RMX Plant Inspection",
+      plantweek: "RMX Plant Weekly Inspection",
+      plantmonth: "RMX Plant Monthly Inspection",
+      plantmaintenance: "FM-SCCO-MTND-002",
+      planttalk: "RMX Safety Talk",
+      plantstat: "RMX Safety Statistics",
     };
 
     vocabularies.forEach((vocabulary) => {

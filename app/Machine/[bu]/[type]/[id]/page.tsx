@@ -7,9 +7,9 @@ import MachineOption from "@/components/machine-option";
 import { normalizeBuCode } from "@/lib/utils";
 
 export default async function MachinePage({
-  params
+  params,
 }: {
-  params: Promise<{ bu: string; type: string; id: string }>
+  params: Promise<{ bu: string; type: string; id: string }>;
 }) {
   const { bu, type, id } = await params;
 
@@ -28,7 +28,11 @@ export default async function MachinePage({
       <MachineHeader bu={normalizedBu} type={decodedType} id={decodedId} />
       <MachineDetail bu={normalizedBu} type={decodedType} id={decodedId} />
       {decodedType.toLowerCase() === "mixerphoto" ? (
-        <MachineForm4photo bu={normalizedBu} type={decodedType} id={decodedId} />
+        <MachineForm4photo
+          bu={normalizedBu}
+          type={decodedType}
+          id={decodedId}
+        />
       ) : (
         <MachineForm bu={normalizedBu} type={decodedType} id={decodedId} />
       )}

@@ -227,12 +227,20 @@ export const normalizeTypeForDisplay = (type: string): string => {
       lowerType
     )
   ) {
-    return "Mixer";
+    return "mixer";
   }
   if (
-    ["plant", "plantweek", "plantmonth", "plantmaintenance"].includes(lowerType)
+    [
+      "plant",
+      "plantweek",
+      "plantmonth",
+      "plantmaintenance",
+      "plantmaintenance",
+      "planttalk",
+      "plantstat",
+    ].includes(lowerType)
   ) {
-    return "Plant";
+    return "plant";
   }
   return type;
 };

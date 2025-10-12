@@ -11,12 +11,12 @@ interface MachineOptionProps {
 export default function MachineOption({ bu, type, id }: MachineOptionProps) {
   const handleMachineSelect = (e: ChangeEvent<HTMLSelectElement>) => {
     const selectedValue = e.target.value;
-    if (selectedValue.includes('Mixertrainer')) {
-      const passcode = prompt('กรุณาใส่ Passcode:');
-      if (passcode === '456789') {
+    if (selectedValue.includes("Mixertrainer")) {
+      const passcode = prompt("กรุณาใส่ Passcode:");
+      if (passcode === "456789") {
         window.location.href = selectedValue;
       } else {
-        alert('รหัสผิด กรุณาใส่ใหม่');
+        alert("รหัสผิด กรุณาใส่ใหม่");
       }
     } else {
       window.location.href = selectedValue;
@@ -24,8 +24,21 @@ export default function MachineOption({ bu, type, id }: MachineOptionProps) {
   };
 
   // Check if it's a Mixer or Plant type
-  const isMixerType = ['Mixer', 'Mixerweek', 'Mixertrainer', 'Mixertsm', 'Mixerphoto'].includes(type);
-  const isPlantType = ['Plant', 'Plantweek', 'Plantmonth', 'Plantmaintenance'].includes(type);
+  const isMixerType = [
+    "Mixer",
+    "Mixerweek",
+    "Mixertrainer",
+    "Mixertsm",
+    "Mixerphoto",
+  ].includes(type);
+  const isPlantType = [
+    "Plant",
+    "Plantweek",
+    "Plantmonth",
+    "Plantmaintenance",
+    "Planttalk",
+    "Plantstat",
+  ].includes(type);
 
   // Only show dropdown for specific machine types
   if (!isMixerType && !isPlantType) {
@@ -33,7 +46,7 @@ export default function MachineOption({ bu, type, id }: MachineOptionProps) {
   }
 
   return (
-    <div className="px-4 py-4 bg-white rounded-md mb-4">
+    <div className="py-4 bg-white rounded-md mb-4">
       <label
         htmlFor="machine-select"
         className="block text-lg font-semibold text-gray-700 mb-2"
@@ -110,6 +123,19 @@ export default function MachineOption({ bu, type, id }: MachineOptionProps) {
               className="odd:bg-gray-100 even:bg-gray-200"
             >
               แบบตรวจหน่วยผลิตคอนกรีตสำหรับช่าง
+            </option>
+            <option disabled>──────────────────────────────</option>
+            <option
+              value={`/Machine/${bu}/Planttalk/${id}`}
+              className="odd:bg-gray-100 even:bg-gray-200"
+            >
+              Safety Talk แบบการสื่อสารความปลอดภัย
+            </option>
+            <option
+              value={`/Machine/${bu}/Plantstat/${id}`}
+              className="odd:bg-gray-100 even:bg-gray-200"
+            >
+              Safety Statistics แบบยืนยันการลงสถิติอุบัติตอนเช้า
             </option>
           </>
         )}

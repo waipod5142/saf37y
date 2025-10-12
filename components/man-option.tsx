@@ -79,15 +79,12 @@ export default function ManOption({ bu, type, id }: ManOptionProps) {
             <option value={`/Man/${bu}/Alert/${id}`}>
               Cảnh báo an toàn / Safety Alert
             </option>
+            <option disabled>──────────────────────────────</option>
             <option value={`/Man/${bu}/Ra/${id}`}>
               Danh sách kiểm tra đánh giá / Risk Assessmen Checklist
             </option>
             <option value={`/Man/${bu}/Pto/${id}`}>
               Quan sát công việc theo kế hoạch / Planned Task Observation
-            </option>
-            <option disabled>──────────────────────────────</option>
-            <option value={`/Man/${bu}/Grease/${id}`}>
-              Phương pháp bơm mỡ / Greasing Method
             </option>
           </>
         )}

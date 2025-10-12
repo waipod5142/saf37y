@@ -82,4 +82,20 @@ export const kh = {
     otherIssues: "Other Issues",
     agreement: "Agreement",
   },
+  ra: {
+    raForm: "Biểu mẫu Risk Assessment",
+    noReports: "Không tìm thấy báo cáo BOG cho máy này",
+    observedName: "Người được quan sát / Observed Person",
+    department: "Bộ phận / Department",
+    taskObserved: "Công việc được quan sát / Task Observed",
+    procedureCode: "Mã quy trình / Procedure Code",
+    potentialDamageOrInjury:
+      "Thiệt hại hoặc chấn thương tiềm ẩn / Potential Damage or Injury",
+    complianceWI:
+      "Tuân thủ Hướng dẫn công việc (WI) / Compliance with Work Instruction",
+    unsafeActs: "Hành vi không an toàn / Unsafe Acts",
+    goodBehaviours: "Hành vi an toàn / Good Behaviours",
+    discussion: "Thảo luận / Discussion",
+    correctiveActions: "Hành động khắc phục / Corrective Actions",
+  },
 };

@@ -58,6 +58,21 @@ export interface BootManRecord extends BaseManRecord {
   area: string;
 }
 
+// Alert form record interface (accident reporting)
+export interface RaManRecord extends BaseManRecord {
+  observedName: string;
+  department: string;
+  taskObserved: string;
+  procedureCode: string;
+  potentialDamageOrInjury: string;
+  complianceWI: string;
+  unsafeActs: string;
+  goodBehaviours: string;
+  discussion: string;
+  correctiveActions: string;
+  area: string;
+}
+
 // Meeting form record interface (safety meeting participation)
 export interface MeetingManRecord extends BaseManRecord {
   acknowledge: string; // Acknowledgment status
@@ -97,6 +112,7 @@ export type ManRecord =
   | ToolboxManRecord
   | AlertManRecord
   | BootManRecord
+  | RaManRecord
   | MeetingManRecord
   | TrainingManRecord
   | GreaseRecord;

@@ -12,10 +12,17 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Camera } from "lucide-react";
-import MultiImageUploader, { ImageUpload } from "@/components/multi-image-uploader";
+import MultiImageUploader, {
+  ImageUpload,
+} from "@/components/multi-image-uploader";
 import { auth, storage } from "@/firebase/client";
 import { signInAnonymously } from "firebase/auth";
-import { ref, uploadBytesResumable, UploadTask, getDownloadURL } from "firebase/storage";
+import {
+  ref,
+  uploadBytesResumable,
+  UploadTask,
+  getDownloadURL,
+} from "firebase/storage";
 import { submitMachineForm } from "@/lib/actions/machines";
 import { useGeolocation } from "@/hooks/useGeolocation";
 
@@ -34,7 +41,11 @@ interface FormData extends FieldValues {
   [key: string]: any;
 }
 
-export default function MachineForm4photo({ bu, type, id }: MachineForm4photoProps) {
+export default function MachineForm4photo({
+  bu,
+  type,
+  id,
+}: MachineForm4photoProps) {
   const {
     register,
     handleSubmit,
@@ -63,7 +74,7 @@ export default function MachineForm4photo({ bu, type, id }: MachineForm4photoPro
     error: locationError,
     loading: locationLoading,
     getCurrentLocation,
-    hasLocation
+    hasLocation,
   } = useGeolocation();
 
   useEffect(() => {
@@ -73,11 +84,12 @@ export default function MachineForm4photo({ bu, type, id }: MachineForm4photoPro
         setIsLoadingVocabulary(true);
 
         // Fetch title from forms collection, vocabulary, and machine data in parallel
-        const [questionsResult, vocabularyResult, machineResult] = await Promise.all([
-          getMachineQuestions(bu, type),
-          getVocabulary(bu),
-          getMachineByIdAction(bu, type, id)
-        ]);
+        const [questionsResult, vocabularyResult, machineResult] =
+          await Promise.all([
+            getMachineQuestions(bu, type),
+            getVocabulary(bu),
+            getMachineByIdAction(bu, type, id),
+          ]);
 
         if (questionsResult.success) {
           if (questionsResult.title) {
@@ -116,7 +128,7 @@ export default function MachineForm4photo({ bu, type, id }: MachineForm4photoPro
     getCurrentLocation();
   }, []);
 
-    // Get translation text with fallback
+  // Get translation text with fallback
   const getTranslation = (key: string, fallback: string): string => {
     if (vocabulary && vocabulary[key as keyof Vocabulary]) {
       return vocabulary[key as keyof Vocabulary] as string;
@@ -127,21 +139,34 @@ export default function MachineForm4photo({ bu, type, id }: MachineForm4photoPro
   // Helper function to get images for a direction
   const getImagesForDirection = (side: string) => {
     switch (side) {
-      case 'front': return frontImages;
-      case 'right': return rightImages;
-      case 'back': return backImages;
-      case 'left': return leftImages;
-      default: return [];
+      case "front":
+        return frontImages;
+      case "right":
+        return rightImages;
+      case "back":
+        return backImages;
+      case "left":
+        return leftImages;
+      default:
+        return [];
     }
   };
 
   // Helper function to set images for a direction
   const setImagesForDirection = (side: string, images: ImageUpload[]) => {
     switch (side) {
-      case 'front': setFrontImages(images); break;
-      case 'right': setRightImages(images); break;
-      case 'back': setBackImages(images); break;
-      case 'left': setLeftImages(images); break;
+      case "front":
+        setFrontImages(images);
+        break;
+      case "right":
+        setRightImages(images);
+        break;
+      case "back":
+        setBackImages(images);
+        break;
+      case "left":
+        setLeftImages(images);
+        break;
     }
   };
 
@@ -149,16 +174,18 @@ export default function MachineForm4photo({ bu, type, id }: MachineForm4photoPro
     try {
       // Validate that all 4 directions have photos
       const imageArrays = [
-        { name: 'front', images: frontImages },
-        { name: 'right', images: rightImages },
-        { name: 'back', images: backImages },
-        { name: 'left', images: leftImages }
+        { name: "front", images: frontImages },
+        { name: "right", images: rightImages },
+        { name: "back", images: backImages },
+        { name: "left", images: leftImages },
       ];
 
-      const missingSides = imageArrays.filter(item => item.images.length === 0).map(item => item.name);
+      const missingSides = imageArrays
+        .filter((item) => item.images.length === 0)
+        .map((item) => item.name);
 
       if (missingSides.length > 0) {
-        toast.error(`Please upload photos for: ${missingSides.join(', ')}`);
+        toast.error(`Please upload photos for: ${missingSides.join(", ")}`);
         return;
       }
 
@@ -192,7 +219,7 @@ export default function MachineForm4photo({ bu, type, id }: MachineForm4photoPro
 
       // Process each direction's images sequentially to get download URLs
       for (const { name, images } of imageArrays) {
-        const fieldName = name + 'P'; // frontP, rightP, backP, leftP
+        const fieldName = name + "P"; // frontP, rightP, backP, leftP
         directionalData[fieldName] = [];
 
         for (let index = 0; index < images.length; index++) {
@@ -211,13 +238,17 @@ export default function MachineForm4photo({ bu, type, id }: MachineForm4photoPro
               // Get download URL after upload completes
               const downloadURL = await getDownloadURL(storageRef);
               directionalData[fieldName].push(downloadURL);
-
             } catch (uploadError) {
-              console.error(`Upload error for ${name} image ${index}:`, uploadError);
-              toast.error(`Failed to upload ${name} image ${index + 1}. Please try again.`);
+              console.error(
+                `Upload error for ${name} image ${index}:`,
+                uploadError
+              );
+              toast.error(
+                `Failed to upload ${name} image ${index + 1}. Please try again.`
+              );
               return;
             }
-          } else if (image.url && !image.url.startsWith('blob:')) {
+          } else if (image.url && !image.url.startsWith("blob:")) {
             // Keep existing Firebase Storage URLs
             directionalData[fieldName].push(image.url);
           }
@@ -301,7 +332,9 @@ export default function MachineForm4photo({ bu, type, id }: MachineForm4photoPro
               <div className="text-green-700 bg-green-50 px-3 py-1 rounded-md inline-block">
                 📍 Location: {latitude!.toFixed(6)}, {longitude!.toFixed(6)}
                 {accuracy && (
-                  <span className="block text-xs mt-1">Accuracy: ±{Math.round(accuracy)}m</span>
+                  <span className="block text-xs mt-1">
+                    Accuracy: ±{Math.round(accuracy)}m
+                  </span>
                 )}
               </div>
             )}
@@ -322,7 +355,8 @@ export default function MachineForm4photo({ bu, type, id }: MachineForm4photoPro
                   </Button>
                 </div>
                 <p className="text-xs text-red-500 mt-1">
-                  Please enable location services in your browser and click "Try Again"
+                  Please enable location services in your browser and click "Try
+                  Again"
                 </p>
               </div>
             )}
@@ -338,31 +372,47 @@ export default function MachineForm4photo({ bu, type, id }: MachineForm4photoPro
             <CardContent className="pt-6">
               <div className="space-y-2">
                 <Label htmlFor="inspector" className="text-lg font-semibold">
-                  {getTranslation('inspector', 'Inspector')}
+                  {getTranslation("inspector", "Inspector")}
                 </Label>
                 {type.toLowerCase() === "mixerphoto" ? (
                   <select
-                    {...register("inspector", { required: "Inspector is required" })}
+                    {...register("inspector", {
+                      required: "Inspector is required",
+                    })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
                   >
                     <option value="">กรอกชื่อ Trainer</option>
                     <option value="CW">Chamnan Wichit (Driver Trainer)</option>
-                    <option value="KN">Kasemsak Nuengkhamin (Driver Trainer)</option>
-                    <option value="SN">Samansuk Ngeonjun (Driver Trainer)</option>
-                    <option value="TW">Theerawud Wattanaruangchai (Driver Trainer)</option>
-                    <option value="KS">Kriangkrai Sangsook (Driver Trainer)</option>
+                    <option value="KN">
+                      Kasemsak Nuengkhamin (Driver Trainer)
+                    </option>
+                    <option value="SN">
+                      Samansuk Ngeonjun (Driver Trainer)
+                    </option>
+                    <option value="TW">
+                      Theerawud Wattanaruangchai (Driver Trainer)
+                    </option>
+                    <option value="KS">
+                      Kriangkrai Sangsook (Driver Trainer)
+                    </option>
                     <option value="NK">Nakorn Kamthong (Driver Trainer)</option>
-                    <option value="TS">Teerawath Saengsilawuthikul (Driver Trainer)</option>
+                    <option value="TS">
+                      Teerawath Saengsilawuthikul (Driver Trainer)
+                    </option>
                   </select>
                 ) : (
                   <Input
-                    {...register("inspector", { required: "Inspector is required" })}
+                    {...register("inspector", {
+                      required: "Inspector is required",
+                    })}
                     placeholder="Inspector"
                     className="w-full"
                   />
                 )}
                 {errors.inspector && (
-                  <p className="text-red-500 text-sm">{errors.inspector.message}</p>
+                  <p className="text-red-500 text-sm">
+                    {errors.inspector.message}
+                  </p>
                 )}
               </div>
             </CardContent>
@@ -377,9 +427,10 @@ export default function MachineForm4photo({ bu, type, id }: MachineForm4photoPro
                 </h3>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {['front', 'right', 'back', 'left'].map((side, idx) => {
+                  {["front", "right", "back", "left"].map((side, idx) => {
                     const images = getImagesForDirection(side);
-                    const setImages = (newImages: ImageUpload[]) => setImagesForDirection(side, newImages);
+                    const setImages = (newImages: ImageUpload[]) =>
+                      setImagesForDirection(side, newImages);
 
                     return (
                       <div
@@ -387,25 +438,37 @@ export default function MachineForm4photo({ bu, type, id }: MachineForm4photoPro
                         className="py-4 rounded-lg bg-purple-100 w-full"
                       >
                         {/* Direction Header */}
-                        <div
-                          className="flex items-center justify-center mb-4 mx-2 bg-purple-200 font-bold py-3 px-4 rounded shadow-lg"
-                        >
+                        <div className="flex items-center justify-center mb-4 mx-2 bg-purple-200 font-bold py-3 px-4 rounded shadow-lg">
                           <span
                             className="mx-2 text-4xl"
-                            style={{ width: '40px', height: '40px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+                            style={{
+                              width: "40px",
+                              height: "40px",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                            }}
                           >
-                            {side === 'front' ? '⬆️' : side === 'right' ? '➡️' : side === 'back' ? '⬇️' : side === 'left' ? '⬅️' : ''}
+                            {side === "front"
+                              ? "⬆️"
+                              : side === "right"
+                                ? "➡️"
+                                : side === "back"
+                                  ? "⬇️"
+                                  : side === "left"
+                                    ? "⬅️"
+                                    : ""}
                           </span>
                           <strong className="text-lg">
-                            {side === 'front'
-                              ? 'หน้า'
-                              : side === 'right'
-                              ? 'ขวา'
-                              : side === 'back'
-                              ? 'หลัง'
-                              : side === 'left'
-                              ? 'ซ้าย'
-                              : ''}
+                            {side === "front"
+                              ? "หน้า"
+                              : side === "right"
+                                ? "ขวา"
+                                : side === "back"
+                                  ? "หลัง"
+                                  : side === "left"
+                                    ? "ซ้าย"
+                                    : ""}
                           </strong>
                           <Camera className="mx-2" size={24} />
                         </div>
@@ -430,12 +493,16 @@ export default function MachineForm4photo({ bu, type, id }: MachineForm4photoPro
                         {/* Validation Message */}
                         {images.length === 0 && (
                           <p className="text-center text-rose-500 text-sm mt-2 px-2">
-                            กรุณาอัพโลดรูปรถโม่ด้าน {
-                              side === 'front' ? 'หน้า' :
-                              side === 'right' ? 'ขวา' :
-                              side === 'back' ? 'หลัง' :
-                              side === 'left' ? 'ซ้าย' : side
-                            }
+                            กรุณาอัพโลดรูปรถโม่ด้าน{" "}
+                            {side === "front"
+                              ? "หน้า"
+                              : side === "right"
+                                ? "ขวา"
+                                : side === "back"
+                                  ? "หลัง"
+                                  : side === "left"
+                                    ? "ซ้าย"
+                                    : side}
                           </p>
                         )}
                       </div>
@@ -452,7 +519,9 @@ export default function MachineForm4photo({ bu, type, id }: MachineForm4photoPro
             disabled={isSubmitting}
             className="w-full h-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-full shadow-lg"
           >
-            {isSubmitting ? "Submitting..." : getTranslation('submit', 'Submit')}
+            {isSubmitting
+              ? "Submitting..."
+              : getTranslation("submit", "Submit")}
           </Button>
         </form>
       ) : (
@@ -465,8 +534,9 @@ export default function MachineForm4photo({ bu, type, id }: MachineForm4photoPro
                 Location Required for Machine Inspection
               </h3>
               <p className="text-red-700 mb-6 max-w-md mx-auto">
-                Machine inspection requires your current location for accurate record keeping.
-                Please enable location sharing to continue with the photo capture.
+                Machine inspection requires your current location for accurate
+                record keeping. Please enable location sharing to continue with
+                the photo capture.
               </p>
               <div className="space-y-3">
                 <Button
@@ -485,7 +555,8 @@ export default function MachineForm4photo({ bu, type, id }: MachineForm4photoPro
                   )}
                 </Button>
                 <p className="text-sm text-red-600">
-                  Make sure location services are enabled in your browser settings
+                  Make sure location services are enabled in your browser
+                  settings
                 </p>
               </div>
             </div>

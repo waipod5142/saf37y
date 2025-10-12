@@ -30,8 +30,8 @@ type Language = "th" | "vn" | "lk" | "bd" | "kh";
 const translations = {
   th: {
     title: "Mã nhân viên Staff ID ?",
-    titleQuestion: "มา nhân viên Staff ID ?",
-    staffIdPlaceholder: "มา nhân viên Staff ID ?",
+    titleQuestion: "Mã nhân viên Staff ID ?",
+    staffIdPlaceholder: "Mã nhân viên Staff ID ?",
     staffIdRequired: "กรุณากรอกรหัสพนักงาน",
 
     question1Title:
@@ -296,7 +296,8 @@ export default function ManFormBoot({
     if (buLower === "vn" || buLower === "vietnam") return "vn";
     if (buLower === "lk" || buLower === "srilanka") return "lk";
     if (buLower === "bd" || buLower === "bangladesh") return "bd";
-    if (buLower === "cmic" || buLower === "cambodia" || buLower === "kh") return "kh";
+    if (buLower === "cmic" || buLower === "cambodia" || buLower === "kh")
+      return "kh";
     return "th"; // Default to Thai
   };
 
@@ -312,14 +313,16 @@ export default function ManFormBoot({
   } = useForm<BootFormData>();
 
   const [images, setImages] = useState<ImageUpload[]>([]);
-  const [employeeSite, setEmployeeSite] = useState<string | undefined>(undefined);
+  const [employeeSite, setEmployeeSite] = useState<string | undefined>(
+    undefined
+  );
 
   // Watch staff ID field
-  const staffId = watch('id');
+  const staffId = watch("id");
 
   // Fetch employee data when staff ID changes
   useEffect(() => {
-    if (staffId && staffId.trim() !== '') {
+    if (staffId && staffId.trim() !== "") {
       getEmployeeByIdAction(bu, staffId).then((result) => {
         if (result.success && result.employee) {
           setEmployeeSite(result.employee.site);
