@@ -25,6 +25,8 @@ import {
   AwardIcon,
   GaugeIcon,
   FactoryIcon,
+  ZoomInIcon,
+  ImageIcon,
 } from "lucide-react";
 import {
   deleteMachineInspectionRecord,
@@ -546,6 +548,58 @@ export default function MachineDetailClient({
             </div>
           </div>
         </CardHeader>
+
+        {/* Images Gallery */}
+        {record.images && record.images.length > 0 && (
+          <div className="mb-4 px-4">
+            <Card className="border-2 border-gray-200 shadow-sm">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <ImageIcon className="h-5 w-5 text-blue-600" />
+                    <h4 className="font-semibold text-base text-gray-800">
+                      Inspection Images
+                    </h4>
+                    <Badge variant="secondary" className="ml-2">
+                      {record.images.length}
+                    </Badge>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {record.images.map((image, index) => (
+                    <div
+                      key={index}
+                      className="group relative aspect-square rounded-lg border-2 border-gray-200 overflow-hidden hover:border-blue-400 hover:shadow-xl transition-all duration-300 cursor-pointer bg-gray-50"
+                      onClick={() => handleImageClick(image)}
+                    >
+                      <img
+                        src={formatImageUrl(image)}
+                        alt={`Inspection image ${index + 1}`}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                        onError={handleImageError}
+                      />
+
+                      {/* Hover Overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center">
+                        <ZoomInIcon className="h-8 w-8 text-white mb-2" />
+                        <span className="text-white text-sm font-medium">
+                          View Full Size
+                        </span>
+                      </div>
+
+                      {/* Image Counter Badge */}
+                      <div className="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded-full font-medium">
+                        {index + 1}/{record.images?.length || 0}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
         <CardContent>
           {/* Inspection Results Summary */}
           <div className="mb-4">
@@ -635,31 +689,6 @@ export default function MachineDetailClient({
               <p className="text-sm bg-gray-50 p-3 rounded border">
                 {record.remark}
               </p>
-            </div>
-          )}
-
-          {/* Images */}
-          {record.images && record.images.length > 0 && (
-            <div className="mb-4">
-              <h4 className="font-semibold text-sm text-gray-700 mb-2">
-                Images
-              </h4>
-              <div className="flex gap-2 flex-wrap">
-                {record.images.map((image, index) => (
-                  <div
-                    key={index}
-                    className="w-20 h-20 rounded border overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
-                  >
-                    <img
-                      src={formatImageUrl(image)}
-                      alt={`Inspection image ${index + 1}`}
-                      className="w-full h-full object-cover hover:scale-105 transition-transform"
-                      onError={handleImageError}
-                      onClick={() => handleImageClick(image)}
-                    />
-                  </div>
-                ))}
-              </div>
             </div>
           )}
 

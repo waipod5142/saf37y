@@ -170,15 +170,23 @@ function InspectionTable({
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className={`${getPercentageBadgeColor(total.percentage)}`}>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
               <div
                 className={`h-5 w-5 rounded ${getPercentageColor(total.percentage)}`}
               ></div>
               <div>
-                <p className="text-sm text-gray-600">Completion Rate</p>
-                <p className="text-2xl font-bold">{total.percentage}%</p>
+                <p
+                  className={`text-sm ${getPercentageBadgeColor(total.percentage)}`}
+                >
+                  Completion Rate
+                </p>
+                <p
+                  className={`text-2xl font-bold ${getPercentageBadgeColor(total.percentage)}`}
+                >
+                  {total.percentage}%
+                </p>
               </div>
             </div>
           </CardContent>
