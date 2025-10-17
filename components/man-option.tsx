@@ -48,18 +48,17 @@ export default function ManOption({ bu, type, id }: ManOptionProps) {
             <option value={`/Man/${bu}/Toolbox/${id}`}>
               การพูดคุยด้านความปลอดภัย Safety / Toolbox Talk
             </option>
-            <option value={`/Man/${bu}/Coupon/${id}`}>
-              โทเคนสำหรับร้านอาหาร / Food Token
-            </option>
             <option value={`/Man/${bu}/Meeting/${id}`}>
               การมีส่วนร่วมในเซฟตี้มีทติ้ง / Safety Meeting
             </option>
             <option value={`/Man/${bu}/Alert/${id}`}>
               ยืนยันการเข้าใจ Safety Alert / Safety Alert Acknowledgement
             </option>
-            <option value={`/Man/${bu}/Training/${id}`}>
+
+            <option value={`https://sccc-inseesafety-prod.web.app/profile/${id}`}>
               ประวัติการฝึกอบรม Training Course
-            </option>
+            </option>            
+            
           </>
         )}
 
