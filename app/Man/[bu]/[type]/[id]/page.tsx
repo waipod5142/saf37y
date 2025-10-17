@@ -9,7 +9,7 @@ import ManFormToken from "@/components/man-form-token";
 import ManTypeBadge from "@/components/man-type-badge";
 import ChangeUserButton from "@/components/change-user-button";
 
-export default async function ManPage({ 
+export default async function MachinePage({ 
   params 
 }: { 
   params: Promise<{ bu: string; type: string; id: string }> 
@@ -20,22 +20,6 @@ export default async function ManPage({
   const decodedBu = decodeURIComponent(bu);
   const decodedType = decodeURIComponent(type);
   const decodedId = decodeURIComponent(id);
-
-  //  Redirect ฝั่ง client ถ้าเป็น Training ชั่วคราวตรวจ IA
-  useEffect(() => {
-    if (decodedType.toLowerCase() === "training") {
-      window.location.href = `https://sccc-inseesafety-prod.web.app/profile/${decodedId}`;
-    }
-  }, [decodedType, decodedId]);
-
-  //  ถ้าเป็น Training — แสดงข้อความชั่วคราว
-  if (decodedType.toLowerCase() === "training") {
-    return (
-      <div className="flex items-center justify-center h-screen text-gray-600 text-lg">
-        Redirecting to Training Profile...
-      </div>
-    );
-  } 
 
   // Normalize BU code (map office, srb, mkt, lbm, rmx, iagg, ieco to "th")
   const normalizedBu = normalizeBuCode(decodedBu);
