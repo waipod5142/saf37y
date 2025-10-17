@@ -21,10 +21,21 @@ export default async function MachinePage({
   const decodedType = decodeURIComponent(type);
   const decodedId = decodeURIComponent(id);
 
-  // ✅ Redirect เฉพาะกรณี type === "Training"
+  //  Redirect ฝั่ง client ถ้าเป็น Training ชั่วคราวตรวจ IA
+  useEffect(() => {
+    if (decodedType.toLowerCase() === "training") {
+      window.location.href = `https://sccc-inseesafety-prod.web.app/profile/${decodedId}`;
+    }
+  }, [decodedType, decodedId]);
+
+  //  ถ้าเป็น Training — แสดงข้อความชั่วคราว
   if (decodedType.toLowerCase() === "training") {
-    redirect(`https://sccc-inseesafety-prod.web.app/profile/${decodedId}`);
-  }  
+    return (
+      <div className="flex items-center justify-center h-screen text-gray-600 text-lg">
+        Redirecting to Training Profile...
+      </div>
+    );
+  } 
 
   // Normalize BU code (map office, srb, mkt, lbm, rmx, iagg, ieco to "th")
   const normalizedBu = normalizeBuCode(decodedBu);
@@ -36,7 +47,6 @@ export default async function MachinePage({
       <div className="mb-4">
         <ManTypeBadge type={decodedType} bu={normalizedBu} className="text-sm" />
       </div>
-      {type === 'Coupon' && <ManFormToken bu={normalizedBu} type={decodedType} id={decodedId} />}
       <ManHeader bu={normalizedBu} type={decodedType} id={decodedId} />
       <ManDetail bu={normalizedBu} type={decodedType} id={decodedId} />
       
