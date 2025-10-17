@@ -9,7 +9,7 @@ import ManFormToken from "@/components/man-form-token";
 import ManTypeBadge from "@/components/man-type-badge";
 import ChangeUserButton from "@/components/change-user-button";
 
-export default async function MachinePage({ 
+export default async function ManPage({ 
   params 
 }: { 
   params: Promise<{ bu: string; type: string; id: string }> 
