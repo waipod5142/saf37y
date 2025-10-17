@@ -21,6 +21,11 @@ export default async function MachinePage({
   const decodedType = decodeURIComponent(type);
   const decodedId = decodeURIComponent(id);
 
+  // ✅ Redirect เฉพาะกรณี type === "Training"
+  if (decodedType.toLowerCase() === "training") {
+    redirect(`https://sccc-inseesafety-prod.web.app/profile/${decodedId}`);
+  }  
+
   // Normalize BU code (map office, srb, mkt, lbm, rmx, iagg, ieco to "th")
   const normalizedBu = normalizeBuCode(decodedBu);
 
