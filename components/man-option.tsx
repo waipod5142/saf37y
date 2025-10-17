@@ -12,9 +12,15 @@ export default function ManOption({ bu, type, id }: ManOptionProps) {
   const handleManSelect = (e: ChangeEvent<HTMLSelectElement>) => {
     const selectedValue = e.target.value;
     if (selectedValue) {
-      window.location.href = selectedValue;
+      // ถ้าเป็น Training Profile → เปิดแท็บใหม่
+      if (selectedValue.startsWith("https://sccc-inseesafety-prod.web.app")) {
+        window.open(selectedValue, "_blank");
+      } else {
+        // นอกนั้นให้เปลี่ยนหน้าในแท็บเดิม
+        window.location.href = selectedValue;
+      }
     }
-  };
+  };  
 
   return (
     <div className="py-4 bg-white rounded-md mb-4">
