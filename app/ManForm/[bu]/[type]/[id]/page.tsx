@@ -4,6 +4,7 @@ import ManFormMeeting from "@/components/man-form-meeting";
 import ManFormToolbox from "@/components/man-form-toolbox";
 import ManFormBoot from "@/components/man-form-boot";
 import ManFormRa from "@/components/man-form-ra";
+import ManFormPto from "@/components/man-form-pto";
 
 export default async function MachinePage({
   params,
@@ -47,6 +48,10 @@ export default async function MachinePage({
         } else if (lowerType === "bootform") {
           return (
             <ManFormBoot bu={normalizedBu} type={decodedType} id={decodedId} />
+          );
+        } else if (lowerType === "ptoform") {
+          return (
+            <ManFormPto bu={normalizedBu} type={decodedType} id={decodedId} />
           );
         } else if (lowerType === "raform") {
           return (

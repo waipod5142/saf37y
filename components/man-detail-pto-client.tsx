@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { RaManRecord } from "@/types/man";
+import { PtoManRecord } from "@/types/man";
 import { deleteManRecord } from "@/lib/actions/man";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -23,11 +23,19 @@ import {
   Trash2Icon,
   ClipboardCheck,
   Factory as FactoryIcon,
+  Users,
+  Building2,
+  Code,
+  Shield,
+  CheckCircle2,
+  XCircle,
+  ThumbsUp,
+  MessageSquare,
 } from "lucide-react";
 import { useManFormTranslation } from "@/lib/i18n/man-forms";
 
-interface RaManDetailClientProps {
-  records: RaManRecord[];
+interface PtoManDetailClientProps {
+  records: PtoManRecord[];
   bu: string;
 }
 
@@ -44,10 +52,10 @@ const formatDate = (date: Date | string) => {
   });
 };
 
-export default function RaManDetailClient({
+export default function PtoManDetailClient({
   records,
   bu,
-}: RaManDetailClientProps) {
+}: PtoManDetailClientProps) {
   const { t } = useManFormTranslation(bu);
   const [showAllRecords, setShowAllRecords] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -75,7 +83,7 @@ export default function RaManDetailClient({
   };
 
   // Helper function to check if record is within 5-minute delete window
-  const isWithinDeleteTimeWindow = (record: RaManRecord) => {
+  const isWithinDeleteTimeWindow = (record: PtoManRecord) => {
     const recordTimestamp = record.timestamp || record.createdAt;
     if (!recordTimestamp) return false;
 
@@ -131,7 +139,7 @@ export default function RaManDetailClient({
     return (
       <div className="mb-6">
         <p className="text-sm text-red-500 mt-2">
-          {t.ra?.noReports || "No BOG reports found for this machine"}
+          {t.pto?.noReports || "No PTO reports found for this machine"}
         </p>
       </div>
     );
@@ -178,7 +186,7 @@ export default function RaManDetailClient({
             return (
               <Card key={index} className="shadow-lg">
                 {/* Header */}
-                <CardHeader className="bg-gradient-to-r from-purple-50 to-blue-50 border-b">
+                <CardHeader className="bg-gradient-to-r from-blue-50 to-cyan-50 border-b">
                   <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                     <div className="flex items-center gap-3">
                       {index === 0 && (
@@ -186,8 +194,8 @@ export default function RaManDetailClient({
                           {t.alert?.latest || "Latest"}
                         </Badge>
                       )}
-                      <Badge className="bg-purple-600 text-white px-3 py-1 text-sm font-medium">
-                        {t.ra?.raForm?.toUpperCase() || "Risk Assessment FORM"}
+                      <Badge className="bg-blue-600 text-white px-3 py-1 text-sm font-medium">
+                        {t.pto?.ptoForm?.toUpperCase() || "PTO FORM"}
                       </Badge>
                       <div className="text-sm text-gray-600">
                         Area: {record.area}
@@ -230,54 +238,77 @@ export default function RaManDetailClient({
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {/* Left Column */}
                     <div className="space-y-4">
-                      {/* Question 1: Supervisor Name */}
-                      {record.supervisorName && (
+                      {/* Question 1: Observed Name */}
+                      {record.observedName && (
                         <div>
                           <p className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                            <AlertTriangle className="h-5 w-5 text-blue-500" />
-                            {t.ra?.supervisorName || "Supervisor Name"}
+                            <Users className="h-5 w-5 text-blue-500" />
+                            {t.pto?.observedName || "Name of Observed People"}
                           </p>
                           <div className="bg-blue-50 p-3 rounded-md border-l-4 border-blue-500">
                             <p className="text-gray-700">
-                              {record.supervisorName}
+                              {record.observedName}
                             </p>
                           </div>
                         </div>
                       )}
 
-                      {/* Question 2: Interviewee Name */}
-                      {record.intervieweeName && (
+                      {/* Question 2: Department */}
+                      {record.department && (
                         <div>
                           <p className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                            <FileText className="h-5 w-5 text-green-500" />
-                            {t.ra?.intervieweeName || "Interviewee Name"}
+                            <Building2 className="h-5 w-5 text-green-500" />
+                            {t.pto?.department || "Department/Contractor"}
                           </p>
                           <div className="bg-green-50 p-3 rounded-md border-l-4 border-green-500">
                             <p className="text-gray-700">
-                              {record.intervieweeName}
+                              {record.department}
                             </p>
                           </div>
                         </div>
                       )}
 
-                      {/* Question 3: FPE List (Multi-selection Display) */}
-                      {record.fpeList && (
+                      {/* Question 3: Task Observed */}
+                      {record.taskObserved && (
                         <div>
                           <p className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
                             <ClipboardCheck className="h-5 w-5 text-orange-500" />
-                            {t.ra?.fpeList || "FPEs Applied"}
+                            {t.pto?.taskObserved || "Task Observed"}
                           </p>
                           <div className="bg-orange-50 p-3 rounded-md border-l-4 border-orange-500">
-                            <div className="flex flex-wrap gap-2">
-                              {record.fpeList.split(", ").map((fpe, idx) => (
-                                <Badge
-                                  key={idx}
-                                  className="bg-orange-600 text-white px-2 py-1 text-xs"
-                                >
-                                  {fpe}
-                                </Badge>
-                              ))}
-                            </div>
+                            <p className="text-gray-700 whitespace-pre-line">
+                              {record.taskObserved}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Question 4: Procedure Code */}
+                      {record.procedureCode && (
+                        <div>
+                          <p className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                            <Code className="h-5 w-5 text-indigo-500" />
+                            {t.pto?.procedureCode || "Code of Current WI Procedure"}
+                          </p>
+                          <div className="bg-indigo-50 p-3 rounded-md border-l-4 border-indigo-500">
+                            <p className="text-gray-700 whitespace-pre-line">
+                              {record.procedureCode}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Question 5: Potential Damage */}
+                      {record.potentialDamage && (
+                        <div>
+                          <p className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                            <Shield className="h-5 w-5 text-red-500" />
+                            {t.pto?.potentialDamage || "Potential Damage or Injury"}
+                          </p>
+                          <div className="bg-red-50 p-3 rounded-md border-l-4 border-red-500">
+                            <p className="text-gray-700 whitespace-pre-line">
+                              {record.potentialDamage}
+                            </p>
                           </div>
                         </div>
                       )}
@@ -285,46 +316,61 @@ export default function RaManDetailClient({
 
                     {/* Right Column */}
                     <div className="space-y-4">
-                      {/* Question 4: Potential Risks */}
-                      {record.potentialRisks && (
+                      {/* Question 6: Compliance WI */}
+                      {record.complianceWI && (
                         <div>
                           <p className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                            <BookOpen className="h-5 w-5 text-purple-600" />
-                            {t.ra?.potentialRisks || "Potential Risks"}
+                            <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+                            {t.pto?.complianceWI || "Compliance with WI Steps"}
                           </p>
-                          <div className="bg-purple-50 p-3 rounded-md border-l-4 border-purple-500">
+                          <div className="bg-emerald-50 p-3 rounded-md border-l-4 border-emerald-500">
                             <p className="text-gray-700 whitespace-pre-line">
-                              {record.potentialRisks}
+                              {record.complianceWI}
                             </p>
                           </div>
                         </div>
                       )}
 
-                      {/* Question 5: Risk Controls */}
-                      {record.riskControls && (
+                      {/* Question 7: Unsafe Acts */}
+                      {record.unsafeActs && (
                         <div>
                           <p className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                            <ClipboardCheck className="h-5 w-5 text-rose-600" />
-                            {t.ra?.riskControls || "Risk Control Measures"}
+                            <XCircle className="h-5 w-5 text-rose-500" />
+                            {t.pto?.unsafeActs || "Unsafe Acts/Conditions"}
                           </p>
                           <div className="bg-rose-50 p-3 rounded-md border-l-4 border-rose-500">
                             <p className="text-gray-700 whitespace-pre-line">
-                              {record.riskControls}
+                              {record.unsafeActs}
                             </p>
                           </div>
                         </div>
                       )}
 
-                      {/* Question 6: Understand RA */}
-                      {record.understandRA && (
+                      {/* Question 8: Good Behaviours */}
+                      {record.goodBehaviours && (
                         <div>
                           <p className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                            <ClipboardCheck className="h-5 w-5 text-teal-600" />
-                            {t.ra?.understandRA || "Understanding of RA"}
+                            <ThumbsUp className="h-5 w-5 text-teal-500" />
+                            {t.pto?.goodBehaviours || "Good Behaviours Observed"}
                           </p>
                           <div className="bg-teal-50 p-3 rounded-md border-l-4 border-teal-500">
-                            <p className="text-gray-700">
-                              {record.understandRA}
+                            <p className="text-gray-700 whitespace-pre-line">
+                              {record.goodBehaviours}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Question 9: Discussion */}
+                      {record.discussion && (
+                        <div>
+                          <p className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                            <MessageSquare className="h-5 w-5 text-purple-500" />
+                            {t.pto?.discussion || "Discussion with Workers"}
+                          </p>
+                          <div className="bg-purple-50 p-3 rounded-md border-l-4 border-purple-500">
+                            <p className="text-gray-700 whitespace-pre-line">
+                              {record.discussion}
                             </p>
                           </div>
                         </div>

@@ -58,18 +58,28 @@ export interface BootManRecord extends BaseManRecord {
   area: string;
 }
 
-// Alert form record interface (accident reporting)
+// Risk Assessment form record interface
 export interface RaManRecord extends BaseManRecord {
-  observedName: string;
-  department: string;
-  taskObserved: string;
-  procedureCode: string;
-  potentialDamageOrInjury: string;
-  complianceWI: string;
-  unsafeActs: string;
-  goodBehaviours: string;
-  discussion: string;
-  correctiveActions: string;
+  supervisorName: string; // Name of the supervisor (Interviewer who hold the RA KPI)
+  intervieweeName: string; // Name of the interviewee (Picture of Workers related to RA)
+  fpeList: string; // Which FPEs shall be applied to the task (list out the answer)
+  potentialRisks: string; // What is potential risks at this specific working place (list out the answer)
+  riskControls: string; // How we control these potential risk at this specific working place (list out the answer)
+  understandRA: string; // Do they understand the RA (confirm by supervisor)
+  area: string;
+}
+
+// Planned Task Observation form record interface
+export interface PtoManRecord extends BaseManRecord {
+  observedName: string; // Name of observed people
+  department: string; // Department/Contractor
+  taskObserved: string; // Task observed
+  procedureCode: string; // Code of current WI procedure
+  potentialDamage: string; // Could practices result in property damage or injury?
+  complianceWI: string; // Did worker follow all WI steps and requirements?
+  unsafeActs: string; // List unsafe/potentially unsafe acts or conditions observed
+  goodBehaviours: string; // List good behaviours observed
+  discussion: string; // Discussion with workers and key points
   area: string;
 }
 
@@ -113,6 +123,7 @@ export type ManRecord =
   | AlertManRecord
   | BootManRecord
   | RaManRecord
+  | PtoManRecord
   | MeetingManRecord
   | TrainingManRecord
   | GreaseRecord;

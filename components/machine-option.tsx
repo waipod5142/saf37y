@@ -25,19 +25,19 @@ export default function MachineOption({ bu, type, id }: MachineOptionProps) {
 
   // Check if it's a Mixer or Plant type
   const isMixerType = [
-    "Mixer",
-    "Mixerweek",
-    "Mixertrainer",
-    "Mixertsm",
-    "Mixerphoto",
+    "mixer",
+    "mixerweek",
+    "mixertrainer",
+    "mixertsm",
+    "mixerphoto",
   ].includes(type);
   const isPlantType = [
-    "Plant",
-    "Plantweek",
-    "Plantmonth",
-    "Plantmaintenance",
-    "Planttalk",
-    "Plantstat",
+    "plant",
+    "plantweek",
+    "plantmonth",
+    "plantmaintenance",
+    "planttalk",
+    "plantstat",
   ].includes(type);
 
   // Only show dropdown for specific machine types

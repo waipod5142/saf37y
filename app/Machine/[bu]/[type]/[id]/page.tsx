@@ -23,10 +23,26 @@ export default async function MachinePage({
 
   return (
     <div className="max-w-4xl mx-auto p-2">
-      <MachineTitle bu={normalizedBu} type={decodedType} id={decodedId} />
-      <MachineOption bu={normalizedBu} type={decodedType} id={decodedId} />
-      <MachineHeader bu={normalizedBu} type={decodedType} id={decodedId} />
-      <MachineDetail bu={normalizedBu} type={decodedType} id={decodedId} />
+      <MachineTitle
+        bu={normalizedBu}
+        type={decodedType.toLowerCase()}
+        id={decodedId}
+      />
+      <MachineOption
+        bu={normalizedBu}
+        type={decodedType.toLowerCase()}
+        id={decodedId}
+      />
+      <MachineHeader
+        bu={normalizedBu}
+        type={decodedType.toLowerCase()}
+        id={decodedId}
+      />
+      <MachineDetail
+        bu={normalizedBu}
+        type={decodedType.toLowerCase()}
+        id={decodedId}
+      />
       {decodedType.toLowerCase() === "mixerphoto" ? (
         <MachineForm4photo
           bu={normalizedBu}

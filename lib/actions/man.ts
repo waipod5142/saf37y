@@ -151,6 +151,33 @@ export async function submitManForm(
         trainingDate: formData.trainingDate,
         expirationDate: formData.expirationDate,
       };
+    } else if (formData.type === "raform") {
+      // RA Form-specific fields
+      manRecord = {
+        ...baseRecord,
+        area: formData.area,
+        supervisorName: formData.supervisorName,
+        intervieweeName: formData.intervieweeName,
+        fpeList: formData.fpeList,
+        potentialRisks: formData.potentialRisks,
+        riskControls: formData.riskControls,
+        understandRA: formData.understandRA,
+      };
+    } else if (formData.type === "ptoform") {
+      // PTO Form-specific fields
+      manRecord = {
+        ...baseRecord,
+        area: formData.area,
+        observedName: formData.observedName,
+        department: formData.department,
+        taskObserved: formData.taskObserved,
+        procedureCode: formData.procedureCode,
+        potentialDamage: formData.potentialDamage,
+        complianceWI: formData.complianceWI,
+        unsafeActs: formData.unsafeActs,
+        goodBehaviours: formData.goodBehaviours,
+        discussion: formData.discussion,
+      };
     } else {
       // Default case - include all form data
       manRecord = {

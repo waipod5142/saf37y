@@ -7,6 +7,7 @@ import {
   AlertManRecord,
   BootManRecord,
   RaManRecord,
+  PtoManRecord,
   MeetingManRecord,
   TrainingManRecord,
   GreaseRecord,
@@ -17,6 +18,7 @@ import ToolboxManDetailClient from "./man-detail-toolbox-client";
 import AlertManDetailClient from "./man-detail-alert-client";
 import BootManDetailClient from "./man-detail-boot-client";
 import RaManDetailClient from "./man-detail-ra-client";
+import PtoManDetailClient from "./man-detail-pto-client";
 import MeetingManDetailClient from "./man-detail-meeting-client";
 import TrainingManDetailClient from "./man-detail-training-client";
 import GreaseManDetailClient from "./man-detail-grease-client";
@@ -79,6 +81,10 @@ const isRaRecord = (record: ManRecord): record is RaManRecord => {
   return record.type === "raform";
 };
 
+const isPtoRecord = (record: ManRecord): record is PtoManRecord => {
+  return record.type === "ptoform";
+};
+
 const isMeetingRecord = (record: ManRecord): record is MeetingManRecord => {
   return record.type === "meetingform";
 };
@@ -124,6 +130,7 @@ export default async function ManDetail({ bu, type, id }: ManDetailProps) {
   const alertRecords = serializedRecords.filter(isAlertRecord);
   const bootRecords = serializedRecords.filter(isBootRecord);
   const raRecords = serializedRecords.filter(isRaRecord);
+  const ptoRecords = serializedRecords.filter(isPtoRecord);
   const meetingRecords = serializedRecords.filter(isMeetingRecord);
   const trainingRecords = serializedRecords.filter(isTrainingRecord);
   const greaseRecords = serializedRecords.filter(isGreaseRecord);
@@ -162,6 +169,12 @@ export default async function ManDetail({ bu, type, id }: ManDetailProps) {
   if (normalizedType === "ra") {
     return raRecords.length > 0 ? (
       <RaManDetailClient records={raRecords} bu={bu} />
+    ) : null;
+  }
+
+  if (normalizedType === "pto") {
+    return ptoRecords.length > 0 ? (
+      <PtoManDetailClient records={ptoRecords} bu={bu} />
     ) : null;
   }
 

@@ -27,6 +27,23 @@ interface ManFormRaProps {
 
 type Language = "th" | "vn";
 
+// FPE categories with colors
+const fpeCategories = [
+  { id: 'ppe', label: 'Thiết bị bảo hộ cá nhân (PPE)', color: 'bg-blue-500' },
+  { id: 'workingAtHeight', label: 'Làm việc trên cao (Working at Height)', color: 'bg-red-500' },
+  { id: 'isolation', label: 'Cách ly nguồn điện (Isolation of plant and equipment)', color: 'bg-orange-500' },
+  { id: 'vehicles', label: 'Phương tiện và An toàn giao thông (Vehicles and Traffic Safety)', color: 'bg-yellow-500' },
+  { id: 'electrical', label: 'An toàn điện (Electrical Safety)', color: 'bg-yellow-400' },
+  { id: 'guarding', label: 'Bảo vệ máy móc (Machine Guarding)', color: 'bg-green-500' },
+  { id: 'hotwork', label: 'Công việc nóng và Giấy phép (Hot Work and Permits)', color: 'bg-teal-500' },
+  { id: 'lifting', label: 'Thiết bị nâng (Lifting Equipment)', color: 'bg-blue-600' },
+  { id: 'quarries', label: 'Công việc mỏ đá (Quarries)', color: 'bg-indigo-500' },
+  { id: 'hotMaterials', label: 'Vật liệu nóng (Hot Materials)', color: 'bg-purple-500' },
+  { id: 'csm', label: 'Quản lý nhà thầu (Contractor Management)', color: 'bg-pink-500' },
+  { id: 'equipment', label: 'Thiết bị di động (Portable Equipment)', color: 'bg-purple-400' },
+  { id: 'generalWork', label: 'Giấy phép làm việc chung (General Work Permits)', color: 'bg-gray-500' },
+];
+
 const translations = {
   th: {
     title: "Mã nhân viên Staff ID ?",
@@ -34,75 +51,44 @@ const translations = {
     staffIdPlaceholder: "Mã nhân viên Staff ID ?",
     staffIdRequired: "กรุณากรอกรหัสพนักงาน",
 
-    question1Title: "1. Tên Người được quan sát / Name of observed people",
+    question1Title: "1. Tên của người giám sát (Người phỏng vấn nắm giữ KPI RA) / Name of the supervisor (Interviewer who hold the RA KPI)",
     question1Subtitle:
-      "Cách kiểm tra: Ghi nhận tên đầy đủ của người được quan sát. / Record the full name of the observed person.\nTiêu chuẩn chấp nhận: Tên của người được quan sát đã được ghi nhận chính xác. / The name of the observed person has been accurately recorded.",
-    question1Placeholder: "Tên Người được quan sát / Name of observed people",
-    question1Required: "กรุณากรอกชื่อผู้ถูกสังเกต",
+      "Ghi rõ tên của người giám sát thực hiện phỏng vấn. / Record the name of the supervisor conducting the interview.",
+    question1Placeholder: "Tên của người giám sát / Name of the supervisor",
+    question1Required: "กรุณากรอกชื่อผู้บังคับบัญชา",
 
-    question2Title: "2. Bộ phận/Nhà thầu / Department/Contractor",
+    question2Title: "2. Tên của người được phỏng vấn (Hình ảnh của Người lao động liên quan đến RA) hàng ngày thực hiện việc này với mọi người / Name of the interviewee (Picture of Workers related to RA) daily do this with people inturn",
     question2Subtitle:
-      "Cách kiểm tra: Xác nhận bộ phận hoặc nhà thầu liên quan. / Confirm the department or contractor involved.\nTiêu chuẩn chấp nhận: Thông tin bộ phận/nhà thầu đã được ghi nhận. / The department/contractor information has been recorded.",
-    question2Placeholder: "Bộ phận/Nhà thầu / Department/Contractor",
-    question2Required: "กรุณากรอกแผนก/ผู้รับเหมา",
+      "Ghi rõ tên của người được phỏng vấn và chụp ảnh người lao động. / Record the name of the interviewee and take pictures of workers.",
+    question2Placeholder: "Tên của người được phỏng vấn / Name of the interviewee",
+    question2Required: "กรุณากรอกชื่อผู้ถูกสัมภาษณ์",
 
-    question3Title: "3. Công việc được quan sát / Task observed",
+    question3Title: "3. Những FPE nào sẽ được áp dụng cho nhiệm vụ (liệt kê câu trả lời) / Which FPEs shall be applied to the task (list out the answer)",
     question3Subtitle:
-      "Cách kiểm tra: Ghi nhận công việc đang được quan sát. / Record the task being observed.\nTiêu chuẩn chấp nhận: Công việc được quan sát đã được ghi nhận. / The observed task has been recorded.",
-    question3Placeholder: "Công việc được quan sát / Task observed",
-    question3Required: "กรุณากรอกงานที่สังเกต",
+      "Liệt kê các thiết bị bảo hộ cá nhân cần thiết cho nhiệm vụ. / List the personal protective equipment required for the task.",
+    question3Placeholder: "Liệt kê các FPE / List FPEs",
+    question3Required: "กรุณาระบุอุปกรณ์ป้องกันส่วนบุคคล",
 
     question4Title:
-      "4. Mã số công việc, thủ tục đang thực hiện / Code of current WI procedure",
+      "4. Những rủi ro tiềm ẩn tại nơi làm việc cụ thể này là gì (liệt kê câu trả lời) / What is potential risks at this specific working place (list out the answer)",
     question4Subtitle:
-      "Cách kiểm tra: Xác nhận và ghi nhận mã số công việc hoặc thủ tục đang thực hiện. / Confirm and record the code of the current work instruction or procedure.\nTiêu chuẩn chấp nhận: Mã số công việc/thủ tục đã được ghi nhận. / The code of the work instruction/procedure has been recorded.",
-    question4Placeholder: "Mã số công việc / Code of current WI procedure",
-    question4Required: "กรุณากรอกรหัสขั้นตอนการทำงาน",
+      "Xác định và liệt kê các rủi ro tiềm ẩn tại nơi làm việc. / Identify and list potential risks at the workplace.",
+    question4Placeholder: "Liệt kê các rủi ro tiềm ẩn / List potential risks",
+    question4Required: "กรุณาระบุความเสี่ยงที่อาจเกิดขึ้น",
 
     question5Title:
-      "5. Các công việc có thể dẫn đến gây thiệt hại về tài sản hoặc gây thương tích không? / Could any of the practices observed result in property damage or injury?",
+      "5. Chúng ta kiểm soát những rủi ro tiềm ẩn này tại nơi làm việc cụ thể này như thế nào (liệt kê câu trả lời) / How we control these potential risk at this specific working place (list out the answer)",
     question5Subtitle:
-      "Cách kiểm tra: Đánh giá và ghi nhận các khả năng gây thiệt hại về tài sản hoặc thương tích. / Assess and record the potential for property damage or injury.\nTiêu chuẩn chấp nhận: Khả năng gây thiệt hại/thương tích đã được ghi nhận. / The potential for damage or injury has been recorded.",
-    question5Placeholder:
-      "Khả năng gây thiệt hại/thương tích / Potential damage or injury",
-    question5Required: "กรุณากรอกความเป็นไปได้ของความเสียหายหรือการบาดเจ็บ",
+      "Mô tả các biện pháp kiểm soát rủi ro được áp dụng. / Describe the risk control measures applied.",
+    question5Placeholder: "Liệt kê các biện pháp kiểm soát / List control measures",
+    question5Required: "กรุณาระบุมาตรการควบคุมความเสี่ยง",
 
     question6Title:
-      "6. Công nhân có làm theo các bước và yêu cầu của hướng dẫn công việc (PPE; Giấy phép; Cách ly…)? Có Không (Nếu Không, mô tả sự sai lệch và lý do đằng sau sự sai lệch đó) / Did the worker(s) follow all WI steps and task requirements (PPE; Permits; Isolations etc.)? Yes No (If No, describe deviations and the reason behind them)",
+      "6. Họ có hiểu RA không (xác nhận của người giám sát) / Do they understand the RA (confrim by supervisor)",
     question6Subtitle:
-      "Cách kiểm tra: Xác nhận xem công nhân có tuân thủ đầy đủ hướng dẫn công việc hay không. / Confirm whether the worker followed all WI steps and requirements.\nTiêu chuẩn chấp nhận: Tuân thủ hướng dẫn công việc đã được xác nhận. / Compliance with work instructions has been confirmed.",
-    question6Placeholder: "Tuân thủ hướng dẫn công việc / Compliance with WI",
-    question6Required: "กรุณากรอกการปฏิบัติตามคำแนะนำในการทำงาน",
-
-    question7Title:
-      "7. Liệt kê các hành động, thiết bị, điều kiện hoặc cách làm, sự thực hành không an toàn hoặc tiềm ẩn sự không an toàn mà có thể ảnh hưởng đến an toàn, chất lượng, năng suất / List any unsafe / potentially unsafe acts; equipment/conditions or practices that could affect safety, quality, or efficiency",
-    question7Subtitle:
-      "Cách kiểm tra: Ghi nhận tất cả các hành vi hoặc điều kiện không an toàn tiềm ẩn. / Record all unsafe or potentially unsafe acts or conditions.\nTiêu chuẩn chấp nhận: Các hành động/điều kiện không an toàn đã được ghi nhận. / Unsafe acts/conditions have been recorded.",
-    question7Placeholder:
-      "Hành động/điều kiện không an toàn / Unsafe acts or conditions",
-    question7Required: "กรุณากรอกการกระทำหรือสภาพที่ไม่ปลอดภัย",
-
-    question8Title:
-      "8. Liệt kê các hành vi tốt mà bạn quan sát được / List any good behaviours observed",
-    question8Subtitle:
-      "Cách kiểm tra: Ghi nhận các hành vi tốt được quan sát. / Record the good behaviours observed.\nTiêu chuẩn chấp nhận: Các hành vi tốt đã được ghi nhận. / Good behaviours have been recorded.",
-    question8Placeholder: "Các hành vi tốt / Good behaviours",
-    question8Required: "กรุณากรอกพฤติกรรมที่ดี",
-
-    question9Title:
-      "9. Thảo luận điều bạn quan sát được với công nhân. Ghi nhận lại các điểm chính vào các dòng phía dưới đây / Discuss your observations with the workers. Record any key points below",
-    question9Subtitle:
-      "Cách kiểm tra: Thảo luận các quan sát với công nhân và ghi lại các điểm chính. / Discuss observations with workers and record key points.\nTiêu chuẩn chấp nhận: Các điểm chính từ cuộc thảo luận đã được ghi nhận. / Key points from the discussion have been recorded.",
-    question9Placeholder:
-      "Các điểm chính từ cuộc thảo luận / Key points from discussion",
-    question9Required: "กรุณากรอกประเด็นสำคัญจากการอภิปราย",
-
-    question10Title:
-      "10. Hành động khắc phục được kiến nghị / Suggested Corrective Actions",
-    question10Subtitle:
-      "Cách kiểm tra: Đề xuất các hành động khắc phục dựa trên quan sát. / Suggest corrective actions based on observations.\nTiêu chuẩn chấp nhận: Các hành động khắc phục đã được ghi nhận. / Corrective actions have been recorded.",
-    question10Placeholder: "Hành động khắc phục / Corrective actions",
-    question10Required: "กรุณากรอกการดำเนินการแก้ไข",
+      "Xác nhận xem người lao động có hiểu rõ về RA hay không. / Confirm whether the worker understands the RA.",
+    question6Placeholder: "Xác nhận hiểu biết về RA / Confirm RA understanding",
+    question6Required: "กรุณายืนยันความเข้าใจเกี่ยวกับ RA",
 
     attachImage: "รูปภาพประกอบ (Attach Image) (Optional)",
     remark: "หมายเหตุ (Remark) (Optional)",
@@ -118,75 +104,44 @@ const translations = {
     staffIdPlaceholder: "Mã nhân viên Staff ID ?",
     staffIdRequired: "Vui lòng nhập mã nhân viên",
 
-    question1Title: "1. Tên Người được quan sát / Name of observed people",
+    question1Title: "1. Tên của người giám sát (Người phỏng vấn nắm giữ KPI RA) / Name of the supervisor (Interviewer who hold the RA KPI)",
     question1Subtitle:
-      "Cách kiểm tra: Ghi nhận tên đầy đủ của người được quan sát. / Record the full name of the observed person.\nTiêu chuẩn chấp nhận: Tên của người được quan sát đã được ghi nhận chính xác. / The name of the observed person has been accurately recorded.",
-    question1Placeholder: "Tên Người được quan sát / Name of observed people",
-    question1Required: "Vui lòng nhập tên người được quan sát",
+      "Ghi rõ tên của người giám sát thực hiện phỏng vấn. / Record the name of the supervisor conducting the interview.",
+    question1Placeholder: "Tên của người giám sát / Name of the supervisor",
+    question1Required: "Vui lòng nhập tên người giám sát",
 
-    question2Title: "2. Bộ phận/Nhà thầu / Department/Contractor",
+    question2Title: "2. Tên của người được phỏng vấn (Hình ảnh của Người lao động liên quan đến RA) hàng ngày thực hiện việc này với mọi người / Name of the interviewee (Picture of Workers related to RA) daily do this with people inturn",
     question2Subtitle:
-      "Cách kiểm tra: Xác nhận bộ phận hoặc nhà thầu liên quan. / Confirm the department or contractor involved.\nTiêu chuẩn chấp nhận: Thông tin bộ phận/nhà thầu đã được ghi nhận. / The department/contractor information has been recorded.",
-    question2Placeholder: "Bộ phận/Nhà thầu / Department/Contractor",
-    question2Required: "Vui lòng nhập bộ phận/nhà thầu",
+      "Ghi rõ tên của người được phỏng vấn và chụp ảnh người lao động. / Record the name of the interviewee and take pictures of workers.",
+    question2Placeholder: "Tên của người được phỏng vấn / Name of the interviewee",
+    question2Required: "Vui lòng nhập tên người được phỏng vấn",
 
-    question3Title: "3. Công việc được quan sát / Task observed",
+    question3Title: "3. Những FPE nào sẽ được áp dụng cho nhiệm vụ (liệt kê câu trả lời) / Which FPEs shall be applied to the task (list out the answer)",
     question3Subtitle:
-      "Cách kiểm tra: Ghi nhận công việc đang được quan sát. / Record the task being observed.\nTiêu chuẩn chấp nhận: Công việc được quan sát đã được ghi nhận. / The observed task has been recorded.",
-    question3Placeholder: "Công việc được quan sát / Task observed",
-    question3Required: "Vui lòng nhập công việc được quan sát",
+      "Liệt kê các thiết bị bảo hộ cá nhân cần thiết cho nhiệm vụ. / List the personal protective equipment required for the task.",
+    question3Placeholder: "Liệt kê các FPE / List FPEs",
+    question3Required: "Vui lòng liệt kê các FPE",
 
     question4Title:
-      "4. Mã số công việc, thủ tục đang thực hiện / Code of current WI procedure",
+      "4. Những rủi ro tiềm ẩn tại nơi làm việc cụ thể này là gì (liệt kê câu trả lời) / What is potential risks at this specific working place (list out the answer)",
     question4Subtitle:
-      "Cách kiểm tra: Xác nhận và ghi nhận mã số công việc hoặc thủ tục đang thực hiện. / Confirm and record the code of the current work instruction or procedure.\nTiêu chuẩn chấp nhận: Mã số công việc/thủ tục đã được ghi nhận. / The code of the work instruction/procedure has been recorded.",
-    question4Placeholder: "Mã số công việc / Code of current WI procedure",
-    question4Required: "Vui lòng nhập mã số công việc",
+      "Xác định và liệt kê các rủi ro tiềm ẩn tại nơi làm việc. / Identify and list potential risks at the workplace.",
+    question4Placeholder: "Liệt kê các rủi ro tiềm ẩn / List potential risks",
+    question4Required: "Vui lòng liệt kê các rủi ro tiềm ẩn",
 
     question5Title:
-      "5. Các công việc có thể dẫn đến gây thiệt hại về tài sản hoặc gây thương tích không? / Could any of the practices observed result in property damage or injury?",
+      "5. Chúng ta kiểm soát những rủi ro tiềm ẩn này tại nơi làm việc cụ thể này như thế nào (liệt kê câu trả lời) / How we control these potential risk at this specific working place (list out the answer)",
     question5Subtitle:
-      "Cách kiểm tra: Đánh giá và ghi nhận các khả năng gây thiệt hại về tài sản hoặc thương tích. / Assess and record the potential for property damage or injury.\nTiêu chuẩn chấp nhận: Khả năng gây thiệt hại/thương tích đã được ghi nhận. / The potential for damage or injury has been recorded.",
-    question5Placeholder:
-      "Khả năng gây thiệt hại/thương tích / Potential damage or injury",
-    question5Required: "Vui lòng nhập khả năng gây thiệt hại/thương tích",
+      "Mô tả các biện pháp kiểm soát rủi ro được áp dụng. / Describe the risk control measures applied.",
+    question5Placeholder: "Liệt kê các biện pháp kiểm soát / List control measures",
+    question5Required: "Vui lòng liệt kê các biện pháp kiểm soát",
 
     question6Title:
-      "6. Công nhân có làm theo các bước và yêu cầu của hướng dẫn công việc (PPE; Giấy phép; Cách ly…)? Có Không (Nếu Không, mô tả sự sai lệch và lý do đằng sau sự sai lệch đó) / Did the worker(s) follow all WI steps and task requirements (PPE; Permits; Isolations etc.)? Yes No (If No, describe deviations and the reason behind them)",
+      "6. Họ có hiểu RA không (xác nhận của người giám sát) / Do they understand the RA (confrim by supervisor)",
     question6Subtitle:
-      "Cách kiểm tra: Xác nhận xem công nhân có tuân thủ đầy đủ hướng dẫn công việc hay không. / Confirm whether the worker followed all WI steps and requirements.\nTiêu chuẩn chấp nhận: Tuân thủ hướng dẫn công việc đã được xác nhận. / Compliance with work instructions has been confirmed.",
-    question6Placeholder: "Tuân thủ hướng dẫn công việc / Compliance with WI",
-    question6Required: "Vui lòng nhập tuân thủ hướng dẫn công việc",
-
-    question7Title:
-      "7. Liệt kê các hành động, thiết bị, điều kiện hoặc cách làm, sự thực hành không an toàn hoặc tiềm ẩn sự không an toàn mà có thể ảnh hưởng đến an toàn, chất lượng, năng suất / List any unsafe / potentially unsafe acts; equipment/conditions or practices that could affect safety, quality, or efficiency",
-    question7Subtitle:
-      "Cách kiểm tra: Ghi nhận tất cả các hành vi hoặc điều kiện không an toàn tiềm ẩn. / Record all unsafe or potentially unsafe acts or conditions.\nTiêu chuẩn chấp nhận: Các hành động/điều kiện không an toàn đã được ghi nhận. / Unsafe acts/conditions have been recorded.",
-    question7Placeholder:
-      "Hành động/điều kiện không an toàn / Unsafe acts or conditions",
-    question7Required: "Vui lòng nhập hành động/điều kiện không an toàn",
-
-    question8Title:
-      "8. Liệt kê các hành vi tốt mà bạn quan sát được / List any good behaviours observed",
-    question8Subtitle:
-      "Cách kiểm tra: Ghi nhận các hành vi tốt được quan sát. / Record the good behaviours observed.\nTiêu chuẩn chấp nhận: Các hành vi tốt đã được ghi nhận. / Good behaviours have been recorded.",
-    question8Placeholder: "Các hành vi tốt / Good behaviours",
-    question8Required: "Vui lòng nhập các hành vi tốt",
-
-    question9Title:
-      "9. Thảo luận điều bạn quan sát được với công nhân. Ghi nhận lại các điểm chính vào các dòng phía dưới đây / Discuss your observations with the workers. Record any key points below",
-    question9Subtitle:
-      "Cách kiểm tra: Thảo luận các quan sát với công nhân và ghi lại các điểm chính. / Discuss observations with workers and record key points.\nTiêu chuẩn chấp nhận: Các điểm chính từ cuộc thảo luận đã được ghi nhận. / Key points from the discussion have been recorded.",
-    question9Placeholder:
-      "Các điểm chính từ cuộc thảo luận / Key points from discussion",
-    question9Required: "Vui lòng nhập các điểm chính từ cuộc thảo luận",
-
-    question10Title:
-      "10. Hành động khắc phục được kiến nghị / Suggested Corrective Actions",
-    question10Subtitle:
-      "Cách kiểm tra: Đề xuất các hành động khắc phục dựa trên quan sát. / Suggest corrective actions based on observations.\nTiêu chuẩn chấp nhận: Các hành động khắc phục đã được ghi nhận. / Corrective actions have been recorded.",
-    question10Placeholder: "Hành động khắc phục / Corrective actions",
-    question10Required: "Vui lòng nhập hành động khắc phục",
+      "Xác nhận xem người lao động có hiểu rõ về RA hay không. / Confirm whether the worker understands the RA.",
+    question6Placeholder: "Xác nhận hiểu biết về RA / Confirm RA understanding",
+    question6Required: "Vui lòng xác nhận hiểu biết về RA",
 
     attachImage: "Hình ảnh đính kèm (Attach Image) (Tùy chọn)",
     remark: "Ghi chú (Remark) (Tùy chọn)",
@@ -201,16 +156,12 @@ const translations = {
 interface RaFormData extends FieldValues {
   id: string;
   area: string;
-  observedName: string;
-  department: string;
-  taskObserved: string;
-  procedureCode: string;
-  potentialDamageOrInjury: string;
-  complianceWI: string;
-  unsafeActs: string;
-  goodBehaviours: string;
-  discussion: string;
-  correctiveActions: string;
+  supervisorName: string;
+  intervieweeName: string;
+  fpeList: string;
+  potentialRisks: string;
+  riskControls: string;
+  understandRA: string;
   remark?: string;
   [key: string]: any;
 }
@@ -247,6 +198,16 @@ export default function ManFormRa({
   const [employeeSite, setEmployeeSite] = useState<string | undefined>(
     undefined
   );
+  const [selectedFpes, setSelectedFpes] = useState<string[]>([]);
+
+  // Handle FPE selection toggle
+  const handleFpeToggle = (fpeId: string) => {
+    setSelectedFpes((prev) =>
+      prev.includes(fpeId)
+        ? prev.filter((id) => id !== fpeId)
+        : [...prev, fpeId]
+    );
+  };
 
   // Watch staff ID field
   const staffId = watch("id");
@@ -273,48 +234,33 @@ export default function ManFormRa({
         return;
       }
 
-      if (!formData.observedName) {
+      if (!formData.supervisorName) {
         toast.error(t.question1Required);
         return;
       }
 
-      if (!formData.department) {
+      if (!formData.intervieweeName) {
         toast.error(t.question2Required);
         return;
       }
 
-      if (!formData.taskObserved) {
+      if (selectedFpes.length === 0) {
         toast.error(t.question3Required);
         return;
       }
 
-      if (!formData.procedureCode) {
+      if (!formData.potentialRisks) {
         toast.error(t.question4Required);
         return;
       }
 
-      if (!formData.potentialDamageOrInjury) {
+      if (!formData.riskControls) {
         toast.error(t.question5Required);
         return;
       }
-      if (!formData.complianceWI) {
+
+      if (!formData.understandRA) {
         toast.error(t.question6Required);
-        return;
-      }
-      if (!formData.unsafeActs) {
-        toast.error(t.question7Required);
-        return;
-      }
-      if (!formData.goodBehaviours) {
-        toast.error(t.question8Required);
-        return;
-      }
-      if (!formData.discussion) {
-        toast.error(t.question9Required);
-        return;
-      }
-      if (!formData.correctiveActions) {
-        toast.error(t.question10Required);
         return;
       }
 
@@ -354,19 +300,34 @@ export default function ManFormRa({
         }
       }
 
+      // Get selected FPE labels
+      const selectedFpeLabels = selectedFpes
+        .map((fpeId) => fpeCategories.find((cat) => cat.id === fpeId)?.label)
+        .filter(Boolean)
+        .join(", ");
+
       const raData = {
-        ...formData,
+        id: formData.id,
         area: id, // URL parameter as area
         bu,
         type: "raform",
         site: employeeSite || undefined,
+        supervisorName: formData.supervisorName,
+        intervieweeName: formData.intervieweeName,
+        fpeList: selectedFpeLabels, // Store as comma-separated string
+        potentialRisks: formData.potentialRisks,
+        riskControls: formData.riskControls,
+        understandRA: formData.understandRA,
+        remark: formData.remark,
         images: imageUrls,
         timestamp: new Date().toISOString(),
       };
 
       // Save to Firestore using server action
       try {
+        console.log("Submitting RA data:", raData);
         const result = await submitManForm(raData);
+        console.log("Submit result:", result);
 
         if (result.success) {
           toast.success(t.success);
@@ -376,10 +337,12 @@ export default function ManFormRa({
 
           reset();
           setImages([]);
+          setSelectedFpes([]);
 
           // Navigate to the Man detail page
           router.push(`/Man/${bu}/Ra/${submittedId}`);
         } else {
+          console.error("Submit failed:", result.error);
           toast.error(result.error || t.error);
         }
       } catch (serverError) {
@@ -399,7 +362,7 @@ export default function ManFormRa({
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <CardTitle className="text-center sm:text-left text-xl font-bold text-gray-800">
-                Danh sách kiểm tra đánh giá / Risk Assessment Checklist
+                Danh sách kiểm tra đánh giá / Risk Assessment Review Checklist
               </CardTitle>
               <p className="text-center sm:text-left text-xl font-extrabold text-purple-600 mt-1">
                 Area: {id}
@@ -426,122 +389,131 @@ export default function ManFormRa({
                 className="w-full"
               />
               {errors.id && (
-                <p className="text-red-500 text-sm">{errors.id?.message}</p>
+                <p className="text-red-500 text-sm">{errors.id?.message as string}</p>
               )}
             </div>
           </CardContent>
         </Card>
 
-        {/* Question 1: Contact Person */}
+        {/* Question 1: Supervisor Name */}
         <Card>
           <CardContent className="pt-6">
             <div className="space-y-2">
-              <Label htmlFor="observedName" className="text-lg font-semibold">
+              <Label htmlFor="supervisorName" className="text-lg font-semibold">
                 {t.question1Title}
               </Label>
               <p className="text-xs text-gray-600 whitespace-pre-line">
                 {t.question1Subtitle}
               </p>
               <Textarea
-                {...register("observedName", {
+                {...register("supervisorName", {
                   required: t.question1Required,
                 })}
                 placeholder={t.question1Placeholder}
                 className="w-full min-h-[80px]"
               />
-              {errors.observedName && (
+              {errors.supervisorName && (
                 <p className="text-red-500 text-sm">
-                  {errors.observedName?.message}
+                  {errors.supervisorName?.message as string}
                 </p>
               )}
             </div>
           </CardContent>
         </Card>
 
-        {/* Question 2: Safe Behavior */}
+        {/* Question 2: Interviewee Name */}
         <Card>
           <CardContent className="pt-6">
             <div className="space-y-2">
-              <Label htmlFor="department" className="text-lg font-semibold">
+              <Label htmlFor="intervieweeName" className="text-lg font-semibold">
                 {t.question2Title}
               </Label>
               <p className="text-xs text-gray-600 whitespace-pre-line">
                 {t.question2Subtitle}
               </p>
               <Textarea
-                {...register("department", {
+                {...register("intervieweeName", {
                   required: t.question2Required,
                 })}
                 placeholder={t.question2Placeholder}
                 className="w-full min-h-[80px]"
               />
-              {errors.department && (
+              {errors.intervieweeName && (
                 <p className="text-red-500 text-sm">
-                  {errors.department?.message}
+                  {errors.intervieweeName?.message as string}
                 </p>
               )}
             </div>
           </CardContent>
         </Card>
 
-        {/* Question 3: Unsafe Condition */}
+        {/* Question 3: FPE List (Multi-selection) */}
         <Card>
           <CardContent className="pt-6">
-            <div className="space-y-2">
-              <Label htmlFor="taskObserved" className="text-lg font-semibold">
+            <div className="space-y-4">
+              <Label className="text-lg font-semibold text-gray-800">
                 {t.question3Title}
               </Label>
               <p className="text-xs text-gray-600 whitespace-pre-line">
                 {t.question3Subtitle}
               </p>
-              <Textarea
-                {...register("taskObserved", {
-                  required: t.question3Required,
-                })}
-                placeholder={t.question3Placeholder}
-                className="w-full min-h-[80px]"
-              />
-              {errors.taskObserved && (
+              <div className="grid grid-cols-1 gap-3">
+                {fpeCategories.map((category) => (
+                  <button
+                    key={category.id}
+                    type="button"
+                    onClick={() => handleFpeToggle(category.id)}
+                    className={`px-3 py-2 rounded-md text-white text-sm font-medium transition-all ${
+                      selectedFpes.includes(category.id)
+                        ? `${category.color} opacity-100 ring-2 ring-offset-2 ring-gray-400`
+                        : `${category.color} opacity-50 hover:opacity-90`
+                    }`}
+                  >
+                    {category.label}
+                  </button>
+                ))}
+              </div>
+              {selectedFpes.length === 0 && (
                 <p className="text-red-500 text-sm">
-                  {errors.taskObserved?.message}
+                  Vui lòng chọn ít nhất một danh mục FPE / Please select at least one FPE category
                 </p>
               )}
             </div>
           </CardContent>
         </Card>
 
-        {/* Question 4: Other Issues */}
+        {/* Question 4: Potential Risks */}
         <Card>
           <CardContent className="pt-6">
             <div className="space-y-2">
-              <Label htmlFor="procedureCode" className="text-lg font-semibold">
+              <Label htmlFor="potentialRisks" className="text-lg font-semibold">
                 {t.question4Title}
               </Label>
               <p className="text-xs text-gray-600 whitespace-pre-line">
                 {t.question4Subtitle}
               </p>
               <Textarea
-                {...register("procedureCode", {
+                {...register("potentialRisks", {
                   required: t.question4Required,
                 })}
                 placeholder={t.question4Placeholder}
                 className="w-full min-h-[80px]"
               />
-              {errors.procedureCode && (
+              {errors.potentialRisks && (
                 <p className="text-red-500 text-sm">
-                  {errors.procedureCode?.message}
+                  {errors.potentialRisks?.message as string}
                 </p>
               )}
             </div>
           </CardContent>
         </Card>
 
-        {/* Question 5: Potential Damage or Injury */}
+        {/* Question 5: Risk Controls */}
         <Card>
           <CardContent className="pt-6">
             <div className="space-y-2">
               <Label
-                htmlFor="potentialDamageOrInjury"
+                htmlFor="riskControls"
                 className="text-lg font-semibold"
               >
                 {t.question5Title}
@@ -550,148 +522,41 @@ export default function ManFormRa({
                 {t.question5Subtitle}
               </p>
               <Textarea
-                {...register("potentialDamageOrInjury", {
+                {...register("riskControls", {
                   required: t.question5Required,
                 })}
                 placeholder={t.question5Placeholder}
                 className="w-full min-h-[80px]"
               />
-              {errors.potentialDamageOrInjury && (
+              {errors.riskControls && (
                 <p className="text-red-500 text-sm">
-                  {errors.potentialDamageOrInjury?.message}
+                  {errors.riskControls?.message as string}
                 </p>
               )}
             </div>
           </CardContent>
         </Card>
 
-        {/* Question 6: Compliance with WI */}
+        {/* Question 6: Understand RA */}
         <Card>
           <CardContent className="pt-6">
             <div className="space-y-2">
-              <Label htmlFor="complianceWI" className="text-lg font-semibold">
+              <Label htmlFor="understandRA" className="text-lg font-semibold">
                 {t.question6Title}
               </Label>
               <p className="text-xs text-gray-600 whitespace-pre-line">
                 {t.question6Subtitle}
               </p>
               <Textarea
-                {...register("complianceWI", {
+                {...register("understandRA", {
                   required: t.question6Required,
                 })}
                 placeholder={t.question6Placeholder}
                 className="w-full min-h-[80px]"
               />
-              {errors.complianceWI && (
+              {errors.understandRA && (
                 <p className="text-red-500 text-sm">
-                  {errors.complianceWI?.message}
-                </p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Question 7: Unsafe Acts */}
-        <Card>
-          <CardContent className="pt-6">
-            <div className="space-y-2">
-              <Label htmlFor="unsafeActs" className="text-lg font-semibold">
-                {t.question7Title}
-              </Label>
-              <p className="text-xs text-gray-600 whitespace-pre-line">
-                {t.question7Subtitle}
-              </p>
-              <Textarea
-                {...register("unsafeActs", {
-                  required: t.question7Required,
-                })}
-                placeholder={t.question7Placeholder}
-                className="w-full min-h-[80px]"
-              />
-              {errors.unsafeActs && (
-                <p className="text-red-500 text-sm">
-                  {errors.unsafeActs?.message}
-                </p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Question 8: Good Behaviours */}
-        <Card>
-          <CardContent className="pt-6">
-            <div className="space-y-2">
-              <Label htmlFor="goodBehaviours" className="text-lg font-semibold">
-                {t.question8Title}
-              </Label>
-              <p className="text-xs text-gray-600 whitespace-pre-line">
-                {t.question8Subtitle}
-              </p>
-              <Textarea
-                {...register("goodBehaviours", {
-                  required: t.question8Required,
-                })}
-                placeholder={t.question8Placeholder}
-                className="w-full min-h-[80px]"
-              />
-              {errors.goodBehaviours && (
-                <p className="text-red-500 text-sm">
-                  {errors.goodBehaviours?.message}
-                </p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Question 9: Discussion */}
-        <Card>
-          <CardContent className="pt-6">
-            <div className="space-y-2">
-              <Label htmlFor="discussion" className="text-lg font-semibold">
-                {t.question9Title}
-              </Label>
-              <p className="text-xs text-gray-600 whitespace-pre-line">
-                {t.question9Subtitle}
-              </p>
-              <Textarea
-                {...register("discussion", {
-                  required: t.question9Required,
-                })}
-                placeholder={t.question9Placeholder}
-                className="w-full min-h-[80px]"
-              />
-              {errors.discussion && (
-                <p className="text-red-500 text-sm">
-                  {errors.discussion?.message}
-                </p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Question 10: Corrective Actions */}
-        <Card>
-          <CardContent className="pt-6">
-            <div className="space-y-2">
-              <Label
-                htmlFor="correctiveActions"
-                className="text-lg font-semibold"
-              >
-                {t.question10Title}
-              </Label>
-              <p className="text-xs text-gray-600 whitespace-pre-line">
-                {t.question10Subtitle}
-              </p>
-              <Textarea
-                {...register("correctiveActions", {
-                  required: t.question10Required,
-                })}
-                placeholder={t.question10Placeholder}
-                className="w-full min-h-[80px]"
-              />
-              {errors.correctiveActions && (
-                <p className="text-red-500 text-sm">
-                  {errors.correctiveActions?.message}
+                  {errors.understandRA?.message as string}
                 </p>
               )}
             </div>
