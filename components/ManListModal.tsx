@@ -51,6 +51,7 @@ interface ManListModalProps {
   typeName?: string;
   startDate: Date;
   endDate: Date;
+  alertNo?: string;
 }
 
 // Form type configuration
@@ -91,6 +92,7 @@ export function ManListModal({
   typeName,
   startDate,
   endDate,
+  alertNo,
 }: ManListModalProps) {
   const [records, setRecords] = useState<ManRecord[]>([]);
   const [filteredRecords, setFilteredRecords] = useState<ManRecord[]>([]);
@@ -117,7 +119,7 @@ export function ManListModal({
       setSelectedRecordBu("");
       setSelectedRecordType("");
     }
-  }, [isOpen, bu, site, type, startDate, endDate]);
+  }, [isOpen, bu, site, type, startDate, endDate, alertNo]);
 
   useEffect(() => {
     // Filter records based on search term
@@ -146,10 +148,14 @@ export function ManListModal({
       frequency,
       startDate: startDate.toISOString(),
       endDate: endDate.toISOString(),
+      alertNo,
     });
 
     try {
-      const apiUrl = `/api/man-records?bu=${bu}&site=${site}&type=${type}&startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`;
+      let apiUrl = `/api/man-records?bu=${bu}&site=${site}&type=${type}&startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`;
+      if (alertNo) {
+        apiUrl += `&alertNo=${alertNo}`;
+      }
       console.log("Fetching from:", apiUrl);
 
       const response = await fetch(apiUrl);

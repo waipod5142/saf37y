@@ -12,9 +12,10 @@ export async function GET(request: NextRequest) {
     const type = searchParams.get("type");
     const startDateStr = searchParams.get("startDate");
     const endDateStr = searchParams.get("endDate");
+    const alertNo = searchParams.get("alertNo");
 
     console.log("=== Man Records API Route ===");
-    console.log("Request params:", { bu, site, type, startDateStr, endDateStr });
+    console.log("Request params:", { bu, site, type, startDateStr, endDateStr, alertNo });
 
     if (!bu || !startDateStr || !endDateStr) {
       console.log("Missing required parameters");
@@ -101,19 +102,20 @@ export async function GET(request: NextRequest) {
 
     console.log("All records before filtering:", allRecords.length);
 
-    // Apply filters including date range
+    // Apply filters including date range and alertNo
     let records = allRecords.filter((record) => {
       const buMatch = record.bu === bu;
       const siteMatch = !site || site === "all" || record.site === site;
       const typeMatch = !type || type === "all" || record.type === type;
+      const alertNoMatch = !alertNo || record.alertNo === alertNo;
 
       // Date range check - convert timestamp string to Date for comparison
       const recordDate = new Date(record.timestamp || record.createdAt);
-      const dateMatch = recordDate >= startDate && recordDate <= endDate;
+      const dateMatch = !startDateStr || !endDateStr || (recordDate >= startDate && recordDate <= endDate);
 
-      const match = buMatch && siteMatch && typeMatch && dateMatch;
+      const match = buMatch && siteMatch && typeMatch && alertNoMatch && dateMatch;
 
-      if (!match && buMatch && siteMatch && typeMatch) {
+      if (!match && buMatch && siteMatch && typeMatch && alertNoMatch) {
         console.log("Date filter excluded:", {
           recordDate: recordDate.toISOString(),
           startDate: startDate.toISOString(),

@@ -59,14 +59,14 @@ export default function RootLayout({
                   Man
                 </Link>
               </li>
-              {/* <li>
+              <li>
                 <Link
-                  href="/transaction"
+                  href="/kpialert"
                   className="uppercase tracking-widest hover:underline"
                 >
-                  Lastest transaction
+                  Alert
                 </Link>
-              </li> */}
+              </li>
               <li>
                 <AuthButtons />
               </li>
