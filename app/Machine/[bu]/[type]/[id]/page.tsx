@@ -46,11 +46,15 @@ export default async function MachinePage({
       {decodedType.toLowerCase() === "mixerphoto" ? (
         <MachineForm4photo
           bu={normalizedBu}
-          type={decodedType}
+          type={decodedType.toLowerCase()}
           id={decodedId}
         />
       ) : (
-        <MachineForm bu={normalizedBu} type={decodedType} id={decodedId} />
+        <MachineForm
+          bu={normalizedBu}
+          type={decodedType.toLowerCase()}
+          id={decodedId}
+        />
       )}
     </div>
   );

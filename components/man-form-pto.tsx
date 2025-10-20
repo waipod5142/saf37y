@@ -359,13 +359,24 @@ export default function ManFormPto({
       <Card className="mb-6">
         <CardHeader>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
+            <div className="flex-1">
               <CardTitle className="text-center sm:text-left text-xl font-bold text-gray-800">
                 Quan sát công việc theo kế hoạch / Planned Task Observation (PTO)
               </CardTitle>
               <p className="text-center sm:text-left text-xl font-extrabold text-blue-600 mt-1">
                 Area: {id}
               </p>
+              <div className="flex justify-center sm:justify-start mt-3">
+                <Button
+                  type="button"
+                  onClick={() => router.push(`/ManForm/${bu}/RaForm/${id}`)}
+                  variant="outline"
+                  className="flex items-center gap-2 text-purple-600 border-purple-600 hover:bg-purple-50"
+                >
+                  <span>↔</span>
+                  <span>Switch to RA Form</span>
+                </Button>
+              </div>
             </div>
             <div className="flex justify-center sm:justify-end flex-shrink-0">
               <QRCodeComponent value={qrUrl} size={100} />
