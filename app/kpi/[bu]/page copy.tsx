@@ -422,7 +422,6 @@ export default function BUKPIPage() {
   );
   const [annualData, setAnnualData] = useState<KPIInspectionData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [backgroundLoading, setBackgroundLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [activeTab, setActiveTab] = useState("daily");
@@ -452,34 +451,22 @@ export default function BUKPIPage() {
       setLoading(true);
       setError(null);
 
-      // Fetch daily data first and show immediately
-      const daily = await fetchData("daily");
-      setDailyData(daily);
-      setLastUpdated(new Date());
-      setLoading(false);
-
-      // Fetch other frequencies in the background
-      setBackgroundLoading(true);
-      Promise.all([
+      const [daily, monthly, quarterly, annual] = await Promise.all([
+        fetchData("daily"),
         fetchData("monthly"),
         fetchData("quarterly"),
         fetchData("annual"),
-      ])
-        .then(([monthly, quarterly, annual]) => {
-          setMonthlyData(monthly);
-          setQuarterlyData(quarterly);
-          setAnnualData(annual);
-          setLastUpdated(new Date());
-          setBackgroundLoading(false);
-        })
-        .catch((err) => {
-          console.error("Error fetching background KPI data:", err);
-          setBackgroundLoading(false);
-          // Don't set error state here as daily data is already loaded
-        });
+      ]);
+
+      setDailyData(daily);
+      setMonthlyData(monthly);
+      setQuarterlyData(quarterly);
+      setAnnualData(annual);
+      setLastUpdated(new Date());
     } catch (err) {
-      console.error("Error fetching daily KPI data:", err);
+      console.error("Error fetching BU KPI data:", err);
       setError(err instanceof Error ? err.message : "Failed to load data");
+    } finally {
       setLoading(false);
     }
   };
@@ -717,7 +704,7 @@ export default function BUKPIPage() {
         </TabsContent>
 
         <TabsContent value="monthly">
-          {monthlyData ? (
+          {monthlyData && (
             <InspectionTable
               data={monthlyData}
               frequency="monthly"
@@ -725,18 +712,11 @@ export default function BUKPIPage() {
               bu={bu}
               machineTypeMapping={machineTypeMapping}
             />
-          ) : (
-            <Card>
-              <CardContent className="text-center py-12">
-                <RefreshCw className="h-12 w-12 text-blue-500 mx-auto mb-4 animate-spin" />
-                <p className="text-gray-600">Loading monthly data...</p>
-              </CardContent>
-            </Card>
           )}
         </TabsContent>
 
         <TabsContent value="quarterly">
-          {quarterlyData ? (
+          {quarterlyData && (
             <InspectionTable
               data={quarterlyData}
               frequency="quarterly"
@@ -744,18 +724,11 @@ export default function BUKPIPage() {
               bu={bu}
               machineTypeMapping={machineTypeMapping}
             />
-          ) : (
-            <Card>
-              <CardContent className="text-center py-12">
-                <RefreshCw className="h-12 w-12 text-blue-500 mx-auto mb-4 animate-spin" />
-                <p className="text-gray-600">Loading quarterly data...</p>
-              </CardContent>
-            </Card>
           )}
         </TabsContent>
 
         <TabsContent value="annual">
-          {annualData ? (
+          {annualData && (
             <InspectionTable
               data={annualData}
               frequency="annual"
@@ -763,13 +736,6 @@ export default function BUKPIPage() {
               bu={bu}
               machineTypeMapping={machineTypeMapping}
             />
-          ) : (
-            <Card>
-              <CardContent className="text-center py-12">
-                <RefreshCw className="h-12 w-12 text-blue-500 mx-auto mb-4 animate-spin" />
-                <p className="text-gray-600">Loading annual data...</p>
-              </CardContent>
-            </Card>
           )}
         </TabsContent>
       </Tabs>

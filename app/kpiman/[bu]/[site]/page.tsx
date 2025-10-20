@@ -384,6 +384,7 @@ export default function SiteManKPIPage() {
   );
   const [annualData, setAnnualData] = useState<KPITransactionData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [backgroundLoading, setBackgroundLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [activeTab, setActiveTab] = useState("daily");
@@ -407,7 +408,7 @@ export default function SiteManKPIPage() {
         throw new Error("Failed to load man KPI data");
       }
 
-      // Map the new API structure to the existing state
+      // Set daily data first and show immediately
       setDailyData({
         success: true,
         bu: data.bu,
@@ -415,36 +416,42 @@ export default function SiteManKPIPage() {
         data: data.kpiData.daily,
         timestamp: data.timestamp,
       });
-
-      setWeeklyData({
-        success: true,
-        bu: data.bu,
-        frequency: "weekly",
-        data: data.kpiData.weekly,
-        timestamp: data.timestamp,
-      });
-
-      setMonthlyData({
-        success: true,
-        bu: data.bu,
-        frequency: "monthly",
-        data: data.kpiData.monthly,
-        timestamp: data.timestamp,
-      });
-
-      setAnnualData({
-        success: true,
-        bu: data.bu,
-        frequency: "annual",
-        data: data.kpiData.annual,
-        timestamp: data.timestamp,
-      });
-
       setLastUpdated(new Date());
+      setLoading(false);
+
+      // Load other frequencies in the background
+      setBackgroundLoading(true);
+      setTimeout(() => {
+        setWeeklyData({
+          success: true,
+          bu: data.bu,
+          frequency: "weekly",
+          data: data.kpiData.weekly,
+          timestamp: data.timestamp,
+        });
+
+        setMonthlyData({
+          success: true,
+          bu: data.bu,
+          frequency: "monthly",
+          data: data.kpiData.monthly,
+          timestamp: data.timestamp,
+        });
+
+        setAnnualData({
+          success: true,
+          bu: data.bu,
+          frequency: "annual",
+          data: data.kpiData.annual,
+          timestamp: data.timestamp,
+        });
+
+        setLastUpdated(new Date());
+        setBackgroundLoading(false);
+      }, 0);
     } catch (err) {
       console.error("Error fetching Man KPI data:", err);
       setError(err instanceof Error ? err.message : "Failed to load data");
-    } finally {
       setLoading(false);
     }
   };
@@ -683,7 +690,7 @@ export default function SiteManKPIPage() {
         </TabsContent>
 
         <TabsContent value="weekly">
-          {weeklyData && (
+          {weeklyData ? (
             <TransactionTable
               data={weeklyData}
               frequency="weekly"
@@ -691,11 +698,18 @@ export default function SiteManKPIPage() {
               site={site}
               onTabChange={setActiveTab}
             />
+          ) : (
+            <Card>
+              <CardContent className="text-center py-12">
+                <RefreshCw className="h-12 w-12 text-blue-500 mx-auto mb-4 animate-spin" />
+                <p className="text-gray-600">Loading weekly data...</p>
+              </CardContent>
+            </Card>
           )}
         </TabsContent>
 
         <TabsContent value="monthly">
-          {monthlyData && (
+          {monthlyData ? (
             <TransactionTable
               data={monthlyData}
               frequency="monthly"
@@ -703,11 +717,18 @@ export default function SiteManKPIPage() {
               site={site}
               onTabChange={setActiveTab}
             />
+          ) : (
+            <Card>
+              <CardContent className="text-center py-12">
+                <RefreshCw className="h-12 w-12 text-blue-500 mx-auto mb-4 animate-spin" />
+                <p className="text-gray-600">Loading monthly data...</p>
+              </CardContent>
+            </Card>
           )}
         </TabsContent>
 
         <TabsContent value="annual">
-          {annualData && (
+          {annualData ? (
             <TransactionTable
               data={annualData}
               frequency="annual"
@@ -715,6 +736,13 @@ export default function SiteManKPIPage() {
               site={site}
               onTabChange={setActiveTab}
             />
+          ) : (
+            <Card>
+              <CardContent className="text-center py-12">
+                <RefreshCw className="h-12 w-12 text-blue-500 mx-auto mb-4 animate-spin" />
+                <p className="text-gray-600">Loading annual data...</p>
+              </CardContent>
+            </Card>
           )}
         </TabsContent>
       </Tabs>
