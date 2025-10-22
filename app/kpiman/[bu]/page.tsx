@@ -67,7 +67,12 @@ const FORM_TYPE_CONFIG: Record<
     color: "bg-red-500",
   },
   bootform: { icon: "🥾", label: "Boot on the ground", color: "bg-green-500" },
-  raform: { icon: "🔍", label: "Risk Assessment", color: "bg-orange-500" },
+  raform: { icon: "🛡️", label: "Risk Assessment", color: "bg-amber-500" },
+  ptoform: {
+    icon: "🎯",
+    label: "Planed Task Observation",
+    color: "bg-teal-500",
+  },
   sot: { icon: "👁️", label: "Safety Observation", color: "bg-purple-500" },
   talk: { icon: "💬", label: "Safety Talk", color: "bg-yellow-500" },
   meetingform: {

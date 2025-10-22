@@ -54,7 +54,6 @@ interface ManListModalProps {
   alertNo?: string;
 }
 
-// Form type configuration
 const FORM_TYPE_CONFIG: Record<
   string,
   { icon: string; label: string; color: string }
@@ -66,11 +65,11 @@ const FORM_TYPE_CONFIG: Record<
     color: "bg-red-500",
   },
   bootform: { icon: "🥾", label: "Boot on the ground", color: "bg-green-500" },
-  raform: { icon: "🔍", label: "Risk Assessment", color: "bg-orange-500" },
+  raform: { icon: "🛡️", label: "Risk Assessment", color: "bg-amber-500" },
   ptoform: {
-    icon: "🔍",
+    icon: "🎯",
     label: "Planed Task Observation",
-    color: "bg-brown-500",
+    color: "bg-teal-500",
   },
   sot: { icon: "👁️", label: "Safety Observation", color: "bg-purple-500" },
   talk: { icon: "💬", label: "Safety Talk", color: "bg-yellow-500" },
@@ -181,13 +180,8 @@ export function ManListModal({
     setSelectedRecordId(record.id);
     setSelectedRecordBu(record.bu);
 
-    // Transform record type: remove "form" suffix
-    let transformedType = record.type;
-    if (record.type === "bootform") transformedType = "boot";
-    else if (record.type === "meetingform") transformedType = "meeting";
-    else if (record.type === "raform") transformedType = "ra";
-    else if (record.type === "alertform") transformedType = "alert";
-    else if (record.type === "trainingform") transformedType = "training";
+    // Transform record type: remove "form" suffix if present
+    const transformedType = record.type.replace("form", "");
 
     setSelectedRecordType(transformedType);
     setShowManDetail(true);
