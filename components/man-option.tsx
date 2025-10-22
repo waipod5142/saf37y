@@ -48,9 +48,6 @@ export default function ManOption({ bu, type, id }: ManOptionProps) {
             <option value={`/Man/${bu}/Toolbox/${id}`}>
               การพูดคุยด้านความปลอดภัย Safety / Toolbox Talk
             </option>
-            <option value={`/Man/${bu}/Coupon/${id}`}>
-              โทเคนสำหรับร้านอาหาร / Food Token
-            </option>
             <option value={`/Man/${bu}/Meeting/${id}`}>
               การมีส่วนร่วมในเซฟตี้มีทติ้ง / Safety Meeting
             </option>

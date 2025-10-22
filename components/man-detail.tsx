@@ -45,10 +45,20 @@ const serializeRecord = (record: ManRecord): ManRecord => {
     return timestamp;
   };
 
+  // Serialize files array if present (using any to handle different record types)
+  const recordWithFiles = record as any;
+  const serializedFiles = recordWithFiles.files
+    ? recordWithFiles.files.map((file: any) => ({
+        ...file,
+        uploadedAt: convertTimestamp(file.uploadedAt),
+      }))
+    : recordWithFiles.files;
+
   return {
     ...record,
     timestamp: convertTimestamp(record.timestamp),
     createdAt: convertTimestamp(record.createdAt),
+    ...(serializedFiles !== undefined && { files: serializedFiles }),
   };
 };
 
@@ -93,6 +103,9 @@ const isTrainingRecord = (record: ManRecord): record is TrainingManRecord => {
   return (
     record.type === "trainingform" ||
     record.type === "training" ||
+    record.type === "record" ||
+    record.type === "upload" ||
+    record.type === "bulk-record" ||
     record.type === undefined ||
     !("type" in record)
   );

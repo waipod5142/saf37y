@@ -7,13 +7,15 @@ function convertFirebaseTimestamp(timestamp: any): Date | null {
   if (!timestamp) return null;
 
   // If it has toDate method (actual Firebase Timestamp)
-  if (timestamp.toDate && typeof timestamp.toDate === 'function') {
+  if (timestamp.toDate && typeof timestamp.toDate === "function") {
     return timestamp.toDate();
   }
 
   // If it's a serialized timestamp with _seconds
   if (timestamp._seconds !== undefined) {
-    return new Date(timestamp._seconds * 1000 + (timestamp._nanoseconds || 0) / 1000000);
+    return new Date(
+      timestamp._seconds * 1000 + (timestamp._nanoseconds || 0) / 1000000
+    );
   }
 
   // Fallback to regular Date parsing
@@ -44,11 +46,15 @@ export const getManRecords = async (
     // Decode URL parameters to handle special characters (including Thai characters)
     const decodedId = decodeURIComponent(id);
 
-    console.log(`Searching for man records with bu: ${bu}, type: ${type}, id: ${decodedId}`);
+    console.log(
+      `Searching for man records with bu: ${bu}, type: ${type}, id: ${decodedId}`
+    );
 
     // Handle training records differently - fetch from trainings collection where empId equals id
     if (type.toLowerCase() === "training") {
-      console.log(`Fetching training records from trainings collection where empId: ${decodedId}`);
+      console.log(
+        `Fetching training records from trainings collection where empId: ${decodedId}`
+      );
 
       const trainingQuery = firestore
         .collection("trainings")
@@ -81,13 +87,20 @@ export const getManRecords = async (
         return dateB.getTime() - dateA.getTime();
       });
 
-      console.log(`Found ${records.length} training records for empId: ${decodedId}`);
+      console.log(
+        `Found ${records.length} training records for empId: ${decodedId}`
+      );
       return records;
     }
 
     // Handle grease records differently - fetch from methodtr collection
-    if (type.toLowerCase() === "grease" || type.toLowerCase() === "greaseform") {
-      console.log(`Fetching grease records from methodtr collection where id: ${decodedId}`);
+    if (
+      type.toLowerCase() === "grease" ||
+      type.toLowerCase() === "greaseform"
+    ) {
+      console.log(
+        `Fetching grease records from methodtr collection where id: ${decodedId}`
+      );
 
       let greaseQuery = firestore
         .collection("methodtr")
@@ -124,7 +137,9 @@ export const getManRecords = async (
         return dateB.getTime() - dateA.getTime();
       });
 
-      console.log(`Found ${records.length} grease records for id: ${decodedId}`);
+      console.log(
+        `Found ${records.length} grease records for id: ${decodedId}`
+      );
       return records;
     }
 
@@ -140,7 +155,9 @@ export const getManRecords = async (
 
     // If no results, try without the type filter (in case type field is different)
     if (manSnapshot.empty) {
-      console.log(`No records found with type filter. Trying without type filter...`);
+      console.log(
+        `No records found with type filter. Trying without type filter...`
+      );
       manQuery = firestore
         .collection("mantr")
         .where("bu", "==", bu)
@@ -152,15 +169,15 @@ export const getManRecords = async (
     // If still no results, try with just the id
     if (manSnapshot.empty) {
       console.log(`No records found with bu filter. Trying with just id...`);
-      manQuery = firestore
-        .collection("mantr")
-        .where("id", "==", decodedId);
+      manQuery = firestore.collection("mantr").where("id", "==", decodedId);
 
       manSnapshot = await manQuery.get();
     }
 
     if (manSnapshot.empty) {
-      console.log(`No man records found for any combination. Final attempt: bu: ${bu}, type: ${type}, id: ${decodedId}`);
+      console.log(
+        `No man records found for any combination. Final attempt: bu: ${bu}, type: ${type}, id: ${decodedId}`
+      );
       return [];
     }
 
@@ -182,7 +199,9 @@ export const getManRecords = async (
       return dateB.getTime() - dateA.getTime();
     });
 
-    console.log(`Found ${records.length} man records for bu: ${bu}, type: ${type}, id: ${decodedId}`);
+    console.log(
+      `Found ${records.length} man records for bu: ${bu}, type: ${type}, id: ${decodedId}`
+    );
     return records;
   } catch (error) {
     console.error("Error fetching man records:", error);
@@ -194,10 +213,7 @@ export const getManRecordById = async (
   recordId: string
 ): Promise<ManRecord | null> => {
   try {
-    const docSnapshot = await firestore
-      .collection("mantr")
-      .doc(recordId)
-      .get();
+    const docSnapshot = await firestore.collection("mantr").doc(recordId).get();
 
     if (!docSnapshot.exists) {
       console.log(`No man record found with ID: ${recordId}`);
@@ -261,7 +277,9 @@ export const getTokenData = async (
 
     // If no results, try just with id and type
     if (tokenSnapshot.empty) {
-      console.log(`No token records found with bu filter. Trying with just id and type...`);
+      console.log(
+        `No token records found with bu filter. Trying with just id and type...`
+      );
       tokenQuery = firestore
         .collection("vehicleTr")
         .where("id", "==", decodedId)
@@ -272,7 +290,9 @@ export const getTokenData = async (
 
     // If still no results, try just with id
     if (tokenSnapshot.empty) {
-      console.log(`No token records found with type filter. Trying with just id...`);
+      console.log(
+        `No token records found with type filter. Trying with just id...`
+      );
       tokenQuery = firestore
         .collection("vehicleTr")
         .where("id", "==", decodedId);
@@ -293,14 +313,14 @@ export const getTokenData = async (
     const tokenData: TokenData = {
       _id: doc.id,
       id: data.id || decodedId,
-      name: data.name || '',
-      position: data.position || '',
-      department: data.department || '',
-      site: data.site || '',
-      type: data.type || 'token',
-      eSite: data.eSite || '',
-      status: data.status || '',
-      company: data.company || '',
+      name: data.name || "",
+      position: data.position || "",
+      department: data.department || "",
+      site: data.site || "",
+      type: data.type || "token",
+      eSite: data.eSite || "",
+      status: data.status || "",
+      company: data.company || "",
       trans: data.trans || [],
     };
 
@@ -311,4 +331,3 @@ export const getTokenData = async (
     return null;
   }
 };
-
