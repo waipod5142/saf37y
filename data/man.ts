@@ -28,6 +28,7 @@ const serializeManRecord = (record: any): ManRecord => {
     createdAt: convertFirebaseTimestamp(record.createdAt),
     // Handle training-specific date fields
     trainingDate: convertFirebaseTimestamp(record.trainingDate),
+    expirationDate: convertFirebaseTimestamp(record.expirationDate),
     expiryDate: convertFirebaseTimestamp(record.expiryDate),
     updateAt: convertFirebaseTimestamp(record.updateAt),
     updatedAt: convertFirebaseTimestamp(record.updatedAt),
@@ -49,14 +50,11 @@ export const getManRecords = async (
     if (type.toLowerCase() === "training") {
       console.log(`Fetching training records from trainings collection where empId: ${decodedId}`);
 
-      let trainingQuery = firestore
+      const trainingQuery = firestore
         .collection("trainings")
         .where("empId", "==", decodedId);
 
-      // Add bu filter if provided
-      if (bu) {
-        trainingQuery = trainingQuery.where("bu", "==", bu);
-      }
+      // Note: bu filter not applied for training records as trainings collection doesn't have bu field
 
       const trainingSnapshot = await trainingQuery.get();
 
