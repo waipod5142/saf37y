@@ -45,14 +45,14 @@ export default async function Account() {
           <div>{decodedToken.email}</div>
           {!!isPasswordProvider && <UpdatePasswordForm />}
         </CardContent>
-        {!decodedToken.admin && (
+        {/* {!decodedToken.admin && (
           <CardFooter className="flex flex-col items-start">
             <h2 className="text-red-500 text-2xl font-bold mb-2">
               Danger Zone
             </h2>
             <DeleteAccountButton />
           </CardFooter>
-        )}
+        )} */}
       </Card>
     </div>
   );

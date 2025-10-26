@@ -11,15 +11,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { EyeIcon, PlusIcon } from "lucide-react";
-import Link from "next/link";
-import RemoveFavouriteButton from "./remove-favourite-button";
+import { EditIcon, PlusIcon, Trash2Icon } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { Machine } from "@/types/machine";
-import { MachineDetailDialog } from "@/components/MachineDetailDialog";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { MachineEditModal } from "./machine-edit-modal";
+import { DeleteMachineDialog } from "./delete-machine-dialog";
+import { MachineDetailDialog } from "@/components/MachineDetailDialog";
 
 interface MyFavouritesClientProps {
   machines: (Machine & { machineKey: string })[];
@@ -43,16 +44,36 @@ export default function MyFavouritesClient({
   startIndex,
 }: MyFavouritesClientProps) {
   const router = useRouter();
-  const [selectedMachine, setSelectedMachine] = useState<{
+  const [selectedMachine, setSelectedMachine] = useState<(Machine & { machineKey: string }) | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [machineToDelete, setMachineToDelete] = useState<(Machine & { machineKey: string }) | null>(null);
+
+  // For MachineDetailDialog
+  const [selectedMachineDetail, setSelectedMachineDetail] = useState<{
     bu: string;
     type: string;
     id: string;
   } | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
 
-  const handleViewMachine = (bu: string, type: string, id: string) => {
-    setSelectedMachine({ bu, type, id });
-    setIsDialogOpen(true);
+  const handleEditMachine = (machine: Machine & { machineKey: string }) => {
+    setSelectedMachine(machine);
+    setIsEditModalOpen(true);
+  };
+
+  const handleDeleteMachine = (machine: Machine & { machineKey: string }) => {
+    setMachineToDelete(machine);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleViewDetail = (bu: string, type: string, id: string) => {
+    setSelectedMachineDetail({ bu, type, id });
+    setIsDetailDialogOpen(true);
+  };
+
+  const handleUpdate = () => {
+    router.refresh();
   };
 
   const handleTypeClick = (type: string) => {
@@ -178,7 +199,14 @@ export default function MyFavouritesClient({
                       {machine.type}
                     </Badge>
                   </TableCell>
-                  <TableCell>{machine.id}</TableCell>
+                  <TableCell>
+                    <button
+                      onClick={() => handleViewDetail(machine.bu, machine.type || "", machine.id)}
+                      className="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer font-medium"
+                    >
+                      {machine.id}
+                    </button>
+                  </TableCell>
                   <TableCell>{machine.kind}</TableCell>
                   <TableCell>{machine.location}</TableCell>
                   <TableCell>
@@ -196,20 +224,19 @@ export default function MyFavouritesClient({
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() =>
-                        handleViewMachine(
-                          machine.bu,
-                          machine.type || "",
-                          machine.id
-                        )
-                      }
+                      onClick={() => handleEditMachine(machine)}
+                      title="View/Edit Machine"
                     >
-                      <EyeIcon className="h-4 w-4" />
+                      <EditIcon className="h-4 w-4" />
                     </Button>
-                    <RemoveFavouriteButton
-                      propertyId={machine.machineKey}
-                      isMachine={true}
-                    />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDeleteMachine(machine)}
+                      title="Delete Machine"
+                    >
+                      <Trash2Icon className="h-4 w-4 text-destructive" />
+                    </Button>
                   </TableCell>
                 </TableRow>
               );
@@ -248,14 +275,40 @@ export default function MyFavouritesClient({
         </Table>
       )}
 
-      {/* Machine Detail Dialog */}
+      {/* Machine Edit Modal */}
       {selectedMachine && (
+        <MachineEditModal
+          isOpen={isEditModalOpen}
+          onClose={() => {
+            setIsEditModalOpen(false);
+            setSelectedMachine(null);
+          }}
+          machine={selectedMachine}
+          onUpdate={handleUpdate}
+        />
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      <DeleteMachineDialog
+        isOpen={isDeleteDialogOpen}
+        onClose={() => {
+          setIsDeleteDialogOpen(false);
+          setMachineToDelete(null);
+        }}
+        machine={machineToDelete}
+      />
+
+      {/* Machine Detail Dialog (for viewing inspection history) */}
+      {selectedMachineDetail && (
         <MachineDetailDialog
-          isOpen={isDialogOpen}
-          onClose={() => setIsDialogOpen(false)}
-          bu={selectedMachine.bu}
-          type={selectedMachine.type}
-          id={selectedMachine.id}
+          isOpen={isDetailDialogOpen}
+          onClose={() => {
+            setIsDetailDialogOpen(false);
+            setSelectedMachineDetail(null);
+          }}
+          bu={selectedMachineDetail.bu}
+          type={selectedMachineDetail.type}
+          id={selectedMachineDetail.id}
         />
       )}
     </div>

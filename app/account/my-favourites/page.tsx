@@ -17,27 +17,45 @@ export default async function MyFavourites({
   const machineFavourites = await getUserMachineFavourites();
   const allMachineFavourites = Object.keys(machineFavourites);
 
-  // Fetch ALL machine data (not paginated yet)
-  const allMachines: (Machine & { machineKey: string })[] = [];
-  for (const machineKey of allMachineFavourites) {
+  // Parse all machine keys to get unique BUs for batch fetching
+  const machinesByBu: Record<string, Array<{ bu: string; type: string; id: string; key: string }>> = {};
+
+  allMachineFavourites.forEach((machineKey) => {
     const [bu, type, id] = machineKey.split("_");
     if (bu && type && id) {
-      try {
-        const machineQuery = firestore
-          .collection("machine")
-          .where("bu", "==", bu)
-          .where("type", "==", type)
-          .where("id", "==", id);
+      if (!machinesByBu[bu]) {
+        machinesByBu[bu] = [];
+      }
+      machinesByBu[bu].push({ bu, type, id, key: machineKey });
+    }
+  });
 
-        const machineSnapshot = await machineQuery.get();
+  // Fetch machines in batches by BU (much faster!)
+  const allMachines: (Machine & { machineKey: string })[] = [];
 
-        if (!machineSnapshot.empty) {
-          const rawData = machineSnapshot.docs[0].data();
+  for (const bu of Object.keys(machinesByBu)) {
+    try {
+      // Fetch all machines for this BU at once
+      const machinesSnapshot = await firestore
+        .collection("machine")
+        .where("bu", "==", bu)
+        .get();
 
+      // Create a lookup map for fast access
+      const machineMap = new Map<string, any>();
+      machinesSnapshot.docs.forEach((doc) => {
+        const data = doc.data();
+        const lookupKey = `${data.bu}_${data.type}_${data.id}`;
+        machineMap.set(lookupKey, { ...data, docId: doc.id });
+      });
+
+      // Match with favorites
+      machinesByBu[bu].forEach(({ key }) => {
+        const machineData = machineMap.get(key);
+        if (machineData) {
           // Convert Firebase Timestamps to serializable format
           const serializedData = JSON.parse(
-            JSON.stringify(rawData, (key, value) => {
-              // Convert Firestore Timestamps to ISO strings
+            JSON.stringify(machineData, (_key, value) => {
               if (value && typeof value === 'object' && '_seconds' in value) {
                 return new Date(value._seconds * 1000).toISOString();
               }
@@ -45,16 +63,14 @@ export default async function MyFavourites({
             })
           );
 
-          const machineData = {
+          allMachines.push({
             ...serializedData,
-            docId: machineSnapshot.docs[0].id,
-            machineKey,
-          } as Machine & { machineKey: string };
-          allMachines.push(machineData);
+            machineKey: key,
+          } as Machine & { machineKey: string });
         }
-      } catch (error) {
-        console.error(`Error fetching machine ${machineKey}:`, error);
-      }
+      });
+    } catch (error) {
+      console.error(`Error fetching machines for BU ${bu}:`, error);
     }
   }
 
