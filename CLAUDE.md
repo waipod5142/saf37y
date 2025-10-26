@@ -2,6 +2,51 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Application Overview
+
+**Saf37y** is a comprehensive workplace safety management platform built with Next.js 15 and Firebase. The application serves multi-national construction and industrial operations across Thailand, Vietnam, Cambodia, Sri Lanka, and Bangladesh.
+
+### Core Capabilities
+
+1. **Machine Safety Inspections** - Digital inspection forms for construction equipment (mixers, pumps, excavators, etc.) with:
+   - QR code-based machine identification
+   - GPS-tagged inspection records
+   - Photo documentation with defect tracking
+   - Pass/fail status determination
+   - Defect response and resolution tracking
+
+2. **Personnel Safety Activities** - Comprehensive safety program management including:
+   - Safety Observation Tools (SOT)
+   - Safety talks and toolbox meetings
+   - Training records with expiration tracking
+   - Safety alerts and incident reporting
+   - Risk assessments
+   - Boot/PPE inspections
+   - Safety coupon/token incentive programs
+
+3. **Maintenance Tracking** - Equipment maintenance schedule management:
+   - Greasing schedules
+   - Lubrication tracking
+   - Maintenance history
+
+4. **Analytics & KPI Dashboards** - Real-time safety metrics and compliance tracking:
+   - Interactive maps with machine location clustering
+   - Country and site-specific dashboards
+   - Inspection completion rates
+   - Defect trending
+   - Personnel safety activity metrics
+   - Transaction history and audit trails
+
+5. **Property Management** (Legacy feature) - Real estate listing and management system
+
+### Target Users
+
+- Safety inspectors and supervisors
+- Maintenance personnel
+- Site managers
+- Safety managers
+- Corporate safety leadership
+
 ## Development Commands
 
 - `npm run dev` - Start development server with Turbopack
@@ -13,9 +58,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Architecture Overview
 
-This is a Next.js 15 property management application with Firebase authentication and real-time database. The app supports property listing, search, admin management, and machine inspection functionality.
+This is a Next.js 15 safety management application with Firebase authentication and real-time database. The app supports:
+
+- **Property management** - Property listings, search, and admin management
+- **Machine safety inspections** - Equipment inspection forms and tracking
+- **Personnel safety activities** - Safety training, meetings, alerts, and safety observations
+- **Maintenance tracking** - Lubrication and greasing schedules
+- **Analytics and KPI dashboards** - Real-time safety metrics and compliance tracking
 
 ### Key Technologies
+
 - **Next.js 15** with App Router
 - **React 19** with modern features
 - **Firebase** (Authentication, Storage, Admin SDK)
@@ -37,6 +89,7 @@ This is a Next.js 15 property management application with Firebase authenticatio
 ### Application Structure
 
 **Authentication System:**
+
 - Firebase Auth with Google OAuth and email/password
 - JWT token management with refresh tokens
 - Role-based access control (admin vs regular users)
@@ -44,23 +97,52 @@ This is a Next.js 15 property management application with Firebase authenticatio
 - Middleware at `middleware.ts` handles route protection and token refresh
 
 **Route Structure:**
+
 - `app/` - Main application routes using App Router
 - `app/(auth)/` - Authentication routes (login, register, forgot-password)
 - `app/property-search/` - Property search with filtering and modal intercepted login
 - `app/property/[propertyId]/` - Individual property pages
 - `app/admin-dashboard/` - Admin-only property management with edit and new property pages
 - `app/account/` - User account management with favorites and password updates
-- `app/Machine/[bu]/[type]/[id]/` - Machine inspection pages with business unit, type, and ID parameters
-- `app/Man/` - Man-related functionality pages
-- `app/dashboard/` - Country selection for safety inspection dashboards
-- `app/dashboard/[bu]/` - Country-specific dashboard with interactive maps and machine data visualization
-- `app/transaction/` - Transaction summary page showing inspection statistics by country
-- `app/transaction/[bu]/` - Country-specific transaction history and detailed inspection records
-- `app/api/` - API routes for machine records, token refresh, dashboard data, and transaction summaries
+- **Machine Inspection Routes:**
+  - `app/Machine/[bu]/[type]/[id]/` - Machine inspection form pages with business unit, type, and ID parameters
+  - `app/dashboard/` - Country selection for machine safety inspection dashboards
+  - `app/dashboard/[bu]/` - Country-specific dashboard with interactive maps and machine location visualization
+  - `app/dashboardbysite/` - Site selection dashboard
+  - `app/dashboardbysite/[site]/` - Site-specific machine dashboard
+  - `app/transaction/` - Transaction summary page showing inspection statistics by country
+  - `app/transaction/[bu]/` - Country-specific transaction history and detailed inspection records
+  - `app/kpi/` - Machine inspection KPI country selection
+  - `app/kpi/[bu]/` - Country-specific machine KPI dashboard
+  - `app/kpi/[bu]/[site]/` - Site-specific machine KPI dashboard
+  - `app/kpilog/[bu]/[site]/` - Machine inspection log by site
+  - `app/rmx/` - Mixer machine owner dashboard
+  - `app/rmxtype/` - Mixer machine type analytics
+- **Personnel Safety Activity Routes:**
+  - `app/Man/[bu]/[type]/[id]/` - Personnel safety activity pages (SOT, Talk, Toolbox, Coupon tracking)
+  - `app/ManForm/[bu]/[type]/[id]/` - Safety activity forms (Alerts, Meetings, Toolbox, Boot inspections, Risk Assessments, PTO)
+  - `app/ManForm/[bu]/[type]/[id]/[trainingDate]/[expirationDate]/[courseId]/` - Training record creation
+  - `app/kpiman/` - Personnel safety activity KPI country selection
+  - `app/kpiman/[bu]/` - Country-specific personnel safety KPI dashboard
+  - `app/kpialert/` - Alert KPI country selection
+  - `app/kpialert/[bu]/` - Country-specific alert KPI dashboard
+- **Maintenance Method Routes:**
+  - `app/MethodForm/[bu]/[type]/[id]/` - Maintenance method forms (Greasing, Lubrication)
+- **API Routes:**
+  - `app/api/machine-records/` - Machine inspection records API
+  - `app/api/man-records/` - Personnel safety activity records API
+  - `app/api/token-data/` - Safety coupon/token data API
+  - `app/api/refresh-token/` - JWT token refresh endpoint
+  - `app/api/dashboard-data/` - Dashboard statistics and analytics API
+  - `app/api/transaction-summary/` - Transaction summary aggregation API
+  - `app/api/transactions/` - Transaction data API
+  - `app/api/all-machine-transactions/` - All machine transactions API
 
 **Data Layer:**
-- `data/` - Data access functions for properties, favorites, machines, and vocabulary
+
+- `data/` - Data access functions for properties, favorites, machines, personnel activities, and vocabulary
   - `data/machines.ts` - Machine data fetching and inspection records
+  - `data/man.ts` - Personnel safety activity data (SOT, Talk, Toolbox, training, alerts, meetings, risk assessments, PTO)
   - `data/forms.ts` - Form questions and title fetching from Firebase forms collection
   - `data/properties.ts` - Property data access functions
   - `data/favourites.ts` - User favorites management
@@ -80,17 +162,21 @@ This is a Next.js 15 property management application with Firebase authenticatio
   - `lib/actions/` - Shared server actions for form submissions and data mutations
     - `lib/actions/forms.ts` - Form questions and title fetching with dynamic title support
     - `lib/actions/machines.ts` - Machine inspection form submission and records management
+    - `lib/actions/man.ts` - Personnel safety activity form submission and records management
+    - `lib/actions/method.ts` - Maintenance method form submission
+    - `lib/actions/employees.ts` - Employee data management
     - `lib/actions/vocabulary.ts` - Vocabulary management actions
   - `lib/constants/` - Application constants and configuration
     - `lib/constants/countries.ts` - Dynamic country and site management with vocabulary system integration
   - `lib/machine-types.ts` - Machine type utilities
   - `lib/imageUrlFormatter.ts` - Image URL formatting utilities
   - `lib/imageCompression.ts` - Image compression utilities with presets for different use cases (defects, general, thumbnails)
-  - `lib/utils.ts` - General utility functions
+  - `lib/utils.ts` - General utility functions including BU code normalization
 - `hooks/` - Custom React hooks
   - `hooks/useGeolocation.ts` - Geolocation functionality for machine positioning
 
 **Components:**
+
 - `components/ui/` - Reusable UI components (shadcn/ui)
   - Form components, buttons, dialogs, tables, and other primitive UI elements
   - `components/ui/date-utils.tsx` - Date formatting utilities and timestamp conversion
@@ -98,54 +184,83 @@ This is a Next.js 15 property management application with Firebase authenticatio
   - `components/ui/breadcrumb.tsx` - Navigation breadcrumb component
   - `components/ui/carousel.tsx` - Image carousel component with Embla Carousel
 - `components/` - Application-specific components
-  - `components/machine-form.tsx` - Full machine inspection form with Firebase integration, geolocation, form submission, and image uploads
-  - `components/machine-title.tsx` - Simplified component displaying only machine title fetched from Firebase forms collection
-  - `components/machine-detail.tsx` - Machine inspection records display
-  - `components/machine-detail-client.tsx` - Client-side machine detail functionality with defect response system
-  - `components/machine-header.tsx` - Machine information header with dynamic field display
-  - `components/multi-image-uploader.tsx` - Multi-image upload component with compression
-  - `components/property-form.tsx` - Property management form
-  - `components/auth-buttons.tsx` - Authentication UI components
-  - `components/continue-with-google-button.tsx` - Google OAuth authentication button
-  - `components/login-form.tsx` - Login form component
-  - `components/mobile-nav.tsx` - Mobile navigation component with responsive design
-  - `components/property-status-badge.tsx` - Property status display component with color coding
-  - `components/qr-code.tsx` - QR code generation component for machine identification
-  - `components/ClusteredMarkers.tsx` - Map clustering component for machine location visualization using Leaflet
-  - `components/LocationMapDialog.tsx` - Interactive location map modal for machine positioning
-  - `components/MachineDetailDialog.tsx` - Machine detail modal dialog for inspection data display
-  - `components/MachineListModal.tsx` - Machine list modal interface for dashboard views
-  - `components/RecentInspectionsDialog.tsx` - Recent inspections modal for displaying latest records
+  - **Machine Components:**
+    - `components/machine-form.tsx` - Full machine inspection form with Firebase integration, geolocation, form submission, and image uploads
+    - `components/machine-title.tsx` - Simplified component displaying only machine title fetched from Firebase forms collection
+    - `components/machine-detail.tsx` - Machine inspection records display
+    - `components/machine-detail-client.tsx` - Client-side machine detail functionality with defect response system
+    - `components/machine-header.tsx` - Machine information header with dynamic field display
+  - **Personnel Safety Activity Components:**
+    - `components/man-option.tsx` - Personnel activity option selector
+    - `components/man-header.tsx` - Personnel information header
+    - `components/man-detail.tsx` - Personnel safety activity records display
+    - `components/man-type-badge.tsx` - Personnel activity type badge
+    - `components/man-form-sot.tsx` - Safety Observation Tool form
+    - `components/man-form-talk.tsx` - Safety Talk form
+    - `components/man-form-toolbox.tsx` - Toolbox meeting form
+    - `components/man-form-token.tsx` - Safety coupon/token form
+    - `components/man-form-alert.tsx` - Safety alert form
+    - `components/man-form-meeting.tsx` - Safety meeting form
+    - `components/man-form-boot.tsx` - Boot inspection form
+    - `components/man-form-ra.tsx` - Risk assessment form
+    - `components/man-form-pto.tsx` - PTO (Paid Time Off) form
+    - `components/man-detail-*-client.tsx` - Client-side detail views for each activity type
+  - **Maintenance Method Components:**
+    - `components/method-form-grease.tsx` - Greasing schedule form
+    - `components/method-form-lub.tsx` - Lubrication schedule form
+  - **Shared Components:**
+    - `components/multi-image-uploader.tsx` - Multi-image upload component with compression
+    - `components/change-user-button.tsx` - User switching component
+    - `components/property-form.tsx` - Property management form
+    - `components/auth-buttons.tsx` - Authentication UI components
+    - `components/continue-with-google-button.tsx` - Google OAuth authentication button
+    - `components/login-form.tsx` - Login form component
+    - `components/mobile-nav.tsx` - Mobile navigation component with responsive design
+    - `components/property-status-badge.tsx` - Property status display component with color coding
+    - `components/qr-code.tsx` - QR code generation component for machine identification
+    - `components/ClusteredMarkers.tsx` - Map clustering component for machine location visualization using Leaflet
+    - `components/LocationMapDialog.tsx` - Interactive location map modal for machine positioning
+    - `components/MachineDetailDialog.tsx` - Machine detail modal dialog for inspection data display
+    - `components/MachineListModal.tsx` - Machine list modal interface for dashboard views
+    - `components/RecentInspectionsDialog.tsx` - Recent inspections modal for displaying latest records
 - Uses Radix UI primitives with custom styling
 
 ### Configuration Notes
 
 **Path Aliases:**
+
 - `@/*` maps to project root for clean imports
 
 **ESLint Configuration:**
+
 - Extends Next.js TypeScript rules
 - Disables unused vars, explicit any, and empty object type warnings
 
 **Tailwind Setup:**
+
 - Custom design system with CSS variables
 - Dark mode support configured
 - Animation utilities included
 
 **Firebase Configuration:**
+
 - Production environment: `sccc-inseesafety-prod`
 - Supports Google Auth and file storage
 - Firebase Admin SDK for server-side operations
 - Firebase App Hosting configuration via `apphosting.yaml`
-- Collections: 
+- Collections:
   - `properties` - Property listings and management data
   - `favourites` - User favorite properties
   - `machine` - Basic machine metadata including country and site information
   - `machinetr` - Machine inspection records and transaction history
+  - `man` - Personnel safety activity records (SOT, Talk, Toolbox, training, alerts, meetings, risk assessments, PTO, coupons)
+  - `mantr` - Personnel safety activity transaction history
+  - `employees` - Employee data and information
   - `forms` - Inspection questions and titles for dynamic form generation
   - `vocabularies` - Dynamic country, site, and business unit configuration data
 
 **Deployment Configuration:**
+
 - `apphosting.yaml` - Firebase App Hosting configuration for modern deployment
 - `firebase.json` - Legacy Firebase hosting configuration
 - Automated deployment via `npm run deploy` for main branch
@@ -154,6 +269,7 @@ This is a Next.js 15 property management application with Firebase authenticatio
 ### Key Patterns
 
 **Form Handling:**
+
 - React Hook Form with Zod validation
 - Consistent error handling and user feedback
 - Server actions for form submissions located in `lib/actions/`
@@ -164,6 +280,7 @@ This is a Next.js 15 property management application with Firebase authenticatio
 - **Defect response system** - Failed inspection items can be responded to with fix descriptions and evidence photos
 
 **Image Management:**
+
 - Multi-image uploader component
 - Firebase Storage integration
 - Image optimization for property listings
@@ -172,6 +289,7 @@ This is a Next.js 15 property management application with Firebase authenticatio
 - **Image compression** with different types (general, defect) for optimal storage
 
 **State Management:**
+
 - React Context for authentication
 - Server actions for data mutations located in `lib/actions/` and co-located with features
 - Client-side state for UI interactions
@@ -180,6 +298,7 @@ This is a Next.js 15 property management application with Firebase authenticatio
 - Form questions and titles dynamically loaded from Firebase forms collection
 
 **Machine Inspection Components:**
+
 - **Dual-component architecture** for machine inspection pages:
   - `machine-form.tsx` - Full-featured inspection form with all functionality
   - `machine-title.tsx` - Lightweight title-only display component
@@ -188,15 +307,50 @@ This is a Next.js 15 property management application with Firebase authenticatio
 - **Loading states** - Proper loading indicators while fetching titles from Firebase
 - **Error handling** - Toast notifications for title fetching failures with graceful degradation
 
+**Personnel Safety Activity System:**
+
+- **Multi-type form system** for different safety activities:
+  - SOT (Safety Observation Tool) - Safety observations and hazard identification
+  - Talk - Safety discussions and communications
+  - Toolbox - Toolbox meeting records
+  - Alert - Safety alerts and incident reporting
+  - Meeting - Safety meeting minutes
+  - Boot - Boot and PPE inspection records
+  - RA (Risk Assessment) - Risk assessment documentation
+  - PTO - Personnel time off tracking
+  - Coupon/Token - Safety incentive token tracking
+- **Training management** - Training records with expiration dates and course tracking
+- **Detail views** - Each activity type has dedicated client-side detail components for viewing records
+- **Activity routing** - Dynamic routing based on activity type for appropriate form display
+
+**Maintenance Method System:**
+
+- **Lubrication tracking** - Greasing and lubrication schedule management
+- **Method-specific forms** - Dedicated forms for different maintenance methods
+- **Schedule management** - Tracking of maintenance schedules and completion
+
 **Dashboard and Analytics:**
-- Country-specific dashboard views with interactive maps and machine clustering
-- Real-time statistics and inspection data visualization
-- Dynamic machine location mapping with clustered markers
-- Interactive modals for detailed machine information and recent inspections
-- Dashboard data API with caching and error handling for performance
-- Visual country selection interface with flag icons and site information
+
+- **Machine Inspection Dashboards:**
+  - Country-specific dashboard views with interactive maps and machine clustering
+  - Site-specific dashboard for focused analysis
+  - Real-time statistics and inspection data visualization
+  - Dynamic machine location mapping with clustered markers
+  - Interactive modals for detailed machine information and recent inspections
+  - Dashboard data API with caching and error handling for performance
+  - Visual country selection interface with flag icons and site information
+  - Mixer-specific dashboards tracking by owner and type
+- **Personnel Safety KPI Dashboards:**
+  - Country-specific personnel safety activity tracking
+  - Alert-specific KPI monitoring
+  - Safety activity metrics and compliance tracking
+- **Multi-level KPI views:**
+  - Country-level aggregated metrics
+  - Site-level detailed analytics
+  - Activity-specific KPI tracking
 
 **Transaction Tracking:**
+
 - Comprehensive transaction history by country and business unit
 - Daily and weekly inspection statistics with global aggregation
 - Real-time transaction summaries with automated data refresh
@@ -217,14 +371,17 @@ This is a Next.js 15 property management application with Firebase authenticatio
 - Responsive design with mobile-optimized transaction cards
 
 **Dynamic Country/Site Management:**
+
 - Vocabulary-driven country and site configuration
 - Fallback data system for reliability when vocabulary service is unavailable
 - Dynamic loading of country flags, names, and site mappings
 - Centralized country constants with Firebase integration
 - Flexible business unit and site relationship management
 - Support for adding new countries without code changes
+- **Business unit normalization** - BU codes (office, srb, mkt, lbm, rmx, iagg, ieco) normalized to country codes (e.g., "th" for Thailand-based units)
 
 **Security:**
+
 - Middleware-based route protection
 - Token-based authentication with refresh
 - Role-based access control

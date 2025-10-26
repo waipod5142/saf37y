@@ -24,3 +24,26 @@ export const getUserFavourites = async () => {
   const favouritesData = favouritesSnapshot.data();
   return favouritesData || {};
 };
+
+export const getUserMachineFavourites = async () => {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("firebaseAuthToken")?.value;
+
+  if (!token) {
+    return {};
+  }
+
+  const verifiedToken = await auth.verifyIdToken(token);
+
+  if (!verifiedToken) {
+    return {};
+  }
+
+  const favouritesSnapshot = await firestore
+    .collection("machineFavourites")
+    .doc(verifiedToken.uid)
+    .get();
+
+  const favouritesData = favouritesSnapshot.data();
+  return favouritesData || {};
+};

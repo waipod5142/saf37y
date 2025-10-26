@@ -1,9 +1,72 @@
-import { firestore } from "@/firebase/server";
+import { firestore, getTotalPages } from "@/firebase/server";
 import { Machine } from "@/types/machine";
 import { MachineInspectionRecord } from "@/types/machineInspectionRecord";
 import { getFormInspectionPeriods, InspectionPeriod } from "./forms";
 import { getSiteMapping } from "@/lib/constants/countries";
 import "server-only";
+
+type GetMachinesOptions = {
+  filters?: {
+    bu?: string | null;
+    type?: string | null;
+    site?: string | null;
+    id?: string | null;
+  };
+  pagination?: {
+    pageSize?: number;
+    page?: number;
+  };
+};
+
+export const getMachines = async (options?: GetMachinesOptions) => {
+  const page = options?.pagination?.page || 1;
+  const pageSize = options?.pagination?.pageSize || 20;
+  const { bu, type, site, id } = options?.filters || {};
+
+  let machinesQuery = firestore.collection("machine") as any;
+
+  // Apply where filters first
+  if (bu !== null && bu !== undefined) {
+    machinesQuery = machinesQuery.where("bu", "==", bu);
+  }
+
+  if (type !== null && type !== undefined) {
+    machinesQuery = machinesQuery.where("type", "==", type.toLowerCase());
+  }
+
+  if (site !== null && site !== undefined) {
+    machinesQuery = machinesQuery.where("site", "==", site);
+  }
+
+  if (id !== null && id !== undefined) {
+    machinesQuery = machinesQuery.where("id", "==", id);
+  }
+
+  const totalPages = await getTotalPages(machinesQuery, pageSize);
+
+  const machinesSnapshot = await machinesQuery
+    .limit(pageSize)
+    .offset((page - 1) * pageSize)
+    .get();
+
+  let machines = machinesSnapshot.docs.map(
+    (doc: any) =>
+      ({
+        ...doc.data(),
+        docId: doc.id,
+      } as Machine)
+  );
+
+  // Sort client-side by bu, site, type, id
+  machines.sort((a: Machine, b: Machine) => {
+    if (a.bu !== b.bu) return (a.bu || "").localeCompare(b.bu || "");
+    if (a.site !== b.site) return (a.site || "").localeCompare(b.site || "");
+    if (a.type !== b.type) return (a.type || "").localeCompare(b.type || "");
+    return (a.id || "").localeCompare(b.id || "");
+  });
+
+  return { data: machines, totalPages };
+};
 
 // Helper function to check if a machine type is a mixer type
 export const isMixerType = (type: string): boolean => {

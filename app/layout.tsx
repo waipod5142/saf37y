@@ -67,6 +67,14 @@ export default function RootLayout({
                   Alert
                 </Link>
               </li>
+              {/* <li>
+                <Link
+                  href="/property-search"
+                  className="uppercase tracking-widest hover:underline"
+                >
+                  Search Properties
+                </Link>
+              </li> */}
               <li>
                 <AuthButtons />
               </li>

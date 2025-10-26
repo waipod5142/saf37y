@@ -15,9 +15,10 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 const formSchema = z.object({
-  minPrice: z.string().optional(),
-  maxPrice: z.string().optional(),
-  minBedrooms: z.string().optional(),
+  bu: z.string().optional(),
+  type: z.string().optional(),
+  site: z.string().optional(),
+  id: z.string().optional(),
 });
 
 export default function FiltersForm() {
@@ -27,26 +28,30 @@ export default function FiltersForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      maxPrice: searchParams.get("maxPrice") ?? "",
-      minBedrooms: searchParams.get("minBedrooms") ?? "",
-      minPrice: searchParams.get("minPrice") ?? "",
+      bu: searchParams.get("bu") ?? "",
+      type: searchParams.get("type") ?? "",
+      site: searchParams.get("site") ?? "",
+      id: searchParams.get("id") ?? "",
     },
   });
 
   const handleSubmit = async (data: z.infer<typeof formSchema>) => {
-    console.log({ data });
     const newSearchParams = new URLSearchParams();
 
-    if (data.minPrice) {
-      newSearchParams.set("minPrice", data.minPrice);
+    if (data.bu) {
+      newSearchParams.set("bu", data.bu);
     }
 
-    if (data.maxPrice) {
-      newSearchParams.set("maxPrice", data.maxPrice);
+    if (data.type) {
+      newSearchParams.set("type", data.type);
     }
 
-    if (data.minBedrooms) {
-      newSearchParams.set("minBedrooms", data.minBedrooms);
+    if (data.site) {
+      newSearchParams.set("site", data.site);
+    }
+
+    if (data.id) {
+      newSearchParams.set("id", data.id);
     }
 
     newSearchParams.set("page", "1");
@@ -57,55 +62,52 @@ export default function FiltersForm() {
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(handleSubmit)}
-        className="grid grid-cols-4 gap-2"
+        className="grid grid-cols-5 gap-2"
       >
         <FormField
           control={form.control}
-          name="minPrice"
+          name="bu"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Min price</FormLabel>
+              <FormLabel>BU</FormLabel>
               <FormControl>
-                <Input
-                  {...field}
-                  placeholder="Min price"
-                  type="number"
-                  min={0}
-                />
+                <Input {...field} placeholder="BU (e.g., vn, th)" />
               </FormControl>
             </FormItem>
           )}
         />
         <FormField
           control={form.control}
-          name="maxPrice"
+          name="type"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Max price</FormLabel>
+              <FormLabel>Type</FormLabel>
               <FormControl>
-                <Input
-                  {...field}
-                  placeholder="Max price"
-                  type="number"
-                  min={0}
-                />
+                <Input {...field} placeholder="Type (e.g., socket)" />
               </FormControl>
             </FormItem>
           )}
         />
         <FormField
           control={form.control}
-          name="minBedrooms"
+          name="site"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Min bedrooms</FormLabel>
+              <FormLabel>Site</FormLabel>
               <FormControl>
-                <Input
-                  {...field}
-                  placeholder="Min bedrooms"
-                  type="number"
-                  min={0}
-                />
+                <Input {...field} placeholder="Site (e.g., catl)" />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="id"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>ID</FormLabel>
+              <FormControl>
+                <Input {...field} placeholder="ID (e.g., CATL-AD-11)" />
               </FormControl>
             </FormItem>
           )}

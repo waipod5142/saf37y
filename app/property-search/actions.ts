@@ -46,3 +46,50 @@ export const addFavourite = async (propertyId: string, authToken: string) => {
       }
     );
 };
+
+export const removeMachineFavourite = async (
+  machineKey: string,
+  authToken: string
+) => {
+  const verifiedToken = await auth.verifyIdToken(authToken);
+
+  if (!verifiedToken) {
+    return {
+      error: true,
+      message: "Unauthorized",
+    };
+  }
+
+  await firestore
+    .collection("machineFavourites")
+    .doc(verifiedToken.uid)
+    .update({
+      [machineKey]: FieldValue.delete(),
+    });
+};
+
+export const addMachineFavourite = async (
+  machineKey: string,
+  authToken: string
+) => {
+  const verifiedToken = await auth.verifyIdToken(authToken);
+
+  if (!verifiedToken) {
+    return {
+      error: true,
+      message: "Unauthorized",
+    };
+  }
+
+  await firestore
+    .collection("machineFavourites")
+    .doc(verifiedToken.uid)
+    .set(
+      {
+        [machineKey]: true,
+      },
+      {
+        merge: true,
+      }
+    );
+};

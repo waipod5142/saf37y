@@ -1,6 +1,6 @@
 "use client";
 
-import { removeFavourite } from "@/app/property-search/actions";
+import { removeFavourite, removeMachineFavourite } from "@/app/property-search/actions";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/auth";
 import { Trash2Icon } from "lucide-react";
@@ -9,21 +9,29 @@ import { toast } from "sonner";
 
 export default function RemoveFavouriteButton({
   propertyId,
+  isMachine = false,
 }: {
   propertyId: string;
+  isMachine?: boolean;
 }) {
   const auth = useAuth();
   const router = useRouter();
   return (
     <Button
       variant="outline"
+      size="sm"
       onClick={async () => {
         const tokenResult = await auth?.currentUser?.getIdTokenResult();
         if (!tokenResult) {
           return;
         }
-        await removeFavourite(propertyId, tokenResult.token);
-        toast.warning("Property removed from favourites");
+        if (isMachine) {
+          await removeMachineFavourite(propertyId, tokenResult.token);
+          toast.warning("Machine removed from favourites");
+        } else {
+          await removeFavourite(propertyId, tokenResult.token);
+          toast.warning("Property removed from favourites");
+        }
         router.refresh();
       }}
     >
