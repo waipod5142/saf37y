@@ -39,12 +39,18 @@ export default function AddMachine() {
     setLoading(true);
 
     try {
+      // Concatenate site prefix to id
+      const concatenatedId = `${formData.site.toUpperCase()}-${formData.id}`;
+
       const response = await fetch("/api/machines", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          id: concatenatedId,
+        }),
       });
 
       const data = await response.json();

@@ -55,7 +55,7 @@ export default function AuthButtons() {
             )}
             {!auth.customClaims?.admin && (
               <DropdownMenuItem asChild>
-                <Link href="/account/my-favourites">My Favourites</Link>
+                <Link href="/account/my-favourites">My Machine List</Link>
               </DropdownMenuItem>
             )}
             <DropdownMenuItem
@@ -77,13 +77,13 @@ export default function AuthButtons() {
           >
             Login
           </Link>
-          <div className="h-8 w-[1px] bg-white/50" />
+          {/* <div className="h-8 w-[1px] bg-white/50" />
           <Link
             href="/register"
             className="uppercase tracking-widest hover:underline"
           >
             Signup
-          </Link>
+          </Link> */}
         </div>
       )}
     </div>

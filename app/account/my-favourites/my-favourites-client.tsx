@@ -11,7 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { EditIcon, PlusIcon, Trash2Icon } from "lucide-react";
+import { EditIcon, PlusIcon, Trash2Icon, QrCode } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Machine } from "@/types/machine";
@@ -21,6 +21,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MachineEditModal } from "./machine-edit-modal";
 import { DeleteMachineDialog } from "./delete-machine-dialog";
 import { MachineDetailDialog } from "@/components/MachineDetailDialog";
+import { MachineQRGenerator } from "@/components/MachineQRGenerator";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface MyFavouritesClientProps {
   machines: (Machine & { machineKey: string })[];
@@ -44,10 +53,14 @@ export default function MyFavouritesClient({
   startIndex,
 }: MyFavouritesClientProps) {
   const router = useRouter();
-  const [selectedMachine, setSelectedMachine] = useState<(Machine & { machineKey: string }) | null>(null);
+  const [selectedMachine, setSelectedMachine] = useState<
+    (Machine & { machineKey: string }) | null
+  >(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [machineToDelete, setMachineToDelete] = useState<(Machine & { machineKey: string }) | null>(null);
+  const [machineToDelete, setMachineToDelete] = useState<
+    (Machine & { machineKey: string }) | null
+  >(null);
 
   // For MachineDetailDialog
   const [selectedMachineDetail, setSelectedMachineDetail] = useState<{
@@ -56,6 +69,12 @@ export default function MyFavouritesClient({
     id: string;
   } | null>(null);
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
+
+  // For QR Code generation
+  const [selectedMachineKeys, setSelectedMachineKeys] = useState<Set<string>>(
+    new Set()
+  );
+  const [isQRDialogOpen, setIsQRDialogOpen] = useState(false);
 
   const handleEditMachine = (machine: Machine & { machineKey: string }) => {
     setSelectedMachine(machine);
@@ -88,14 +107,54 @@ export default function MyFavouritesClient({
 
   const sortedTypes = Object.entries(countByType).sort((a, b) => b[1] - a[1]);
 
+  const handleSelectMachine = (machineKey: string, checked: boolean) => {
+    const newSelected = new Set(selectedMachineKeys);
+    if (checked) {
+      newSelected.add(machineKey);
+    } else {
+      newSelected.delete(machineKey);
+    }
+    setSelectedMachineKeys(newSelected);
+  };
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      const allKeys = new Set(machines.map((m) => m.machineKey));
+      setSelectedMachineKeys(allKeys);
+    } else {
+      setSelectedMachineKeys(new Set());
+    }
+  };
+
+  const handleGenerateQR = () => {
+    if (selectedMachineKeys.size > 0) {
+      setIsQRDialogOpen(true);
+    }
+  };
+
+  const selectedMachines = machines.filter((m) =>
+    selectedMachineKeys.has(m.machineKey)
+  );
+  const allSelected =
+    machines.length > 0 && selectedMachineKeys.size === machines.length;
+  const someSelected = selectedMachineKeys.size > 0 && !allSelected;
+
   return (
     <div className="max-w-screen-2xl mx-auto p-5">
       <div className="flex justify-between items-center mb-5">
-        <h1 className="text-4xl font-bold">My Machine Favourites</h1>
-        <Button onClick={() => router.push("/admin/add-machine")}>
-          <PlusIcon className="mr-2 h-4 w-4" />
-          Add New Machine
-        </Button>
+        <h1 className="text-4xl font-bold">My Machines</h1>
+        <div className="flex gap-2">
+          {selectedMachineKeys.size > 0 && (
+            <Button onClick={handleGenerateQR} variant="outline">
+              <QrCode className="mr-2 h-4 w-4" />
+              Generate QR ({selectedMachineKeys.size})
+            </Button>
+          )}
+          <Button onClick={() => router.push("/admin/add-machine")}>
+            <PlusIcon className="mr-2 h-4 w-4" />
+            Add New Machine
+          </Button>
+        </div>
       </div>
 
       {/* Statistics Cards */}
@@ -157,6 +216,13 @@ export default function MyFavouritesClient({
         <Table className="mt-4">
           <TableHeader>
             <TableRow>
+              <TableHead className="w-12">
+                <Checkbox
+                  checked={allSelected}
+                  onCheckedChange={handleSelectAll}
+                  aria-label="Select all"
+                />
+              </TableHead>
               <TableHead>No</TableHead>
               <TableHead>Image</TableHead>
               <TableHead>BU</TableHead>
@@ -175,6 +241,18 @@ export default function MyFavouritesClient({
               const globalIndex = startIndex + idx + 1;
               return (
                 <TableRow key={machine.machineKey}>
+                  <TableCell>
+                    <Checkbox
+                      checked={selectedMachineKeys.has(machine.machineKey)}
+                      onCheckedChange={(checked) =>
+                        handleSelectMachine(
+                          machine.machineKey,
+                          checked as boolean
+                        )
+                      }
+                      aria-label={`Select ${machine.id}`}
+                    />
+                  </TableCell>
                   <TableCell>{globalIndex}</TableCell>
                   <TableCell>
                     {machine.images?.[0] && (
@@ -201,7 +279,13 @@ export default function MyFavouritesClient({
                   </TableCell>
                   <TableCell>
                     <button
-                      onClick={() => handleViewDetail(machine.bu, machine.type || "", machine.id)}
+                      onClick={() =>
+                        handleViewDetail(
+                          machine.bu,
+                          machine.type || "",
+                          machine.id
+                        )
+                      }
                       className="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer font-medium"
                     >
                       {machine.id}
@@ -244,7 +328,7 @@ export default function MyFavouritesClient({
           </TableBody>
           <TableFooter>
             <TableRow>
-              <TableCell colSpan={10} className="text-center">
+              <TableCell colSpan={11} className="text-center">
                 {Array.from({ length: totalPages }).map((_, i) => {
                   const pageNum = i + 1;
                   const params = new URLSearchParams();
@@ -311,6 +395,24 @@ export default function MyFavouritesClient({
           id={selectedMachineDetail.id}
         />
       )}
+
+      {/* QR Code Generation Dialog */}
+      <Dialog open={isQRDialogOpen} onOpenChange={setIsQRDialogOpen}>
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Generate QR Codes for Selected Machines</DialogTitle>
+            <DialogDescription>
+              {selectedMachineKeys.size} machine
+              {selectedMachineKeys.size !== 1 ? "s" : ""} selected. Preview and
+              download as PDF for printing on A4 paper.
+            </DialogDescription>
+          </DialogHeader>
+          <MachineQRGenerator
+            machines={selectedMachines}
+            onClose={() => setIsQRDialogOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

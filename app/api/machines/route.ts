@@ -30,15 +30,16 @@ export async function POST(request: Request) {
     // Normalize type to lowercase
     const normalizedType = type.toLowerCase();
 
+    // Create document ID: {bu}_{type}_{id}
+    const docId = `${bu}_${normalizedType}_${id}`;
+
     // Check if machine already exists
     const existingMachine = await firestore
       .collection("machine")
-      .where("bu", "==", bu)
-      .where("type", "==", normalizedType)
-      .where("id", "==", id)
+      .doc(docId)
       .get();
 
-    if (!existingMachine.empty) {
+    if (existingMachine.exists) {
       return NextResponse.json(
         { error: "Machine with this BU, Type, and ID already exists" },
         { status: 409 }
@@ -65,7 +66,8 @@ export async function POST(request: Request) {
       images: [],
     };
 
-    const machineRef = await firestore.collection("machine").add(machineData);
+    // Use set() with specific docId instead of add()
+    await firestore.collection("machine").doc(docId).set(machineData);
 
     // Automatically add to user's favorites
     const machineKey = `${bu}_${normalizedType}_${id}`;
@@ -82,7 +84,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       success: true,
       message: "Machine created and added to favorites",
-      machineId: machineRef.id,
+      machineId: docId,
       machineKey,
     });
   } catch (error) {

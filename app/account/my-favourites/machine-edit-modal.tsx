@@ -215,7 +215,7 @@ export function MachineEditModal({
             </div>
 
             <div>
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">Email of responsible person</Label>
               <Input
                 id="email"
                 name="email"
