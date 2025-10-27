@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, ReactNode } from 'react';
-import { useMap } from 'react-leaflet';
-import { useRouter } from 'next/navigation';
-import L from 'leaflet';
-import 'leaflet.markercluster';
+import { useEffect, ReactNode } from "react";
+import { useMap } from "react-leaflet";
+import { useRouter } from "next/navigation";
+import L from "leaflet";
+import "leaflet.markercluster";
+import { formatRelativeDateTime } from "@/components/ui/date-utils";
 
 interface ClusteredMarkersProps {
   children?: ReactNode;
@@ -21,23 +22,31 @@ interface ClusteredMarkersProps {
   type: string;
 }
 
-export default function ClusteredMarkers({ children, locations, createIcon, bu, type }: ClusteredMarkersProps) {
+export default function ClusteredMarkers({
+  children,
+  locations,
+  createIcon,
+  bu,
+  type,
+}: ClusteredMarkersProps) {
   const map = useMap();
   const router = useRouter();
 
   // Handle navigation messages from popup content
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
-      if (event.data.type === 'navigate-to-machine' && event.data.machineId) {
+      if (event.data.type === "navigate-to-machine" && event.data.machineId) {
         // Capitalize first letter of type
         const capitalizedType = type.charAt(0).toUpperCase() + type.slice(1);
         // Navigate to machine detail page
-        router.push(`/Machine/${bu}/${capitalizedType}/${encodeURIComponent(event.data.machineId)}`);
+        router.push(
+          `/Machine/${bu}/${capitalizedType}/${encodeURIComponent(event.data.machineId)}`
+        );
       }
     };
 
-    window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
   }, [router, bu, type]);
 
   useEffect(() => {
@@ -48,15 +57,17 @@ export default function ClusteredMarkers({ children, locations, createIcon, bu, 
       maxClusterRadius: 80,
       iconCreateFunction: (cluster) => {
         const count = cluster.getChildCount();
-        
+
         // Check if any markers in cluster have defects
         const markers = cluster.getAllChildMarkers();
         const hasDefects = markers.some((marker: any) => {
-          return marker.options.title && marker.options.title.includes('defect');
+          return (
+            marker.options.title && marker.options.title.includes("defect")
+          );
         });
 
-        const color = hasDefects ? '#ef4444' : '#22c55e';
-        
+        const color = hasDefects ? "#ef4444" : "#22c55e";
+
         return L.divIcon({
           html: `<div style="
             background-color: ${color};
@@ -72,7 +83,7 @@ export default function ClusteredMarkers({ children, locations, createIcon, bu, 
             font-weight: bold;
             font-size: 14px;
           ">${count}</div>`,
-          className: 'marker-cluster',
+          className: "marker-cluster",
           iconSize: [40, 40],
           iconAnchor: [20, 20],
         });
@@ -87,26 +98,26 @@ export default function ClusteredMarkers({ children, locations, createIcon, bu, 
     locations.forEach((location) => {
       const marker = L.marker([location.latitude, location.longitude], {
         icon: createIcon(location.hasDefects),
-        title: location.hasDefects ? 'defect-marker' : 'pass-marker',
+        title: location.hasDefects ? "defect-marker" : "pass-marker",
       });
 
       // Create popup content with navigation
-      
+
       const popupContent = `
         <div style="padding: 8px; min-width: 200px;">
           <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-            <div style="width: 12px; height: 12px; border-radius: 50%; background-color: ${location.hasDefects ? '#ef4444' : '#22c55e'};"></div>
+            <div style="width: 12px; height: 12px; border-radius: 50%; background-color: ${location.hasDefects ? "#ef4444" : "#22c55e"};"></div>
             <span 
               onclick="window.parent.postMessage({type: 'navigate-to-machine', machineId: '${location.id}'}, '*')"
               style="font-weight: bold; color: #2563eb; cursor: pointer; text-decoration: underline;"
               title="Click to view machine details"
             >${location.id}</span>
-            <span style="padding: 2px 8px; border-radius: 4px; font-size: 12px; background-color: ${location.hasDefects ? '#ef4444' : '#22c55e'}; color: white;">
-              ${location.hasDefects ? 'Defects' : 'Pass'}
+            <span style="padding: 2px 8px; border-radius: 4px; font-size: 12px; background-color: ${location.hasDefects ? "#ef4444" : "#22c55e"}; color: white;">
+              ${location.hasDefects ? "Defects" : "Pass"}
             </span>
           </div>
           <div style="font-size: 14px; color: #4b5563; line-height: 1.4;">
-            <div>📅 ${new Date(location.inspectionDate).toLocaleDateString()} at ${new Date(location.inspectionDate).toLocaleTimeString()}</div>
+            <div>📅 ${formatRelativeDateTime(location.inspectionDate)}</div>
             <div>👤 Inspector: ${location.inspector}</div>
             <div>📍 ${location.latitude.toFixed(6)}, ${location.longitude.toFixed(6)}</div>
           </div>
@@ -129,7 +140,7 @@ export default function ClusteredMarkers({ children, locations, createIcon, bu, 
 
       marker.bindPopup(popupContent, {
         maxWidth: 300,
-        className: 'custom-popup'
+        className: "custom-popup",
       });
 
       markerClusterGroup.addLayer(marker);

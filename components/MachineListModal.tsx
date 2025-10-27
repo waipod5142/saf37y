@@ -16,7 +16,6 @@ import {
   MachineWithInspection,
 } from "@/lib/actions/machines";
 import { LocationMapDialog } from "./LocationMapDialog";
-import { RecentInspectionsDialog } from "./RecentInspectionsDialog";
 import { MachineDetailDialog } from "./MachineDetailDialog";
 
 interface MachineListModalProps {
@@ -45,7 +44,6 @@ export function MachineListModal({
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [showLocationMap, setShowLocationMap] = useState(false);
-  const [showRecentInspections, setShowRecentInspections] = useState(false);
   const [showMachineDetail, setShowMachineDetail] = useState(false);
   const [selectedMachineId, setSelectedMachineId] = useState("");
   const [isMainModalVisible, setIsMainModalVisible] = useState(true);
@@ -195,14 +193,6 @@ export function MachineListModal({
                   className="flex items-center gap-1"
                 >
                   📍 Show Locations
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowRecentInspections(true)}
-                  className="flex items-center gap-1"
-                >
-                  📅 Last 15 Days
                 </Button>
               </div>
 
@@ -376,7 +366,7 @@ export function MachineListModal({
         typeName={typeName}
       />
 
-      <RecentInspectionsDialog
+      {/* <RecentInspectionsDialog
         isOpen={showRecentInspections}
         onClose={() => setShowRecentInspections(false)}
         bu={bu}
@@ -384,7 +374,7 @@ export function MachineListModal({
         type={type}
         siteName={siteName}
         typeName={typeName}
-      />
+      /> */}
 
       <MachineDetailDialog
         isOpen={showMachineDetail}
