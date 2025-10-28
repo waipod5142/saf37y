@@ -3,6 +3,8 @@ import MachineHeader from "@/components/machine-header";
 import MachineDetail from "@/components/machine-detail";
 import MachineForm from "@/components/machine-form";
 import MachineForm4photo from "@/components/machine-form4photo";
+import MachineFormTalk from "@/components/machine-formTalk";
+import MachineFormStat from "@/components/machine-formStat";
 import MachineOption from "@/components/machine-option";
 import { normalizeBuCode } from "@/lib/utils";
 
@@ -45,6 +47,18 @@ export default async function MachinePage({
       />
       {decodedType.toLowerCase() === "mixerphoto" ? (
         <MachineForm4photo
+          bu={normalizedBu}
+          type={decodedType.toLowerCase()}
+          id={decodedId}
+        />
+      ) : decodedType.toLowerCase() === "planttalk" ? (
+        <MachineFormTalk
+          bu={normalizedBu}
+          type={decodedType.toLowerCase()}
+          id={decodedId}
+        />
+      ) : decodedType.toLowerCase() === "plantstat" ? (
+        <MachineFormStat
           bu={normalizedBu}
           type={decodedType.toLowerCase()}
           id={decodedId}

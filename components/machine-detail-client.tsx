@@ -143,7 +143,7 @@ export default function MachineDetailClient({
 
       const now = new Date();
       const timeDifference = now.getTime() - recordDate.getTime();
-      const fiveMinutesInMs = 50 * 60 * 1000; // 5 minutes in milliseconds
+      const fiveMinutesInMs = 5 * 60 * 1000; // 5 minutes in milliseconds
 
       return timeDifference <= fiveMinutesInMs;
     } catch (error) {
@@ -469,10 +469,12 @@ export default function MachineDetailClient({
                   <CalendarIcon className="h-4 w-4" />
                   {formatRelativeDateTime(record.timestamp || record.createdAt)}
                 </div>
-                <div className="flex items-center gap-1">
-                  <UserIcon className="h-4 w-4" />
-                  {record.inspector || "Unknown Inspector"}
-                </div>
+                {record.inspector && (
+                  <div className="flex items-center gap-1">
+                    <UserIcon className="h-4 w-4" />
+                    {record.inspector || "Unknown Inspector"}
+                  </div>
+                )}
                 {record.site && (
                   <div className="flex items-center gap-1">
                     <FactoryIcon className="h-4 w-4" />

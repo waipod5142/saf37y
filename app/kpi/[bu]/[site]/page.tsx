@@ -216,89 +216,92 @@ function InspectionTable({
                 </tr>
               </thead>
               <tbody>
-                {Object.entries(byType).map(([type, equipment]) => {
-                  const hasData = equipment.total > 0;
-                  return (
-                    <tr key={type} className="border-b hover:bg-gray-50">
-                      <td className="p-3">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xl">
-                            {getMachineEmoji(type) || "🔧"}
-                          </span>
-                          <span className="font-medium capitalize">
-                            {machineTypeMapping[type] ||
-                              type
-                                .replace(/([A-Z])/g, " $1")
-                                .replace(/^./, (str) => str.toUpperCase())}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="text-center p-3">
-                        <span
-                          className={`${
-                            equipment.inspected === 0
-                              ? "text-gray-400"
-                              : "font-semibold" +
-                                (hasData
-                                  ? " cursor-pointer hover:underline"
-                                  : "")
-                          }`}
-                          onClick={() =>
-                            handleCellClick(bu, site, type, hasData)
-                          }
-                        >
-                          {equipment.inspected}
-                        </span>
-                      </td>
-                      <td className="text-center p-3">
-                        <span
-                          className={`${
-                            equipment.total === 0
-                              ? "text-gray-400"
-                              : "font-semibold" +
-                                (hasData
-                                  ? " cursor-pointer hover:underline"
-                                  : "")
-                          }`}
-                          onClick={() =>
-                            handleCellClick(bu, site, type, hasData)
-                          }
-                        >
-                          {equipment.total}
-                        </span>
-                      </td>
-                      <td className="text-center p-3">
-                        <Badge
-                          className={`font-semibold ${getPercentageBadgeColor(equipment.percentage)} ${hasData ? "cursor-pointer hover:ring-2 hover:ring-offset-1" : ""}`}
-                          onClick={() =>
-                            handleCellClick(bu, site, type, hasData)
-                          }
-                        >
-                          {equipment.percentage}%
-                        </Badge>
-                      </td>
-                      {showDefects && (
-                        <td className="text-center p-3">
-                          {equipment.defected > 0 ? (
-                            <Badge
-                              variant="destructive"
-                              className={`text-xs ${hasData ? "cursor-pointer hover:ring-2 hover:ring-offset-1 hover:ring-red-300" : ""}`}
-                              onClick={() =>
-                                handleCellClick(bu, site, type, hasData)
-                              }
-                            >
-                              <AlertTriangle className="h-3 w-3 mr-1" />
-                              {equipment.defected} ({equipment.defectPercentage}
-                              %)
-                            </Badge>
-                          ) : (
-                            <span className="text-gray-400">-</span>
-                          )}
+                {Object.entries(byType)
+                  .filter(([type, equipment]) => equipment.total > 0)
+                  .map(([type, equipment]) => {
+                    const hasData = equipment.total > 0;
+                    return (
+                      <tr key={type} className="border-b hover:bg-gray-50">
+                        <td className="p-3">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xl">
+                              {getMachineEmoji(type) || "🔧"}
+                            </span>
+                            <span className="font-medium capitalize">
+                              {machineTypeMapping[type] ||
+                                type
+                                  .replace(/([A-Z])/g, " $1")
+                                  .replace(/^./, (str) => str.toUpperCase())}
+                            </span>
+                          </div>
                         </td>
-                      )}
-                    </tr>
-                  );
-                })}
+                        <td className="text-center p-3">
+                          <span
+                            className={`${
+                              equipment.inspected === 0
+                                ? "text-gray-400"
+                                : "font-semibold" +
+                                  (hasData
+                                    ? " cursor-pointer hover:underline"
+                                    : "")
+                            }`}
+                            onClick={() =>
+                              handleCellClick(bu, site, type, hasData)
+                            }
+                          >
+                            {equipment.inspected}
+                          </span>
+                        </td>
+                        <td className="text-center p-3">
+                          <span
+                            className={`${
+                              equipment.total === 0
+                                ? "text-gray-400"
+                                : "font-semibold" +
+                                  (hasData
+                                    ? " cursor-pointer hover:underline"
+                                    : "")
+                            }`}
+                            onClick={() =>
+                              handleCellClick(bu, site, type, hasData)
+                            }
+                          >
+                            {equipment.total}
+                          </span>
+                        </td>
+                        <td className="text-center p-3">
+                          <Badge
+                            className={`font-semibold ${getPercentageBadgeColor(equipment.percentage)} ${hasData ? "cursor-pointer hover:ring-2 hover:ring-offset-1" : ""}`}
+                            onClick={() =>
+                              handleCellClick(bu, site, type, hasData)
+                            }
+                          >
+                            {equipment.percentage}%
+                          </Badge>
+                        </td>
+                        {showDefects && (
+                          <td className="text-center p-3">
+                            {equipment.defected > 0 ? (
+                              <Badge
+                                variant="destructive"
+                                className={`text-xs ${hasData ? "cursor-pointer hover:ring-2 hover:ring-offset-1 hover:ring-red-300" : ""}`}
+                                onClick={() =>
+                                  handleCellClick(bu, site, type, hasData)
+                                }
+                              >
+                                <AlertTriangle className="h-3 w-3 mr-1" />
+                                {equipment.defected} (
+                                {equipment.defectPercentage}
+                                %)
+                              </Badge>
+                            ) : (
+                              <span className="text-gray-400">-</span>
+                            )}
+                          </td>
+                        )}
+                      </tr>
+                    );
+                  })}
                 {/* Total Row */}
                 <tr className="border-t-2 bg-gray-50 font-semibold">
                   <td className="p-3 font-bold">Total</td>
