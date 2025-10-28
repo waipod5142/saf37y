@@ -9,9 +9,9 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import MultiImageUploader, {
-  ImageUpload,
-} from "@/components/multi-image-uploader";
+import MultiMediaUploader, {
+  MediaUpload,
+} from "@/components/multi-media-uploader";
 import { auth, storage } from "@/firebase/client";
 import { signInAnonymously } from "firebase/auth";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
@@ -312,7 +312,7 @@ export default function ManFormBoot({
     watch,
   } = useForm<BootFormData>();
 
-  const [images, setImages] = useState<ImageUpload[]>([]);
+  const [images, setImages] = useState<MediaUpload[]>([]);
   const [employeeSite, setEmployeeSite] = useState<string | undefined>(
     undefined
   );
@@ -626,21 +626,21 @@ export default function ManFormBoot({
           </CardContent>
         </Card>
 
-        {/* Image Upload */}
+        {/* Image/Video Upload */}
         <Card>
           <CardContent className="pt-6">
             <div className="space-y-4">
               <Label className="text-lg font-semibold">{t.attachImage}</Label>
-              <MultiImageUploader
-                images={images}
-                onImagesChange={setImages}
-                urlFormatter={(image) => {
-                  if (!image.file) {
+              <MultiMediaUploader
+                media={images}
+                onMediaChange={setImages}
+                urlFormatter={(media) => {
+                  if (!media.file) {
                     return `https://firebasestorage.googleapis.com/v0/b/sccc-inseesafety-prod.firebasestorage.app/o/${encodeURIComponent(
-                      image.url
+                      media.url
                     )}?alt=media`;
                   }
-                  return image.url;
+                  return media.url;
                 }}
                 compressionType="general"
               />

@@ -24,7 +24,6 @@ import ManFormRa from "@/components/man-form-ra";
 import ManFormSot from "@/components/man-form-sot";
 import ManFormTalk from "@/components/man-form-talk";
 import ManFormToolbox from "@/components/man-form-toolbox";
-import ManFormTraining from "@/components/man-form-training";
 
 interface MachineDetailDialogProps {
   isOpen: boolean;
@@ -171,13 +170,6 @@ export function MachineDetailDialog({
                 />
               ) : decodedType === "toolbox" ? (
                 <ManFormToolbox
-                  bu={decodedBu}
-                  type={decodedType}
-                  id={decodedId}
-                  isInDialog={true}
-                />
-              ) : decodedType === "training" ? (
-                <ManFormTraining
                   bu={decodedBu}
                   type={decodedType}
                   id={decodedId}

@@ -106,7 +106,7 @@ export default function MultiMediaUploader({
       );
 
       // Filter out nulls from invalid files
-      const validMedia = processedMedia.filter((m): m is MediaUpload => m !== null);
+      const validMedia = processedMedia.filter((m): m is NonNullable<typeof m> => m !== null);
       onMediaChange([...media, ...validMedia]);
 
       // Show success message with compression info for images

@@ -23,6 +23,7 @@ import {
   Trash2Icon,
   ClipboardCheck,
   Factory as FactoryIcon,
+  VideoIcon,
 } from "lucide-react";
 import { useManFormTranslation } from "@/lib/i18n/man-forms";
 
@@ -94,7 +95,14 @@ export default function BootManDetailClient({
     }
   };
 
-  // Image click handler
+  // Helper function to detect video files
+  const isVideoFile = (url: string): boolean => {
+    const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.avi', '.mkv', '.m4v'];
+    const lowerUrl = url.toLowerCase();
+    return videoExtensions.some(ext => lowerUrl.includes(ext));
+  };
+
+  // Image/Video click handler
   const handleImageClick = (imageUrl: string) => {
     setSelectedImage(imageUrl);
     setIsImageModalOpen(true);
@@ -327,7 +335,7 @@ export default function BootManDetailClient({
                     </div>
                   </div>
 
-                  {/* Images */}
+                  {/* Images/Videos */}
                   {record.images && record.images.length > 0 && (
                     <div className="mt-6 pt-6 border-t">
                       <p className="font-semibold text-gray-700 mb-4 flex items-center gap-2">
@@ -335,21 +343,39 @@ export default function BootManDetailClient({
                         {t.common.images} ({record.images.length})
                       </p>
                       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                        {record.images.map((imageUrl, imgIndex) => (
-                          <div
-                            key={imgIndex}
-                            className="relative group cursor-pointer"
-                            onClick={() => handleImageClick(imageUrl)}
-                          >
-                            <img
-                              src={imageUrl}
-                              alt={`${t.alert.imageAlt} ${imgIndex + 1}`}
-                              className="w-full h-32 object-cover rounded-md shadow-md group-hover:shadow-lg transition-shadow pointer-events-none"
-                              onError={handleImageError}
-                            />
-                            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all rounded-md pointer-events-none" />
-                          </div>
-                        ))}
+                        {record.images.map((imageUrl, imgIndex) => {
+                          const isVideo = isVideoFile(imageUrl);
+
+                          return (
+                            <div
+                              key={imgIndex}
+                              className="relative group cursor-pointer"
+                              onClick={() => handleImageClick(imageUrl)}
+                            >
+                              {isVideo ? (
+                                <>
+                                  <video
+                                    src={imageUrl}
+                                    className="w-full h-32 object-cover rounded-md shadow-md group-hover:shadow-lg transition-shadow pointer-events-none"
+                                    preload="metadata"
+                                  />
+                                  <div className="absolute top-2 left-2 bg-blue-600 text-white text-xs px-2 py-1 rounded-full font-medium flex items-center gap-1">
+                                    <VideoIcon className="h-3 w-3" />
+                                    Video
+                                  </div>
+                                </>
+                              ) : (
+                                <img
+                                  src={imageUrl}
+                                  alt={`${t.alert.imageAlt} ${imgIndex + 1}`}
+                                  className="w-full h-32 object-cover rounded-md shadow-md group-hover:shadow-lg transition-shadow pointer-events-none"
+                                  onError={handleImageError}
+                                />
+                              )}
+                              <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all rounded-md pointer-events-none" />
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   )}
@@ -360,24 +386,37 @@ export default function BootManDetailClient({
         </div>
       </div>
 
-      {/* Image Modal */}
+      {/* Image/Video Modal */}
       <Dialog open={isImageModalOpen} onOpenChange={setIsImageModalOpen}>
         <DialogContent className="max-w-4xl max-h-[90vh] p-0">
           <DialogHeader className="p-6 pb-0">
-            <DialogTitle>{t.alert.imageModalTitle}</DialogTitle>
+            <DialogTitle>
+              {selectedImage && isVideoFile(selectedImage) ? 'Video' : t.alert.imageModalTitle}
+            </DialogTitle>
           </DialogHeader>
           <div className="p-6 pt-2">
             {selectedImage && (
               <div className="flex justify-center">
-                <img
-                  src={selectedImage}
-                  alt={t.alert.imageAlt}
-                  className="max-w-full max-h-[70vh] object-contain rounded"
-                  onError={(e) => {
-                    e.currentTarget.src =
-                      "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCA0MDAgMzAwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgogIDxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjRjNGNEY2Ii8+CiAgPHRleHQgeD0iMjAwIiB5PSIxNTAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM5Q0E0QUYiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNiI+SW1hZ2UgY291bGQgbm90IGJlIGxvYWRlZDwvdGV4dD4KPC9zdmc+";
-                  }}
-                />
+                {isVideoFile(selectedImage) ? (
+                  <video
+                    src={selectedImage}
+                    controls
+                    className="max-w-full max-h-[70vh] object-contain rounded"
+                    autoPlay
+                  >
+                    Your browser does not support the video tag.
+                  </video>
+                ) : (
+                  <img
+                    src={selectedImage}
+                    alt={t.alert.imageAlt}
+                    className="max-w-full max-h-[70vh] object-contain rounded"
+                    onError={(e) => {
+                      e.currentTarget.src =
+                        "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCA0MDAgMzAwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgogIDxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjRjNGNEY2Ii8+CiAgPHRleHQgeD0iMjAwIiB5PSIxNTAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM5Q0E0QUYiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNiI+SW1hZ2UgY291bGQgbm90IGJlIGxvYWRlZDwvdGV4dD4KPC9zdmc+";
+                    }}
+                  />
+                )}
               </div>
             )}
           </div>
