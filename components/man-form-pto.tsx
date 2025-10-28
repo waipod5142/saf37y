@@ -35,48 +35,66 @@ const translations = {
     staffIdRequired: "กรุณากรอกรหัสพนักงาน",
 
     question1Title: "1. Tên Người được quan sát / Name of observed people",
-    question1Subtitle: "Ghi nhận tên đầy đủ của người được quan sát. / Record the full name of the observed person.",
+    question1Subtitle:
+      "Ghi nhận tên đầy đủ của người được quan sát. / Record the full name of the observed person.",
     question1Placeholder: "Tên Người được quan sát / Name of observed people",
     question1Required: "กรุณากรอกชื่อผู้ถูกสังเกต",
 
     question2Title: "2. Bộ phận/Nhà thầu / Department/Contractor",
-    question2Subtitle: "Xác nhận bộ phận hoặc nhà thầu liên quan. / Confirm the department or contractor involved.",
+    question2Subtitle:
+      "Xác nhận bộ phận hoặc nhà thầu liên quan. / Confirm the department or contractor involved.",
     question2Placeholder: "Bộ phận/Nhà thầu / Department/Contractor",
     question2Required: "กรุณากรอกแผนก/ผู้รับเหมา",
 
     question3Title: "3. Công việc được quan sát / Task observed",
-    question3Subtitle: "Ghi nhận công việc đang được quan sát. / Record the task being observed.",
+    question3Subtitle:
+      "Ghi nhận công việc đang được quan sát. / Record the task being observed.",
     question3Placeholder: "Công việc được quan sát / Task observed",
     question3Required: "กรุณากรอกงานที่สังเกต",
 
-    question4Title: "4. Mã số công việc, thủ tục đang thực hiện / Code of current WI procedure",
-    question4Subtitle: "Xác nhận và ghi nhận mã số công việc hoặc thủ tục đang thực hiện. / Confirm and record the code of the current work instruction or procedure.",
+    question4Title:
+      "4. Mã số công việc, thủ tục đang thực hiện / Code of current WI procedure",
+    question4Subtitle:
+      "Xác nhận và ghi nhận mã số công việc hoặc thủ tục đang thực hiện. / Confirm and record the code of the current work instruction or procedure.",
     question4Placeholder: "Mã số công việc / Code of current WI procedure",
     question4Required: "กรุณากรอกรหัสขั้นตอนการทำงาน",
 
-    question5Title: "5. Các công việc có thể dẫn đến gây thiệt hại về tài sản hoặc gây thương tích không? / Could any of the practices observed result in property damage or injury?",
-    question5Subtitle: "Đánh giá và ghi nhận các khả năng gây thiệt hại về tài sản hoặc thương tích. / Assess and record the potential for property damage or injury.",
-    question5Placeholder: "Khả năng gây thiệt hại/thương tích / Potential damage or injury",
+    question5Title:
+      "5. Các công việc có thể dẫn đến gây thiệt hại về tài sản hoặc gây thương tích không? / Could any of the practices observed result in property damage or injury?",
+    question5Subtitle:
+      "Đánh giá và ghi nhận các khả năng gây thiệt hại về tài sản hoặc thương tích. / Assess and record the potential for property damage or injury.",
+    question5Placeholder:
+      "Khả năng gây thiệt hại/thương tích / Potential damage or injury",
     question5Required: "กรุณากรอกความเป็นไปได้ของความเสียหายหรือการบาดเจ็บ",
 
-    question6Title: "6. Công nhân có làm theo các bước và yêu cầu của hướng dẫn công việc (PPE; Giấy phép; Cách ly…)? Có Không (Nếu Không, mô tả sự sai lệch và lý do đằng sau sự sai lệch đó) / Did the worker(s) follow all WI steps and task requirements (PPE; Permits; Isolations etc.)? Yes No (If No, describe deviations and the reason behind them)",
-    question6Subtitle: "Xác nhận xem công nhân có tuân thủ đầy đủ hướng dẫn công việc hay không. / Confirm whether the worker followed all WI steps and requirements.",
+    question6Title:
+      "6. Công nhân có làm theo các bước và yêu cầu của hướng dẫn công việc (PPE; Giấy phép; Cách ly…)? Có Không (Nếu Không, mô tả sự sai lệch và lý do đằng sau sự sai lệch đó) / Did the worker(s) follow all WI steps and task requirements (PPE; Permits; Isolations etc.)? Yes No (If No, describe deviations and the reason behind them)",
+    question6Subtitle:
+      "Xác nhận xem công nhân có tuân thủ đầy đủ hướng dẫn công việc hay không. / Confirm whether the worker followed all WI steps and requirements.",
     question6Placeholder: "Tuân thủ hướng dẫn công việc / Compliance with WI",
     question6Required: "กรุณากรอกการปฏิบัติตามคำแนะนำในการทำงาน",
 
-    question7Title: "7. Liệt kê các hành động, thiết bị, điều kiện hoặc cách làm, sự thực hành không an toàn hoặc tiềm ẩn sự không an toàn mà có thể ảnh hưởng đến an toàn, chất lượng, năng suất / List any unsafe / potentially unsafe acts; equipment/conditions or practices that could affect safety, quality, or efficiency",
-    question7Subtitle: "Ghi nhận tất cả các hành vi hoặc điều kiện không an toàn tiềm ẩn. / Record all unsafe or potentially unsafe acts or conditions.",
-    question7Placeholder: "Hành động/điều kiện không an toàn / Unsafe acts or conditions",
+    question7Title:
+      "7. Liệt kê các hành động, thiết bị, điều kiện hoặc cách làm, sự thực hành không an toàn hoặc tiềm ẩn sự không an toàn mà có thể ảnh hưởng đến an toàn, chất lượng, năng suất / List any unsafe / potentially unsafe acts; equipment/conditions or practices that could affect safety, quality, or efficiency",
+    question7Subtitle:
+      "Ghi nhận tất cả các hành vi hoặc điều kiện không an toàn tiềm ẩn. / Record all unsafe or potentially unsafe acts or conditions.",
+    question7Placeholder:
+      "Hành động/điều kiện không an toàn / Unsafe acts or conditions",
     question7Required: "กรุณากรอกการกระทำหรือสภาพที่ไม่ปลอดภัย",
 
-    question8Title: "8. Liệt kê các hành vi tốt mà bạn quan sát được / List any good behaviours observed",
-    question8Subtitle: "Ghi nhận các hành vi tốt được quan sát. / Record the good behaviours observed.",
+    question8Title:
+      "8. Liệt kê các hành vi tốt mà bạn quan sát được / List any good behaviours observed",
+    question8Subtitle:
+      "Ghi nhận các hành vi tốt được quan sát. / Record the good behaviours observed.",
     question8Placeholder: "Các hành vi tốt / Good behaviours",
     question8Required: "กรุณากรอกพฤติกรรมที่ดี",
 
-    question9Title: "9. Thảo luận điều bạn quan sát được với công nhân (tham khảo phần THẢO LUẬN tại mặt trong của bìa cuốn sổ). Ghi nhận lại các điểm chính vào các dòng phía dưới đây / Discuss your observations with the workers (Refer to the DISCUSSION section of the inside cover). Record any key points below",
-    question9Subtitle: "Thảo luận các quan sát với công nhân và ghi lại các điểm chính. / Discuss observations with workers and record key points.",
-    question9Placeholder: "Các điểm chính từ cuộc thảo luận / Key points from discussion",
+    question9Title:
+      "9. Thảo luận điều bạn quan sát được với công nhân (tham khảo phần THẢO LUẬN tại mặt trong của bìa cuốn sổ). Ghi nhận lại các điểm chính vào các dòng phía dưới đây / Discuss your observations with the workers (Refer to the DISCUSSION section of the inside cover). Record any key points below",
+    question9Subtitle:
+      "Thảo luận các quan sát với công nhân và ghi lại các điểm chính. / Discuss observations with workers and record key points.",
+    question9Placeholder:
+      "Các điểm chính từ cuộc thảo luận / Key points from discussion",
     question9Required: "กรุณากรอกประเด็นสำคัญจากการอภิปราย",
 
     attachImage: "รูปภาพประกอบ (Attach Image) (Optional)",
@@ -94,48 +112,66 @@ const translations = {
     staffIdRequired: "Vui lòng nhập mã nhân viên",
 
     question1Title: "1. Tên Người được quan sát / Name of observed people",
-    question1Subtitle: "Ghi nhận tên đầy đủ của người được quan sát. / Record the full name of the observed person.",
+    question1Subtitle:
+      "Ghi nhận tên đầy đủ của người được quan sát. / Record the full name of the observed person.",
     question1Placeholder: "Tên Người được quan sát / Name of observed people",
     question1Required: "Vui lòng nhập tên người được quan sát",
 
     question2Title: "2. Bộ phận/Nhà thầu / Department/Contractor",
-    question2Subtitle: "Xác nhận bộ phận hoặc nhà thầu liên quan. / Confirm the department or contractor involved.",
+    question2Subtitle:
+      "Xác nhận bộ phận hoặc nhà thầu liên quan. / Confirm the department or contractor involved.",
     question2Placeholder: "Bộ phận/Nhà thầu / Department/Contractor",
     question2Required: "Vui lòng nhập bộ phận/nhà thầu",
 
     question3Title: "3. Công việc được quan sát / Task observed",
-    question3Subtitle: "Ghi nhận công việc đang được quan sát. / Record the task being observed.",
+    question3Subtitle:
+      "Ghi nhận công việc đang được quan sát. / Record the task being observed.",
     question3Placeholder: "Công việc được quan sát / Task observed",
     question3Required: "Vui lòng nhập công việc được quan sát",
 
-    question4Title: "4. Mã số công việc, thủ tục đang thực hiện / Code of current WI procedure",
-    question4Subtitle: "Xác nhận và ghi nhận mã số công việc hoặc thủ tục đang thực hiện. / Confirm and record the code of the current work instruction or procedure.",
+    question4Title:
+      "4. Mã số công việc, thủ tục đang thực hiện / Code of current WI procedure",
+    question4Subtitle:
+      "Xác nhận và ghi nhận mã số công việc hoặc thủ tục đang thực hiện. / Confirm and record the code of the current work instruction or procedure.",
     question4Placeholder: "Mã số công việc / Code of current WI procedure",
     question4Required: "Vui lòng nhập mã số công việc",
 
-    question5Title: "5. Các công việc có thể dẫn đến gây thiệt hại về tài sản hoặc gây thương tích không? / Could any of the practices observed result in property damage or injury?",
-    question5Subtitle: "Đánh giá và ghi nhận các khả năng gây thiệt hại về tài sản hoặc thương tích. / Assess and record the potential for property damage or injury.",
-    question5Placeholder: "Khả năng gây thiệt hại/thương tích / Potential damage or injury",
+    question5Title:
+      "5. Các công việc có thể dẫn đến gây thiệt hại về tài sản hoặc gây thương tích không? / Could any of the practices observed result in property damage or injury?",
+    question5Subtitle:
+      "Đánh giá và ghi nhận các khả năng gây thiệt hại về tài sản hoặc thương tích. / Assess and record the potential for property damage or injury.",
+    question5Placeholder:
+      "Khả năng gây thiệt hại/thương tích / Potential damage or injury",
     question5Required: "Vui lòng nhập khả năng gây thiệt hại/thương tích",
 
-    question6Title: "6. Công nhân có làm theo các bước và yêu cầu của hướng dẫn công việc (PPE; Giấy phép; Cách ly…)? Có Không (Nếu Không, mô tả sự sai lệch và lý do đằng sau sự sai lệch đó) / Did the worker(s) follow all WI steps and task requirements (PPE; Permits; Isolations etc.)? Yes No (If No, describe deviations and the reason behind them)",
-    question6Subtitle: "Xác nhận xem công nhân có tuân thủ đầy đủ hướng dẫn công việc hay không. / Confirm whether the worker followed all WI steps and requirements.",
+    question6Title:
+      "6. Công nhân có làm theo các bước và yêu cầu của hướng dẫn công việc (PPE; Giấy phép; Cách ly…)? Có Không (Nếu Không, mô tả sự sai lệch và lý do đằng sau sự sai lệch đó) / Did the worker(s) follow all WI steps and task requirements (PPE; Permits; Isolations etc.)? Yes No (If No, describe deviations and the reason behind them)",
+    question6Subtitle:
+      "Xác nhận xem công nhân có tuân thủ đầy đủ hướng dẫn công việc hay không. / Confirm whether the worker followed all WI steps and requirements.",
     question6Placeholder: "Tuân thủ hướng dẫn công việc / Compliance with WI",
     question6Required: "Vui lòng nhập tuân thủ hướng dẫn công việc",
 
-    question7Title: "7. Liệt kê các hành động, thiết bị, điều kiện hoặc cách làm, sự thực hành không an toàn hoặc tiềm ẩn sự không an toàn mà có thể ảnh hưởng đến an toàn, chất lượng, năng suất / List any unsafe / potentially unsafe acts; equipment/conditions or practices that could affect safety, quality, or efficiency",
-    question7Subtitle: "Ghi nhận tất cả các hành vi hoặc điều kiện không an toàn tiềm ẩn. / Record all unsafe or potentially unsafe acts or conditions.",
-    question7Placeholder: "Hành động/điều kiện không an toàn / Unsafe acts or conditions",
+    question7Title:
+      "7. Liệt kê các hành động, thiết bị, điều kiện hoặc cách làm, sự thực hành không an toàn hoặc tiềm ẩn sự không an toàn mà có thể ảnh hưởng đến an toàn, chất lượng, năng suất / List any unsafe / potentially unsafe acts; equipment/conditions or practices that could affect safety, quality, or efficiency",
+    question7Subtitle:
+      "Ghi nhận tất cả các hành vi hoặc điều kiện không an toàn tiềm ẩn. / Record all unsafe or potentially unsafe acts or conditions.",
+    question7Placeholder:
+      "Hành động/điều kiện không an toàn / Unsafe acts or conditions",
     question7Required: "Vui lòng nhập hành động/điều kiện không an toàn",
 
-    question8Title: "8. Liệt kê các hành vi tốt mà bạn quan sát được / List any good behaviours observed",
-    question8Subtitle: "Ghi nhận các hành vi tốt được quan sát. / Record the good behaviours observed.",
+    question8Title:
+      "8. Liệt kê các hành vi tốt mà bạn quan sát được / List any good behaviours observed",
+    question8Subtitle:
+      "Ghi nhận các hành vi tốt được quan sát. / Record the good behaviours observed.",
     question8Placeholder: "Các hành vi tốt / Good behaviours",
     question8Required: "Vui lòng nhập các hành vi tốt",
 
-    question9Title: "9. Thảo luận điều bạn quan sát được với công nhân (tham khảo phần THẢO LUẬN tại mặt trong của bìa cuốn sổ). Ghi nhận lại các điểm chính vào các dòng phía dưới đây / Discuss your observations with the workers (Refer to the DISCUSSION section of the inside cover). Record any key points below",
-    question9Subtitle: "Thảo luận các quan sát với công nhân và ghi lại các điểm chính. / Discuss observations with workers and record key points.",
-    question9Placeholder: "Các điểm chính từ cuộc thảo luận / Key points from discussion",
+    question9Title:
+      "9. Thảo luận điều bạn quan sát được với công nhân (tham khảo phần THẢO LUẬN tại mặt trong của bìa cuốn sổ). Ghi nhận lại các điểm chính vào các dòng phía dưới đây / Discuss your observations with the workers (Refer to the DISCUSSION section of the inside cover). Record any key points below",
+    question9Subtitle:
+      "Thảo luận các quan sát với công nhân và ghi lại các điểm chính. / Discuss observations with workers and record key points.",
+    question9Placeholder:
+      "Các điểm chính từ cuộc thảo luận / Key points from discussion",
     question9Required: "Vui lòng nhập các điểm chính từ cuộc thảo luận",
 
     attachImage: "Hình ảnh đính kèm (Attach Image) (Tùy chọn)",
@@ -212,7 +248,11 @@ export default function ManFormPto({
   }, [staffId, bu]);
 
   // Generate QR code URL
-  const qrUrl = `https://www.saf37y.com/ManForm/${bu}/${type}/${id}`;
+  const capitalizedType = type.charAt(0).toUpperCase() + type.slice(1);
+  const formattedType = capitalizedType.endsWith("Form")
+    ? capitalizedType
+    : `${capitalizedType}Form`;
+  const qrUrl = `https://www.saf37y.com/ManForm/${bu}/${formattedType}/${id}`;
 
   const onSubmit: SubmitHandler<PtoFormData> = async (formData) => {
     try {
@@ -361,7 +401,8 @@ export default function ManFormPto({
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex-1">
               <CardTitle className="text-center sm:text-left text-xl font-bold text-gray-800">
-                Quan sát công việc theo kế hoạch / Planned Task Observation (PTO)
+                Quan sát công việc theo kế hoạch / Planned Task Observation
+                (PTO)
               </CardTitle>
               <p className="text-center sm:text-left text-xl font-extrabold text-blue-600 mt-1">
                 Area: {id}
@@ -399,7 +440,9 @@ export default function ManFormPto({
                 className="w-full"
               />
               {errors.id && (
-                <p className="text-red-500 text-sm">{errors.id?.message as string}</p>
+                <p className="text-red-500 text-sm">
+                  {errors.id?.message as string}
+                </p>
               )}
             </div>
           </CardContent>
@@ -513,7 +556,10 @@ export default function ManFormPto({
         <Card>
           <CardContent className="pt-6">
             <div className="space-y-2">
-              <Label htmlFor="potentialDamage" className="text-lg font-semibold">
+              <Label
+                htmlFor="potentialDamage"
+                className="text-lg font-semibold"
+              >
                 {t.question5Title}
               </Label>
               <p className="text-xs text-gray-600 whitespace-pre-line">

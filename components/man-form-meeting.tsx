@@ -9,7 +9,9 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import MultiImageUploader, { ImageUpload } from "@/components/multi-image-uploader";
+import MultiImageUploader, {
+  ImageUpload,
+} from "@/components/multi-image-uploader";
 import { auth, storage } from "@/firebase/client";
 import { signInAnonymously } from "firebase/auth";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
@@ -32,7 +34,12 @@ interface AlertFormData extends FieldValues {
   [key: string]: any;
 }
 
-export default function ManFormAlert({ bu, type, id, isInDialog = false }: ManFormAlertProps) {
+export default function ManFormAlert({
+  bu,
+  type,
+  id,
+  isInDialog = false,
+}: ManFormAlertProps) {
   const router = useRouter();
 
   const {
@@ -44,15 +51,17 @@ export default function ManFormAlert({ bu, type, id, isInDialog = false }: ManFo
   } = useForm<AlertFormData>();
 
   const [images, setImages] = useState<ImageUpload[]>([]);
-  const [employeeSite, setEmployeeSite] = useState<string | undefined>(undefined);
+  const [employeeSite, setEmployeeSite] = useState<string | undefined>(
+    undefined
+  );
 
   // Watch form values
-  const acknowledge = watch('acknowledge');
-  const staffId = watch('id');
+  const acknowledge = watch("acknowledge");
+  const staffId = watch("id");
 
   // Fetch employee data when staff ID changes
   useEffect(() => {
-    if (staffId && staffId.trim() !== '') {
+    if (staffId && staffId.trim() !== "") {
       getEmployeeByIdAction(bu, staffId).then((result) => {
         if (result.success && result.employee) {
           setEmployeeSite(result.employee.site);
@@ -62,8 +71,11 @@ export default function ManFormAlert({ bu, type, id, isInDialog = false }: ManFo
   }, [staffId, bu]);
 
   // Generate QR code URL
-  const qrUrl = `https://www.saf37y.com/ManForm/${bu}/${type}/${id}`;
-
+  const capitalizedType = type.charAt(0).toUpperCase() + type.slice(1);
+  const formattedType = capitalizedType.endsWith("Form")
+    ? capitalizedType
+    : `${capitalizedType}Form`;
+  const qrUrl = `https://www.saf37y.com/ManForm/${bu}/${formattedType}/${id}`;
 
   const onSubmit: SubmitHandler<AlertFormData> = async (formData) => {
     try {
@@ -72,7 +84,6 @@ export default function ManFormAlert({ bu, type, id, isInDialog = false }: ManFo
         toast.error("Please enter Staff ID");
         return;
       }
-
 
       if (!formData.feedback) {
         toast.error("Please enter lesson feedback");
@@ -114,7 +125,9 @@ export default function ManFormAlert({ bu, type, id, isInDialog = false }: ManFo
             imageUrls.push(downloadURL);
           } catch (uploadError) {
             console.error(`Upload error for image ${index}:`, uploadError);
-            toast.error(`Failed to upload image ${index + 1}. Please try again.`);
+            toast.error(
+              `Failed to upload image ${index + 1}. Please try again.`
+            );
             return;
           }
         }
@@ -198,7 +211,6 @@ export default function ManFormAlert({ bu, type, id, isInDialog = false }: ManFo
           </CardContent>
         </Card>
 
-
         {/* Lesson feedback */}
         <Card>
           <CardContent className="pt-6">
@@ -207,12 +219,16 @@ export default function ManFormAlert({ bu, type, id, isInDialog = false }: ManFo
                 1. การเรียนรู้ที่ได้รับ feedback ?
               </Label>
               <Textarea
-                {...register("feedback", { required: "Lesson feedback is required" })}
+                {...register("feedback", {
+                  required: "Lesson feedback is required",
+                })}
                 placeholder="Lesson feedback"
                 className="w-full min-h-[80px]"
               />
               {errors.feedback && (
-                <p className="text-red-500 text-sm">{errors.feedback?.message}</p>
+                <p className="text-red-500 text-sm">
+                  {errors.feedback?.message}
+                </p>
               )}
             </div>
           </CardContent>
@@ -223,21 +239,27 @@ export default function ManFormAlert({ bu, type, id, isInDialog = false }: ManFo
           <CardContent className="pt-6">
             <div className="space-y-4">
               <Label className="text-lg font-semibold text-gray-800">
-                2. ฉันเข้าใจและรับทราบวาระการประชุมสื่อสารด้านความปลอดภัยในครั้งนี้ I understand and acknowledge this safety meeting
+                2.
+                ฉันเข้าใจและรับทราบวาระการประชุมสื่อสารด้านความปลอดภัยในครั้งนี้
+                I understand and acknowledge this safety meeting
               </Label>
               <div className="grid grid-cols-2 gap-3">
                 <label className="flex items-center space-x-3 cursor-pointer">
                   <input
                     type="radio"
                     value="yes"
-                    {...register('acknowledge', { required: 'Please select acknowledge status' })}
+                    {...register("acknowledge", {
+                      required: "Please select acknowledge status",
+                    })}
                     className="sr-only"
                   />
-                  <div className={`px-4 py-2 rounded-md text-white text-sm font-medium transition-all ${
-                    acknowledge === "yes"
-                      ? "bg-green-500 opacity-100 ring-2 ring-offset-2 ring-gray-400"
-                      : "bg-green-500 opacity-70 hover:opacity-90"
-                  }`}>
+                  <div
+                    className={`px-4 py-2 rounded-md text-white text-sm font-medium transition-all ${
+                      acknowledge === "yes"
+                        ? "bg-green-500 opacity-100 ring-2 ring-offset-2 ring-gray-400"
+                        : "bg-green-500 opacity-70 hover:opacity-90"
+                    }`}
+                  >
                     เข้าใจ
                   </div>
                 </label>
@@ -245,20 +267,26 @@ export default function ManFormAlert({ bu, type, id, isInDialog = false }: ManFo
                   <input
                     type="radio"
                     value="no"
-                    {...register('acknowledge', { required: 'Please select acknowledge status' })}
+                    {...register("acknowledge", {
+                      required: "Please select acknowledge status",
+                    })}
                     className="sr-only"
                   />
-                  <div className={`px-4 py-2 rounded-md text-white text-sm font-medium transition-all ${
-                    acknowledge === "no"
-                      ? "bg-red-500 opacity-100 ring-2 ring-offset-2 ring-gray-400"
-                      : "bg-red-500 opacity-70 hover:opacity-90"
-                  }`}>
+                  <div
+                    className={`px-4 py-2 rounded-md text-white text-sm font-medium transition-all ${
+                      acknowledge === "no"
+                        ? "bg-red-500 opacity-100 ring-2 ring-offset-2 ring-gray-400"
+                        : "bg-red-500 opacity-70 hover:opacity-90"
+                    }`}
+                  >
                     ไม่เข้าใจ
                   </div>
                 </label>
               </div>
               {errors.acknowledge && (
-                <p className="text-red-500 text-sm">{errors.acknowledge?.message}</p>
+                <p className="text-red-500 text-sm">
+                  {errors.acknowledge?.message}
+                </p>
               )}
             </div>
           </CardContent>

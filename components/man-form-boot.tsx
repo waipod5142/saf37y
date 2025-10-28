@@ -332,7 +332,9 @@ export default function ManFormBoot({
   }, [staffId, bu]);
 
   // Generate QR code URL
-  const qrUrl = `https://www.saf37y.com/ManForm/${bu}/${type}/${id}`;
+  const capitalizedType = type.charAt(0).toUpperCase() + type.slice(1);
+  const formattedType = capitalizedType.endsWith("Form") ? capitalizedType : `${capitalizedType}Form`;
+  const qrUrl = `https://www.saf37y.com/ManForm/${bu}/${formattedType}/${id}`;
 
   const onSubmit: SubmitHandler<BootFormData> = async (formData) => {
     try {

@@ -16,6 +16,15 @@ import MachineTitle from "@/components/machine-title";
 import MachineHeader from "@/components/machine-header";
 import MachineDetailClient from "@/components/machine-detail-client";
 import MachineForm from "@/components/machine-form";
+import ManFormAlert from "@/components/man-form-alert";
+import ManFormBoot from "@/components/man-form-boot";
+import ManFormMeeting from "@/components/man-form-meeting";
+import ManFormPto from "@/components/man-form-pto";
+import ManFormRa from "@/components/man-form-ra";
+import ManFormSot from "@/components/man-form-sot";
+import ManFormTalk from "@/components/man-form-talk";
+import ManFormToolbox from "@/components/man-form-toolbox";
+import ManFormTraining from "@/components/man-form-training";
 
 interface MachineDetailDialogProps {
   isOpen: boolean;
@@ -60,7 +69,7 @@ export function MachineDetailDialog({
       // Fetch inspection records and form questions for the MachineDetailClient component
       const [recordsResult, questionsResult] = await Promise.all([
         getMachineInspectionRecordsAction(decodedBu, decodedType, decodedId),
-        getMachineQuestions(decodedBu, decodedType)
+        getMachineQuestions(decodedBu, decodedType),
       ]);
 
       if (recordsResult.success) {
@@ -91,26 +100,101 @@ export function MachineDetailDialog({
             Machine Details - {decodedId}
           </DialogTitle>
         </DialogHeader>
-        
+
         {loading ? (
           <div className="flex justify-center items-center py-8 flex-1">
             <div className="text-gray-600">Loading machine details...</div>
           </div>
         ) : (
-          <div 
+          <div
             ref={scrollContainerRef}
-            className="overflow-y-auto flex-1 px-1 min-h-0" 
-            style={{ scrollBehavior: 'auto' }}
+            className="overflow-y-auto flex-1 px-1 min-h-0"
+            style={{ scrollBehavior: "auto" }}
           >
-            <div className="space-y-6 pb-4" style={{ position: 'relative', top: 0 }}>
+            <div
+              className="space-y-6 pb-4"
+              style={{ position: "relative", top: 0 }}
+            >
               <MachineTitle bu={decodedBu} type={decodedType} id={decodedId} />
               <MachineHeader bu={decodedBu} type={decodedType} id={decodedId} />
               <MachineDetailClient records={records} questions={questions} />
-              <MachineForm bu={decodedBu} type={decodedType} id={decodedId} isInDialog={true} />
+
+              {/* Conditionally render the appropriate form based on type */}
+              {decodedType === "alert" ? (
+                <ManFormAlert
+                  bu={decodedBu}
+                  type={decodedType}
+                  id={decodedId}
+                  isInDialog={true}
+                />
+              ) : decodedType === "boot" ? (
+                <ManFormBoot
+                  bu={decodedBu}
+                  type={decodedType}
+                  id={decodedId}
+                  isInDialog={true}
+                />
+              ) : decodedType === "meeting" ? (
+                <ManFormMeeting
+                  bu={decodedBu}
+                  type={decodedType}
+                  id={decodedId}
+                  isInDialog={true}
+                />
+              ) : decodedType === "pto" ? (
+                <ManFormPto
+                  bu={decodedBu}
+                  type={decodedType}
+                  id={decodedId}
+                  isInDialog={true}
+                />
+              ) : decodedType === "ra" ? (
+                <ManFormRa
+                  bu={decodedBu}
+                  type={decodedType}
+                  id={decodedId}
+                  isInDialog={true}
+                />
+              ) : decodedType === "sot" ? (
+                <ManFormSot
+                  bu={decodedBu}
+                  type={decodedType}
+                  id={decodedId}
+                  isInDialog={true}
+                />
+              ) : decodedType === "talk" ? (
+                <ManFormTalk
+                  bu={decodedBu}
+                  type={decodedType}
+                  id={decodedId}
+                  isInDialog={true}
+                />
+              ) : decodedType === "toolbox" ? (
+                <ManFormToolbox
+                  bu={decodedBu}
+                  type={decodedType}
+                  id={decodedId}
+                  isInDialog={true}
+                />
+              ) : decodedType === "training" ? (
+                <ManFormTraining
+                  bu={decodedBu}
+                  type={decodedType}
+                  id={decodedId}
+                  isInDialog={true}
+                />
+              ) : (
+                <MachineForm
+                  bu={decodedBu}
+                  type={decodedType}
+                  id={decodedId}
+                  isInDialog={true}
+                />
+              )}
             </div>
           </div>
         )}
-        
+
         <div className="flex-shrink-0 mt-4 flex justify-end border-t pt-4">
           <Button variant="outline" onClick={onClose}>
             Close

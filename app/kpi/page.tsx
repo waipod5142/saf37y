@@ -83,27 +83,6 @@ export default async function KPIPage() {
           </Card>
         ))}
       </div>
-
-      <div className="flex py-4">
-        <Link href={`/kpilog/th/rmx`}>
-          <Badge
-            variant="outline"
-            className="cursor-pointer hover:bg-green-50 hover:border-green-500 hover:text-green-700 transition-colors px-3 py-1"
-          >
-            <MapPin className="h-3 w-3 mr-1" />
-            RMX - daily only
-          </Badge>
-        </Link>
-        <Link href={`/kpilog/th/log`}>
-          <Badge
-            variant="outline"
-            className="cursor-pointer hover:bg-green-50 hover:border-green-500 hover:text-green-700 transition-colors px-3 py-1"
-          >
-            <MapPin className="h-3 w-3 mr-1" />
-            LOG - daily only
-          </Badge>
-        </Link>
-      </div>
     </div>
   );
 }

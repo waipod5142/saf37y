@@ -29,19 +29,67 @@ type Language = "th" | "vn";
 
 // FPE categories with colors
 const fpeCategories = [
-  { id: 'ppe', label: 'Thiết bị bảo hộ cá nhân (PPE)', color: 'bg-blue-500' },
-  { id: 'workingAtHeight', label: 'Làm việc trên cao (Working at Height)', color: 'bg-red-500' },
-  { id: 'isolation', label: 'Cách ly nguồn điện (Isolation of plant and equipment)', color: 'bg-orange-500' },
-  { id: 'vehicles', label: 'Phương tiện và An toàn giao thông (Vehicles and Traffic Safety)', color: 'bg-yellow-500' },
-  { id: 'electrical', label: 'An toàn điện (Electrical Safety)', color: 'bg-yellow-400' },
-  { id: 'guarding', label: 'Bảo vệ máy móc (Machine Guarding)', color: 'bg-green-500' },
-  { id: 'hotwork', label: 'Công việc nóng và Giấy phép (Hot Work and Permits)', color: 'bg-teal-500' },
-  { id: 'lifting', label: 'Thiết bị nâng (Lifting Equipment)', color: 'bg-blue-600' },
-  { id: 'quarries', label: 'Công việc mỏ đá (Quarries)', color: 'bg-indigo-500' },
-  { id: 'hotMaterials', label: 'Vật liệu nóng (Hot Materials)', color: 'bg-purple-500' },
-  { id: 'csm', label: 'Quản lý nhà thầu (Contractor Management)', color: 'bg-pink-500' },
-  { id: 'equipment', label: 'Thiết bị di động (Portable Equipment)', color: 'bg-purple-400' },
-  { id: 'generalWork', label: 'Giấy phép làm việc chung (General Work Permits)', color: 'bg-gray-500' },
+  { id: "ppe", label: "Thiết bị bảo hộ cá nhân (PPE)", color: "bg-blue-500" },
+  {
+    id: "workingAtHeight",
+    label: "Làm việc trên cao (Working at Height)",
+    color: "bg-red-500",
+  },
+  {
+    id: "isolation",
+    label: "Cách ly nguồn điện (Isolation of plant and equipment)",
+    color: "bg-orange-500",
+  },
+  {
+    id: "vehicles",
+    label: "Phương tiện và An toàn giao thông (Vehicles and Traffic Safety)",
+    color: "bg-yellow-500",
+  },
+  {
+    id: "electrical",
+    label: "An toàn điện (Electrical Safety)",
+    color: "bg-yellow-400",
+  },
+  {
+    id: "guarding",
+    label: "Bảo vệ máy móc (Machine Guarding)",
+    color: "bg-green-500",
+  },
+  {
+    id: "hotwork",
+    label: "Công việc nóng và Giấy phép (Hot Work and Permits)",
+    color: "bg-teal-500",
+  },
+  {
+    id: "lifting",
+    label: "Thiết bị nâng (Lifting Equipment)",
+    color: "bg-blue-600",
+  },
+  {
+    id: "quarries",
+    label: "Công việc mỏ đá (Quarries)",
+    color: "bg-indigo-500",
+  },
+  {
+    id: "hotMaterials",
+    label: "Vật liệu nóng (Hot Materials)",
+    color: "bg-purple-500",
+  },
+  {
+    id: "csm",
+    label: "Quản lý nhà thầu (Contractor Management)",
+    color: "bg-pink-500",
+  },
+  {
+    id: "equipment",
+    label: "Thiết bị di động (Portable Equipment)",
+    color: "bg-purple-400",
+  },
+  {
+    id: "generalWork",
+    label: "Giấy phép làm việc chung (General Work Permits)",
+    color: "bg-gray-500",
+  },
 ];
 
 const translations = {
@@ -51,19 +99,23 @@ const translations = {
     staffIdPlaceholder: "Mã nhân viên Staff ID ?",
     staffIdRequired: "กรุณากรอกรหัสพนักงาน",
 
-    question1Title: "1. Tên của người giám sát (Người phỏng vấn nắm giữ KPI RA) / Name of the supervisor (Interviewer who hold the RA KPI)",
+    question1Title:
+      "1. Tên của người giám sát (Người phỏng vấn nắm giữ KPI RA) / Name of the supervisor (Interviewer who hold the RA KPI)",
     question1Subtitle:
       "Ghi rõ tên của người giám sát thực hiện phỏng vấn. / Record the name of the supervisor conducting the interview.",
     question1Placeholder: "Tên của người giám sát / Name of the supervisor",
     question1Required: "กรุณากรอกชื่อผู้บังคับบัญชา",
 
-    question2Title: "2. Tên của người được phỏng vấn (Hình ảnh của Người lao động liên quan đến RA) hàng ngày thực hiện việc này với mọi người / Name of the interviewee (Picture of Workers related to RA) daily do this with people inturn",
+    question2Title:
+      "2. Tên của người được phỏng vấn (Hình ảnh của Người lao động liên quan đến RA) hàng ngày thực hiện việc này với mọi người / Name of the interviewee (Picture of Workers related to RA) daily do this with people inturn",
     question2Subtitle:
       "Ghi rõ tên của người được phỏng vấn và chụp ảnh người lao động. / Record the name of the interviewee and take pictures of workers.",
-    question2Placeholder: "Tên của người được phỏng vấn / Name of the interviewee",
+    question2Placeholder:
+      "Tên của người được phỏng vấn / Name of the interviewee",
     question2Required: "กรุณากรอกชื่อผู้ถูกสัมภาษณ์",
 
-    question3Title: "3. Những FPE nào sẽ được áp dụng cho nhiệm vụ (liệt kê câu trả lời) / Which FPEs shall be applied to the task (list out the answer)",
+    question3Title:
+      "3. Những FPE nào sẽ được áp dụng cho nhiệm vụ (liệt kê câu trả lời) / Which FPEs shall be applied to the task (list out the answer)",
     question3Subtitle:
       "Liệt kê các thiết bị bảo hộ cá nhân cần thiết cho nhiệm vụ. / List the personal protective equipment required for the task.",
     question3Placeholder: "Liệt kê các FPE / List FPEs",
@@ -80,7 +132,8 @@ const translations = {
       "5. Chúng ta kiểm soát những rủi ro tiềm ẩn này tại nơi làm việc cụ thể này như thế nào (liệt kê câu trả lời) / How we control these potential risk at this specific working place (list out the answer)",
     question5Subtitle:
       "Mô tả các biện pháp kiểm soát rủi ro được áp dụng. / Describe the risk control measures applied.",
-    question5Placeholder: "Liệt kê các biện pháp kiểm soát / List control measures",
+    question5Placeholder:
+      "Liệt kê các biện pháp kiểm soát / List control measures",
     question5Required: "กรุณาระบุมาตรการควบคุมความเสี่ยง",
 
     question6Title:
@@ -104,19 +157,23 @@ const translations = {
     staffIdPlaceholder: "Mã nhân viên Staff ID ?",
     staffIdRequired: "Vui lòng nhập mã nhân viên",
 
-    question1Title: "1. Tên của người giám sát (Người phỏng vấn nắm giữ KPI RA) / Name of the supervisor (Interviewer who hold the RA KPI)",
+    question1Title:
+      "1. Tên của người giám sát (Người phỏng vấn nắm giữ KPI RA) / Name of the supervisor (Interviewer who hold the RA KPI)",
     question1Subtitle:
       "Ghi rõ tên của người giám sát thực hiện phỏng vấn. / Record the name of the supervisor conducting the interview.",
     question1Placeholder: "Tên của người giám sát / Name of the supervisor",
     question1Required: "Vui lòng nhập tên người giám sát",
 
-    question2Title: "2. Tên của người được phỏng vấn (Hình ảnh của Người lao động liên quan đến RA) hàng ngày thực hiện việc này với mọi người / Name of the interviewee (Picture of Workers related to RA) daily do this with people inturn",
+    question2Title:
+      "2. Tên của người được phỏng vấn (Hình ảnh của Người lao động liên quan đến RA) hàng ngày thực hiện việc này với mọi người / Name of the interviewee (Picture of Workers related to RA) daily do this with people inturn",
     question2Subtitle:
       "Ghi rõ tên của người được phỏng vấn và chụp ảnh người lao động. / Record the name of the interviewee and take pictures of workers.",
-    question2Placeholder: "Tên của người được phỏng vấn / Name of the interviewee",
+    question2Placeholder:
+      "Tên của người được phỏng vấn / Name of the interviewee",
     question2Required: "Vui lòng nhập tên người được phỏng vấn",
 
-    question3Title: "3. Những FPE nào sẽ được áp dụng cho nhiệm vụ (liệt kê câu trả lời) / Which FPEs shall be applied to the task (list out the answer)",
+    question3Title:
+      "3. Những FPE nào sẽ được áp dụng cho nhiệm vụ (liệt kê câu trả lời) / Which FPEs shall be applied to the task (list out the answer)",
     question3Subtitle:
       "Liệt kê các thiết bị bảo hộ cá nhân cần thiết cho nhiệm vụ. / List the personal protective equipment required for the task.",
     question3Placeholder: "Liệt kê các FPE / List FPEs",
@@ -133,7 +190,8 @@ const translations = {
       "5. Chúng ta kiểm soát những rủi ro tiềm ẩn này tại nơi làm việc cụ thể này như thế nào (liệt kê câu trả lời) / How we control these potential risk at this specific working place (list out the answer)",
     question5Subtitle:
       "Mô tả các biện pháp kiểm soát rủi ro được áp dụng. / Describe the risk control measures applied.",
-    question5Placeholder: "Liệt kê các biện pháp kiểm soát / List control measures",
+    question5Placeholder:
+      "Liệt kê các biện pháp kiểm soát / List control measures",
     question5Required: "Vui lòng liệt kê các biện pháp kiểm soát",
 
     question6Title:
@@ -224,7 +282,11 @@ export default function ManFormRa({
   }, [staffId, bu]);
 
   // Generate QR code URL
-  const qrUrl = `https://www.saf37y.com/ManForm/${bu}/${type}/${id}`;
+  const capitalizedType = type.charAt(0).toUpperCase() + type.slice(1);
+  const formattedType = capitalizedType.endsWith("Form")
+    ? capitalizedType
+    : `${capitalizedType}Form`;
+  const qrUrl = `https://www.saf37y.com/ManForm/${bu}/${formattedType}/${id}`;
 
   const onSubmit: SubmitHandler<RaFormData> = async (formData) => {
     try {
@@ -400,7 +462,9 @@ export default function ManFormRa({
                 className="w-full"
               />
               {errors.id && (
-                <p className="text-red-500 text-sm">{errors.id?.message as string}</p>
+                <p className="text-red-500 text-sm">
+                  {errors.id?.message as string}
+                </p>
               )}
             </div>
           </CardContent>
@@ -436,7 +500,10 @@ export default function ManFormRa({
         <Card>
           <CardContent className="pt-6">
             <div className="space-y-2">
-              <Label htmlFor="intervieweeName" className="text-lg font-semibold">
+              <Label
+                htmlFor="intervieweeName"
+                className="text-lg font-semibold"
+              >
                 {t.question2Title}
               </Label>
               <p className="text-xs text-gray-600 whitespace-pre-line">
@@ -486,7 +553,8 @@ export default function ManFormRa({
               </div>
               {selectedFpes.length === 0 && (
                 <p className="text-red-500 text-sm">
-                  Vui lòng chọn ít nhất một danh mục FPE / Please select at least one FPE category
+                  Vui lòng chọn ít nhất một danh mục FPE / Please select at
+                  least one FPE category
                 </p>
               )}
             </div>
@@ -523,10 +591,7 @@ export default function ManFormRa({
         <Card>
           <CardContent className="pt-6">
             <div className="space-y-2">
-              <Label
-                htmlFor="riskControls"
-                className="text-lg font-semibold"
-              >
+              <Label htmlFor="riskControls" className="text-lg font-semibold">
                 {t.question5Title}
               </Label>
               <p className="text-xs text-gray-600 whitespace-pre-line">

@@ -13,9 +13,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import MultiImageUploader, {
-  ImageUpload,
-} from "@/components/multi-image-uploader";
+import MultiMediaUploader, {
+  MediaUpload,
+} from "@/components/multi-media-uploader";
 import { auth, storage } from "@/firebase/client";
 import { signInAnonymously } from "firebase/auth";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
@@ -77,9 +77,9 @@ export default function MachineForm({
   const [selectedValues, setSelectedValues] = useState<{
     [key: string]: string | null;
   }>({});
-  const [images, setImages] = useState<ImageUpload[]>([]);
+  const [images, setImages] = useState<MediaUpload[]>([]);
   const [questionImages, setQuestionImages] = useState<{
-    [questionName: string]: ImageUpload[];
+    [questionName: string]: MediaUpload[];
   }>({});
 
   // Use geolocation hook for automatic location capture
@@ -157,7 +157,7 @@ export default function MachineForm({
 
   const handleQuestionImagesChange = (
     questionName: string,
-    images: ImageUpload[]
+    images: MediaUpload[]
   ) => {
     setQuestionImages((prev) => ({ ...prev, [questionName]: images }));
   };
@@ -638,14 +638,14 @@ export default function MachineForm({
 
                       <div>
                         <Label className="text-sm font-medium mb-2 block">
-                          Upload Images for {question.question}
+                          Upload Images/Videos for {question.question}
                         </Label>
-                        <MultiImageUploader
-                          images={questionImages[question.name] || []}
-                          onImagesChange={(images) =>
-                            handleQuestionImagesChange(question.name, images)
+                        <MultiMediaUploader
+                          media={questionImages[question.name] || []}
+                          onMediaChange={(media) =>
+                            handleQuestionImagesChange(question.name, media)
                           }
-                          urlFormatter={(image) => image.url}
+                          urlFormatter={(media) => media.url}
                           compressionType="defect"
                         />
                       </div>
@@ -657,7 +657,7 @@ export default function MachineForm({
                       )}
                       {(questionImages[question.name] || []).length === 0 && (
                         <p className="text-red-500 text-sm">
-                          Please attach at least one picture
+                          Please attach at least one picture/video
                         </p>
                       )}
                     </div>
@@ -672,19 +672,19 @@ export default function MachineForm({
             <CardContent className="pt-6">
               <div className="space-y-4">
                 <Label className="text-lg font-semibold">
-                  {getTranslation("picture", "Attach Images")} (Optional)
+                  {getTranslation("picture", "Attach Images/Videos")} (Optional)
                 </Label>
 
-                <MultiImageUploader
-                  images={images}
-                  onImagesChange={setImages}
-                  urlFormatter={(image) => {
-                    if (!image.file) {
+                <MultiMediaUploader
+                  media={images}
+                  onMediaChange={setImages}
+                  urlFormatter={(media) => {
+                    if (!media.file) {
                       return `https://firebasestorage.googleapis.com/v0/b/sccc-inseesafety-prod.firebasestorage.app/o/${encodeURIComponent(
-                        image.url
+                        media.url
                       )}?alt=media`;
                     }
-                    return image.url;
+                    return media.url;
                   }}
                   compressionType="general"
                 />

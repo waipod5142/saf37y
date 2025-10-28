@@ -242,7 +242,11 @@ export default function ManFormAlert({
   }, [staffId, bu]);
 
   // Generate QR code URL
-  const qrUrl = `https://www.saf37y.com/ManForm/${bu}/${type}/${id}`;
+  const capitalizedType = type.charAt(0).toUpperCase() + type.slice(1);
+  const formattedType = capitalizedType.endsWith("Form")
+    ? capitalizedType
+    : `${capitalizedType}Form`;
+  const qrUrl = `https://www.saf37y.com/ManForm/${bu}/${formattedType}/${id}`;
 
   // Alert topics with colors matching the form image
   const alertTopics = [

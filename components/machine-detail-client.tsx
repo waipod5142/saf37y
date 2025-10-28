@@ -27,6 +27,7 @@ import {
   FactoryIcon,
   ZoomInIcon,
   ImageIcon,
+  VideoIcon,
 } from "lucide-react";
 import {
   deleteMachineInspectionRecord,
@@ -142,7 +143,7 @@ export default function MachineDetailClient({
 
       const now = new Date();
       const timeDifference = now.getTime() - recordDate.getTime();
-      const fiveMinutesInMs = 5 * 60 * 1000; // 5 minutes in milliseconds
+      const fiveMinutesInMs = 50 * 60 * 1000; // 5 minutes in milliseconds
 
       return timeDifference <= fiveMinutesInMs;
     } catch (error) {
@@ -294,6 +295,20 @@ export default function MachineDetailClient({
 
     // Otherwise, format it as a Firebase Storage URL
     return `https://firebasestorage.googleapis.com/v0/b/sccc-inseesafety-prod.firebasestorage.app/o/${encodeURIComponent(image)}?alt=media`;
+  };
+
+  const isVideoFile = (url: string): boolean => {
+    const videoExtensions = [
+      ".mp4",
+      ".webm",
+      ".ogg",
+      ".mov",
+      ".avi",
+      ".mkv",
+      ".m4v",
+    ];
+    const lowerUrl = url.toLowerCase();
+    return videoExtensions.some((ext) => lowerUrl.includes(ext));
   };
 
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
@@ -568,33 +583,55 @@ export default function MachineDetailClient({
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {record.images.map((image, index) => (
-                    <div
-                      key={index}
-                      className="group relative aspect-square rounded-lg border-2 border-gray-200 overflow-hidden hover:border-blue-400 hover:shadow-xl transition-all duration-300 cursor-pointer bg-gray-50"
-                      onClick={() => handleImageClick(image)}
-                    >
-                      <img
-                        src={formatImageUrl(image)}
-                        alt={`Inspection image ${index + 1}`}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                        onError={handleImageError}
-                      />
+                  {record.images.map((image, index) => {
+                    const mediaUrl = formatImageUrl(image);
+                    const isVideo = isVideoFile(mediaUrl);
 
-                      {/* Hover Overlay */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center">
-                        <ZoomInIcon className="h-8 w-8 text-white mb-2" />
-                        <span className="text-white text-sm font-medium">
-                          View Full Size
-                        </span>
-                      </div>
+                    return (
+                      <div
+                        key={index}
+                        className="group relative aspect-square rounded-lg border-2 border-gray-200 overflow-hidden hover:border-blue-400 hover:shadow-xl transition-all duration-300 cursor-pointer bg-gray-50"
+                        onClick={() => handleImageClick(image)}
+                      >
+                        {isVideo ? (
+                          <video
+                            src={mediaUrl}
+                            className="w-full h-full object-cover"
+                            controls={false}
+                            preload="metadata"
+                          />
+                        ) : (
+                          <img
+                            src={mediaUrl}
+                            alt={`Inspection image ${index + 1}`}
+                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                            onError={handleImageError}
+                          />
+                        )}
 
-                      {/* Image Counter Badge */}
-                      <div className="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded-full font-medium">
-                        {index + 1}/{record.images?.length || 0}
+                        {/* Hover Overlay */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center">
+                          <ZoomInIcon className="h-8 w-8 text-white mb-2" />
+                          <span className="text-white text-sm font-medium">
+                            {isVideo ? "View Video" : "View Full Size"}
+                          </span>
+                        </div>
+
+                        {/* Media Type Badge */}
+                        {isVideo && (
+                          <div className="absolute top-2 left-2 bg-blue-600 text-white text-xs px-2 py-1 rounded-full font-medium flex items-center gap-1">
+                            <VideoIcon className="h-3 w-3" />
+                            Video
+                          </div>
+                        )}
+
+                        {/* Counter Badge */}
+                        <div className="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded-full font-medium">
+                          {index + 1}/{record.images?.length || 0}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </CardContent>
             </Card>
@@ -724,20 +761,39 @@ export default function MachineDetailClient({
                           {photos.length > 1 ? "s" : ""})
                         </h5>
                         <div className="flex gap-2 flex-wrap">
-                          {photos.map((image, index) => (
-                            <div
-                              key={index}
-                              className="w-20 h-20 rounded border overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
-                            >
-                              <img
-                                src={formatImageUrl(image)}
-                                alt={`${photoType} view ${index + 1}`}
-                                className="w-full h-full object-cover hover:scale-105 transition-transform"
-                                onError={handleImageError}
+                          {photos.map((image, index) => {
+                            const mediaUrl = formatImageUrl(image);
+                            const isVideo = isVideoFile(mediaUrl);
+
+                            return (
+                              <div
+                                key={index}
+                                className="w-20 h-20 rounded border overflow-hidden hover:shadow-lg transition-shadow cursor-pointer relative"
                                 onClick={() => handleImageClick(image)}
-                              />
-                            </div>
-                          ))}
+                              >
+                                {isVideo ? (
+                                  <>
+                                    <video
+                                      src={mediaUrl}
+                                      className="w-full h-full object-cover"
+                                      controls={false}
+                                      preload="metadata"
+                                    />
+                                    <div className="absolute inset-0 flex items-center justify-center bg-black/30 pointer-events-none">
+                                      <VideoIcon className="h-6 w-6 text-white" />
+                                    </div>
+                                  </>
+                                ) : (
+                                  <img
+                                    src={mediaUrl}
+                                    alt={`${photoType} view ${index + 1}`}
+                                    className="w-full h-full object-cover hover:scale-105 transition-transform"
+                                    onError={handleImageError}
+                                  />
+                                )}
+                              </div>
+                            );
+                          })}
                         </div>
                       </div>
                     );
@@ -800,27 +856,46 @@ export default function MachineDetailClient({
                         </div>
                       )}
 
-                      {/* Images */}
+                      {/* Images/Videos */}
                       {data.images && data.images.length > 0 && (
                         <div className="mb-3">
                           <span className="text-xs font-medium text-red-700 block mb-2">
-                            Defect Images ({data.images.length}):
+                            Defect Media ({data.images.length}):
                           </span>
                           <div className="flex gap-2 flex-wrap">
-                            {data.images.map((image, index) => (
-                              <div
-                                key={index}
-                                className="w-16 h-16 rounded border overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
-                              >
-                                <img
-                                  src={formatImageUrl(image)}
-                                  alt={`${questionName} defect image ${index + 1}`}
-                                  className="w-full h-full object-cover hover:scale-105 transition-transform"
-                                  onError={handleImageError}
+                            {data.images.map((image, index) => {
+                              const mediaUrl = formatImageUrl(image);
+                              const isVideo = isVideoFile(mediaUrl);
+
+                              return (
+                                <div
+                                  key={index}
+                                  className="w-16 h-16 rounded border overflow-hidden hover:shadow-lg transition-shadow cursor-pointer relative"
                                   onClick={() => handleImageClick(image)}
-                                />
-                              </div>
-                            ))}
+                                >
+                                  {isVideo ? (
+                                    <>
+                                      <video
+                                        src={mediaUrl}
+                                        className="w-full h-full object-cover"
+                                        controls={false}
+                                        preload="metadata"
+                                      />
+                                      <div className="absolute inset-0 flex items-center justify-center bg-black/30 pointer-events-none">
+                                        <VideoIcon className="h-4 w-4 text-white" />
+                                      </div>
+                                    </>
+                                  ) : (
+                                    <img
+                                      src={mediaUrl}
+                                      alt={`${questionName} defect image ${index + 1}`}
+                                      className="w-full h-full object-cover hover:scale-105 transition-transform"
+                                      onError={handleImageError}
+                                    />
+                                  )}
+                                </div>
+                              );
+                            })}
                           </div>
                         </div>
                       )}
@@ -862,22 +937,41 @@ export default function MachineDetailClient({
                                 </span>
                                 <div className="flex gap-2 flex-wrap">
                                   {record[questionName + "F"].map(
-                                    (image: string, index: number) => (
-                                      <div
-                                        key={index}
-                                        className="w-16 h-16 rounded border overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
-                                      >
-                                        <img
-                                          src={formatImageUrl(image)}
-                                          alt={`${questionName} fix image ${index + 1}`}
-                                          className="w-full h-full object-cover hover:scale-105 transition-transform"
-                                          onError={handleImageError}
+                                    (image: string, index: number) => {
+                                      const mediaUrl = formatImageUrl(image);
+                                      const isVideo = isVideoFile(mediaUrl);
+
+                                      return (
+                                        <div
+                                          key={index}
+                                          className="w-16 h-16 rounded border overflow-hidden hover:shadow-lg transition-shadow cursor-pointer relative"
                                           onClick={() =>
                                             handleImageClick(image)
                                           }
-                                        />
-                                      </div>
-                                    )
+                                        >
+                                          {isVideo ? (
+                                            <>
+                                              <video
+                                                src={mediaUrl}
+                                                className="w-full h-full object-cover"
+                                                controls={false}
+                                                preload="metadata"
+                                              />
+                                              <div className="absolute inset-0 flex items-center justify-center bg-black/30 pointer-events-none">
+                                                <VideoIcon className="h-4 w-4 text-white" />
+                                              </div>
+                                            </>
+                                          ) : (
+                                            <img
+                                              src={mediaUrl}
+                                              alt={`${questionName} fix image ${index + 1}`}
+                                              className="w-full h-full object-cover hover:scale-105 transition-transform"
+                                              onError={handleImageError}
+                                            />
+                                          )}
+                                        </div>
+                                      );
+                                    }
                                   )}
                                 </div>
                               </div>
@@ -981,24 +1075,39 @@ export default function MachineDetailClient({
         </div>
       )}
 
-      {/* Image Modal */}
+      {/* Image/Video Modal */}
       <Dialog open={isImageModalOpen} onOpenChange={setIsImageModalOpen}>
         <DialogContent className="max-w-4xl max-h-[90vh] p-0">
           <DialogHeader className="p-6 pb-0">
-            <DialogTitle>Inspection Image</DialogTitle>
+            <DialogTitle>
+              {selectedImage && isVideoFile(selectedImage)
+                ? "Inspection Video"
+                : "Inspection Image"}
+            </DialogTitle>
           </DialogHeader>
           <div className="p-6 pt-2">
             {selectedImage && (
               <div className="flex justify-center">
-                <img
-                  src={selectedImage}
-                  alt="Inspection image"
-                  className="max-w-full max-h-[70vh] object-contain rounded"
-                  onError={(e) => {
-                    e.currentTarget.src =
-                      "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCA0MDAgMzAwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgogIDxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjRjNGNEY2Ii8+CiAgPHRleHQgeD0iMjAwIiB5PSIxNTAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM5Q0E0QUYiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNiI+SW1hZ2UgY291bGQgbm90IGJlIGxvYWRlZDwvdGV4dD4KPC9zdmc+";
-                  }}
-                />
+                {isVideoFile(selectedImage) ? (
+                  <video
+                    src={selectedImage}
+                    controls
+                    className="max-w-full max-h-[70vh] object-contain rounded"
+                    autoPlay
+                  >
+                    Your browser does not support the video tag.
+                  </video>
+                ) : (
+                  <img
+                    src={selectedImage}
+                    alt="Inspection image"
+                    className="max-w-full max-h-[70vh] object-contain rounded"
+                    onError={(e) => {
+                      e.currentTarget.src =
+                        "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCA0MDAgMzAwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgogIDxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjRjNGNEY2Ii8+CiAgPHRleHQgeD0iMjAwIiB5PSIxNTAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM5Q0E0QUYiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNiI+SW1hZ2UgY291bGQgbm90IGJlIGxvYWRlZDwvdGV4dD4KPC9zdmc+";
+                    }}
+                  />
+                )}
               </div>
             )}
           </div>

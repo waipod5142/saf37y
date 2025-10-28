@@ -190,7 +190,9 @@ export default function MachineHeaderClient({
 
               {machine.email && (
                 <div className="flex flex-col">
-                  <span className="text-gray-500 font-medium">Email</span>
+                  <span className="text-gray-500 font-medium">
+                    Responsible person email
+                  </span>
                   <span className="text-gray-900">{machine.email}</span>
                 </div>
               )}
