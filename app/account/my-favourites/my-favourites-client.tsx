@@ -150,10 +150,10 @@ export default function MyFavouritesClient({
               Generate QR ({selectedMachineKeys.size})
             </Button>
           )}
-          <Button onClick={() => router.push("/admin/add-machine")}>
+          {/* <Button onClick={() => router.push("/admin/add-machine")}>
             <PlusIcon className="mr-2 h-4 w-4" />
             Add New Machine
-          </Button>
+          </Button> */}
         </div>
       </div>
 
@@ -224,11 +224,10 @@ export default function MyFavouritesClient({
                 />
               </TableHead>
               <TableHead>No</TableHead>
-              <TableHead>Image</TableHead>
-              <TableHead>BU</TableHead>
               <TableHead>Site</TableHead>
               <TableHead>Type</TableHead>
               <TableHead>ID</TableHead>
+              <TableHead>Email</TableHead>
               <TableHead>Kind</TableHead>
               <TableHead>Location</TableHead>
               <TableHead>Status</TableHead>
@@ -254,7 +253,7 @@ export default function MyFavouritesClient({
                     />
                   </TableCell>
                   <TableCell>{globalIndex}</TableCell>
-                  <TableCell>
+                  {/* <TableCell>
                     {machine.images?.[0] && (
                       <div className="w-16 h-16 relative">
                         <Image
@@ -265,8 +264,7 @@ export default function MyFavouritesClient({
                         />
                       </div>
                     )}
-                  </TableCell>
-                  <TableCell className="font-medium">{machine.bu}</TableCell>
+                  </TableCell> */}
                   <TableCell>{machine.site}</TableCell>
                   <TableCell>
                     <Badge
@@ -291,6 +289,7 @@ export default function MyFavouritesClient({
                       {machine.id}
                     </button>
                   </TableCell>
+                  <TableCell>{machine.email}</TableCell>
                   <TableCell>{machine.kind}</TableCell>
                   <TableCell>{machine.location}</TableCell>
                   <TableCell>
