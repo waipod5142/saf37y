@@ -139,6 +139,13 @@ export default function MachineHeaderClient({
                 </div>
               )}
 
+              {machine.interval && (
+                <div className="flex flex-col">
+                  <span className="text-gray-500 font-medium">interval</span>
+                  <span className="text-gray-900">{machine.interval}</span>
+                </div>
+              )}
+
               {machine.description && (
                 <div className="flex flex-col">
                   <span className="text-gray-500 font-medium">Description</span>
