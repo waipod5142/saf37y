@@ -19,7 +19,11 @@ import { signInAnonymously } from "firebase/auth";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { submitMachineForm } from "@/lib/actions/machines";
 import { useGeolocation } from "@/hooks/useGeolocation";
-import { getSafetyStatByPlantId } from "@/lib/actions/safetystat";
+import {
+  getSafetyStatByPlantId,
+  getActiveCampaign,
+  Campaign,
+} from "@/lib/actions/safetystat";
 
 interface MachineFormProps {
   bu: string;
@@ -72,6 +76,7 @@ export default function MachineFormStat({
   const [calculatedDays, setCalculatedDays] = useState<number>(0);
   const [plantData, setPlantData] = useState<any>(null);
   const [isPlantFound, setIsPlantFound] = useState<boolean>(false);
+  const [campaign, setCampaign] = useState<Campaign | null>(null);
 
   const lastAccidentDate = watch("lastAccident");
 
@@ -91,12 +96,13 @@ export default function MachineFormStat({
       try {
         setIsLoadingVocabulary(true);
 
-        // Fetch title, vocabulary, and machine data in parallel
-        const [questionsResult, vocabularyResult, machineResult] =
+        // Fetch title, vocabulary, machine data, and campaign in parallel
+        const [questionsResult, vocabularyResult, machineResult, campaignResult] =
           await Promise.all([
             getMachineQuestions(bu, type),
             getVocabulary(bu),
             getMachineByIdAction(bu, type, id),
+            getActiveCampaign(),
           ]);
 
         // Handle title and emoji
@@ -121,6 +127,23 @@ export default function MachineFormStat({
         if (machineResult.success && machineResult.machine) {
           setMachineSite(machineResult.machine.site);
         }
+
+        // Handle campaign data
+        if (campaignResult.success && campaignResult.data) {
+          setCampaign(campaignResult.data);
+        } else {
+          console.warn("No active campaign found, using defaults");
+          // Set default campaign if none found in Firestore
+          setCampaign({
+            campaignId: "safety-first-campaign",
+            title: CAMPAIGN_TITLE,
+            description: CAMPAIGN_DESCRIPTION,
+            startDate: CAMPAIGN_START_DATE,
+            endDate: CAMPAIGN_END_DATE,
+            durationYears: CAMPAIGN_DURATION_YEARS,
+            isActive: true,
+          });
+        }
       } catch (error) {
         console.error("Error loading data:", error);
         toast.error("Failed to load form data");
@@ -142,9 +165,12 @@ export default function MachineFormStat({
 
   // Load plant data and auto-populate fields
   useEffect(() => {
+    // Wait for campaign data to be loaded
+    if (!campaign) return;
+
     const loadPlantData = async () => {
-      const campaignStart = new Date(CAMPAIGN_START_DATE);
-      const campaignEnd = new Date(CAMPAIGN_END_DATE);
+      const campaignStart = new Date(campaign.startDate);
+      const campaignEnd = new Date(campaign.endDate);
       const today = new Date();
 
       // Calculate days from campaign start
@@ -160,47 +186,53 @@ export default function MachineFormStat({
       const plantInfo = result.success ? result.data : undefined;
 
       if (plantInfo) {
-      // Plant found in data
-      setIsPlantFound(true);
-      setPlantData(plantInfo);
+        // Plant found in data
+        setIsPlantFound(true);
+        setPlantData(plantInfo);
 
-      // Auto-populate fields
-      const lastAccident = plantInfo.lastAccidentDate
-        ? new Date(plantInfo.lastAccidentDate)
-        : new Date(CAMPAIGN_START_DATE);
+        // Auto-populate fields
+        const actualLastAccident = plantInfo.lastAccidentDate
+          ? new Date(plantInfo.lastAccidentDate)
+          : campaignStart;
 
-      const lastAccidentStr = lastAccident.toISOString().split("T")[0];
-      setValue("lastAccident", lastAccidentStr);
+        // Show actual accident date in the form
+        const lastAccidentStr = actualLastAccident.toISOString().split("T")[0];
+        setValue("lastAccident", lastAccidentStr);
 
-      // Calculate operated days
-      const opDays = Math.ceil(
-        (today.getTime() - lastAccident.getTime()) / (1000 * 60 * 60 * 24)
-      );
-      setCalculatedDays(opDays);
-      setValue("operatedDays", opDays);
+        // For calculations, use campaign start if accident was before campaign
+        const calculationDate =
+          actualLastAccident < campaignStart ? campaignStart : actualLastAccident;
 
-      // Set target (calculated from today to campaign end)
-      setValue("target", targetDays);
+        // Calculate operated days from the calculation date (not the actual accident date)
+        const opDays = Math.ceil(
+          (today.getTime() - calculationDate.getTime()) / (1000 * 60 * 60 * 24)
+        );
+        setCalculatedDays(opDays);
+        setValue("operatedDays", opDays);
 
-      // Calculate best record
-      const calculatedBestRecord = Math.max(campaignDays, opDays);
-      let bestRec = 0;
+        // Set target (calculated from today to campaign end)
+        setValue("target", targetDays);
 
-      if (plantInfo.bestRecord !== null && plantInfo.bestRecord !== undefined) {
-        // Use the higher value between manual best record and calculated value
-        // This ensures we never show a lower value than current reality
-        bestRec = Math.max(plantInfo.bestRecord, calculatedBestRecord);
-      } else {
-        // Auto-calculate: max of campaign days or operated days
-        bestRec = calculatedBestRecord;
-      }
-      setValue("bestRecord", bestRec);
+        // Calculate best record
+        const calculatedBestRecord = Math.max(campaignDays, opDays);
+        let bestRec = 0;
+
+        if (
+          plantInfo.bestRecord !== null &&
+          plantInfo.bestRecord !== undefined
+        ) {
+          // Use the higher value between manual best record and calculated value
+          // This ensures we never show a lower value than current reality
+          bestRec = Math.max(plantInfo.bestRecord, calculatedBestRecord);
+        } else {
+          // Auto-calculate: max of campaign days or operated days
+          bestRec = calculatedBestRecord;
+        }
+        setValue("bestRecord", bestRec);
       } else {
         // Plant not found - use campaign start date
         setIsPlantFound(false);
-        const campaignStartStr = new Date(CAMPAIGN_START_DATE)
-          .toISOString()
-          .split("T")[0];
+        const campaignStartStr = campaignStart.toISOString().split("T")[0];
         setValue("lastAccident", campaignStartStr);
         setValue("operatedDays", campaignDays);
         setValue("target", targetDays);
@@ -210,7 +242,7 @@ export default function MachineFormStat({
     };
 
     loadPlantData();
-  }, [id, setValue]);
+  }, [id, setValue, campaign]);
 
   const onSubmit: SubmitHandler<FormData> = async (formData) => {
     try {
@@ -405,9 +437,7 @@ export default function MachineFormStat({
                   <span>{CAMPAIGN_TITLE}</span>
                   <span>🛡️</span>
                 </div>
-                <p className="text-sm text-gray-700">
-                  {CAMPAIGN_DESCRIPTION}
-                </p>
+                <p className="text-sm text-gray-700">{CAMPAIGN_DESCRIPTION}</p>
                 <p className="text-sm font-semibold text-green-700">
                   📅 Campaign Period: {CAMPAIGN_START_DATE} to{" "}
                   {CAMPAIGN_END_DATE} ({CAMPAIGN_DURATION_YEARS} years)
@@ -707,7 +737,9 @@ export default function MachineFormStat({
                       ℹ️ Plant ID: {id} - Not found in safety data records
                     </p>
                     <p className="text-xs text-blue-600 mt-1">
-                      Last accident date shows "--/--/--" (no accident history). Using campaign start date ({CAMPAIGN_START_DATE}) as baseline for calculations.
+                      Last accident date shows "--/--/--" (no accident history).
+                      Using campaign start date ({CAMPAIGN_START_DATE}) as
+                      baseline for calculations.
                     </p>
                   </div>
                 )}
