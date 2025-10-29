@@ -10,6 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Machine } from "@/types/machine";
 import Image from "next/image";
@@ -38,6 +39,7 @@ export function MachineEditModal({
     location: machine.location || "",
     plantId: machine.plantId || "",
     email: machine.email || "",
+    supemail: machine.supemail || "",
     status: machine.status || "active",
   });
 
@@ -52,12 +54,13 @@ export function MachineEditModal({
       location: machine.location || "",
       plantId: machine.plantId || "",
       email: machine.email || "",
+      supemail: machine.supemail || "",
       status: machine.status || "active",
     });
     setIsEditing(false);
   }, [machine]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -216,13 +219,25 @@ export function MachineEditModal({
 
             <div>
               <Label htmlFor="email">Email of responsible person</Label>
-              <Input
+              <Textarea
                 id="email"
                 name="email"
-                type="email"
                 value={formData.email}
                 onChange={handleChange}
                 disabled={!isEditing}
+                className="min-h-[60px] resize-y"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="supemail">Supervisor Email</Label>
+              <Textarea
+                id="supemail"
+                name="supemail"
+                value={formData.supemail}
+                onChange={handleChange}
+                disabled={!isEditing}
+                className="min-h-[60px] resize-y"
               />
             </div>
 
@@ -263,6 +278,7 @@ export function MachineEditModal({
                       location: machine.location || "",
                       plantId: machine.plantId || "",
                       email: machine.email || "",
+                      supemail: machine.supemail || "",
                       status: machine.status || "active",
                     });
                   }}

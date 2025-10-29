@@ -193,7 +193,7 @@ export default function MachineHeaderClient({
                   <span className="text-gray-500 font-medium">
                     Responsible person email
                   </span>
-                  <span className="text-gray-900">{machine.email}</span>
+                  <span className="text-gray-900 break-words break-all">{machine.email}</span>
                 </div>
               )}
 

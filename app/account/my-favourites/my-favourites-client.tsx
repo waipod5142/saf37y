@@ -228,6 +228,7 @@ export default function MyFavouritesClient({
               <TableHead>Type</TableHead>
               <TableHead>ID</TableHead>
               <TableHead>Email</TableHead>
+              <TableHead>CC Email</TableHead>
               <TableHead>Kind</TableHead>
               <TableHead>Location</TableHead>
               <TableHead>Status</TableHead>
@@ -290,6 +291,7 @@ export default function MyFavouritesClient({
                     </button>
                   </TableCell>
                   <TableCell>{machine.email}</TableCell>
+                  <TableCell>{machine.supemail}</TableCell>
                   <TableCell>{machine.kind}</TableCell>
                   <TableCell>{machine.location}</TableCell>
                   <TableCell>
