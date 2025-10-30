@@ -237,6 +237,7 @@ export const normalizeTypeForDisplay = (type: string): string => {
       "plantmaintenance",
       "planttalk",
       "plantstat",
+      "plantaccess",
     ].includes(lowerType)
   ) {
     return "plant";

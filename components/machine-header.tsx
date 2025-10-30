@@ -141,8 +141,15 @@ export default function MachineHeaderClient({
 
               {machine.interval && (
                 <div className="flex flex-col">
-                  <span className="text-gray-500 font-medium">interval</span>
+                  <span className="text-gray-500 font-medium">Interval</span>
                   <span className="text-gray-900">{machine.interval}</span>
+                </div>
+              )}
+
+              {machine.quantity && (
+                <div className="flex flex-col">
+                  <span className="text-gray-500 font-medium">Quantity</span>
+                  <span className="text-gray-900">{machine.quantity}</span>
                 </div>
               )}
 
@@ -193,7 +200,18 @@ export default function MachineHeaderClient({
                   <span className="text-gray-500 font-medium">
                     Responsible person email
                   </span>
-                  <span className="text-gray-900 break-words break-all">{machine.email}</span>
+                  <span className="text-gray-900 break-words break-all">
+                    {machine.email}
+                  </span>
+                </div>
+              )}
+
+              {machine.supemail && (
+                <div className="flex flex-col">
+                  <span className="text-gray-500 font-medium">CC email</span>
+                  <span className="text-gray-900 break-words break-all">
+                    {machine.supemail}
+                  </span>
                 </div>
               )}
 

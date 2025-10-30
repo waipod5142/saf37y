@@ -54,7 +54,7 @@ export const getMachines = async (options?: GetMachinesOptions) => {
       ({
         ...doc.data(),
         docId: doc.id,
-      } as Machine)
+      }) as Machine
   );
 
   // Sort client-side by bu, site, type, id
@@ -95,6 +95,7 @@ export const PLANT_TYPES = [
   "plantmaintenance",
   "planttalk",
   "plantstat",
+  "plantaccess",
 ];
 
 // Utility function for Firebase timestamp conversion

@@ -38,6 +38,7 @@ export default function MachineOption({ bu, type, id }: MachineOptionProps) {
     "plantmaintenance",
     "planttalk",
     "plantstat",
+    "plantaccess",
   ].includes(type);
 
   // Only show dropdown for specific machine types
@@ -136,6 +137,12 @@ export default function MachineOption({ bu, type, id }: MachineOptionProps) {
               className="odd:bg-gray-100 even:bg-gray-200"
             >
               Safety Statistics แบบยืนยันการลงสถิติอุบัติตอนเช้า
+            </option>
+            <option
+              value={`/Machine/${bu}/Plantaccess/${id}`}
+              className="odd:bg-gray-100 even:bg-gray-200"
+            >
+              Plant Access Control แบบบันทึกการเข้าออกหน่วยผลิต
             </option>
           </>
         )}
