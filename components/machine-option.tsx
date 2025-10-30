@@ -41,8 +41,8 @@ export default function MachineOption({ bu, type, id }: MachineOptionProps) {
     "plantaccess",
   ].includes(type);
 
-  // Only show dropdown for specific machine types
-  if (!isMixerType && !isPlantType) {
+  // Only show dropdown for specific machine types and bu must be "th"
+  if (bu !== "th" || (!isMixerType && !isPlantType)) {
     return null;
   }
 

@@ -85,7 +85,7 @@ export default function MachineHeaderClient({
               className="text-2xl font-bold text-blue-600 hover:text-blue-800 mb-2 cursor-pointer transition-colors duration-200 bg-transparent border-none p-0 text-left"
               title="Click to open full machine page"
             >
-              {machine.id}
+              {machine.id.toUpperCase()}
             </button>
 
             {/* Dynamic machine information */}

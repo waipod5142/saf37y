@@ -103,55 +103,33 @@ export default function MachineForm({
     try {
       setIsLoadingTransaction(true);
       const visitortrRef = collection(db, "visitortr");
+      // Query without orderBy to avoid composite index requirement
       const q = query(
         visitortrRef,
         where("tel", "==", tel),
-        where("id", "==", id),
-        orderBy("checkInTimestamp", "desc"),
-        limit(1)
+        where("id", "==", id)
       );
 
       const querySnapshot = await getDocs(q);
       if (!querySnapshot.empty) {
-        const txData = querySnapshot.docs[0].data();
-        setLatestTransaction({
-          ...txData,
-          docId: querySnapshot.docs[0].id,
-        });
+        // Sort manually to get the latest transaction
+        const transactions = querySnapshot.docs
+          .map((doc) => ({
+            ...doc.data(),
+            docId: doc.id,
+          }))
+          .sort((a: any, b: any) => {
+            const aTime = a.checkInTimestamp?.toDate?.()?.getTime() || 0;
+            const bTime = b.checkInTimestamp?.toDate?.()?.getTime() || 0;
+            return bTime - aTime;
+          });
+        setLatestTransaction(transactions[0]);
       } else {
         setLatestTransaction(null);
       }
     } catch (error) {
       console.error("Error fetching latest transaction:", error);
-      // Try without orderBy if composite index is missing
-      try {
-        const visitortrRef = collection(db, "visitortr");
-        const q = query(
-          visitortrRef,
-          where("tel", "==", tel),
-          where("id", "==", id)
-        );
-        const querySnapshot = await getDocs(q);
-        if (!querySnapshot.empty) {
-          // Sort manually
-          const transactions = querySnapshot.docs
-            .map((doc) => ({
-              ...doc.data(),
-              docId: doc.id,
-            }))
-            .sort((a: any, b: any) => {
-              const aTime = a.checkInTimestamp?.toDate?.()?.getTime() || 0;
-              const bTime = b.checkInTimestamp?.toDate?.()?.getTime() || 0;
-              return bTime - aTime;
-            });
-          setLatestTransaction(transactions[0]);
-        } else {
-          setLatestTransaction(null);
-        }
-      } catch (fallbackError) {
-        console.error("Error in fallback query:", fallbackError);
-        setLatestTransaction(null);
-      }
+      setLatestTransaction(null);
     } finally {
       setIsLoadingTransaction(false);
     }
@@ -448,7 +426,7 @@ export default function MachineForm({
       <Card className="mb-6">
         <CardHeader>
           <CardTitle className="text-center text-2xl font-bold">
-            Visitor Access
+            Plant Access Control
           </CardTitle>
         </CardHeader>
       </Card>
@@ -565,17 +543,20 @@ export default function MachineForm({
                       <p className="text-purple-600 font-medium">
                         <strong>Duration:</strong>{" "}
                         {(() => {
-                          const checkIn = latestTransaction.checkInTimestamp?.toDate();
-                          const checkOut = latestTransaction.checkOutTimestamp?.toDate();
+                          const checkIn =
+                            latestTransaction.checkInTimestamp?.toDate();
+                          const checkOut =
+                            latestTransaction.checkOutTimestamp?.toDate();
                           if (checkIn && checkOut) {
-                            const diffMs = checkOut.getTime() - checkIn.getTime();
+                            const diffMs =
+                              checkOut.getTime() - checkIn.getTime();
                             const diffMins = Math.floor(diffMs / (1000 * 60));
                             const hours = Math.floor(diffMins / 60);
                             const mins = diffMins % 60;
                             if (hours > 0) {
-                              return `${hours} hour${hours > 1 ? 's' : ''} ${mins} minute${mins !== 1 ? 's' : ''}`;
+                              return `${hours} hour${hours > 1 ? "s" : ""} ${mins} minute${mins !== 1 ? "s" : ""}`;
                             }
-                            return `${mins} minute${mins !== 1 ? 's' : ''}`;
+                            return `${mins} minute${mins !== 1 ? "s" : ""}`;
                           }
                           return "N/A";
                         })()}
@@ -587,7 +568,8 @@ export default function MachineForm({
                       <p className="text-orange-600 font-medium">
                         <strong>Time in plant:</strong>{" "}
                         {(() => {
-                          const checkIn = latestTransaction.checkInTimestamp?.toDate();
+                          const checkIn =
+                            latestTransaction.checkInTimestamp?.toDate();
                           if (checkIn) {
                             const now = new Date();
                             const diffMs = now.getTime() - checkIn.getTime();
@@ -595,9 +577,9 @@ export default function MachineForm({
                             const hours = Math.floor(diffMins / 60);
                             const mins = diffMins % 60;
                             if (hours > 0) {
-                              return `${hours} hour${hours > 1 ? 's' : ''} ${mins} minute${mins !== 1 ? 's' : ''}`;
+                              return `${hours} hour${hours > 1 ? "s" : ""} ${mins} minute${mins !== 1 ? "s" : ""}`;
                             }
-                            return `${mins} minute${mins !== 1 ? 's' : ''}`;
+                            return `${mins} minute${mins !== 1 ? "s" : ""}`;
                           }
                           return "N/A";
                         })()}
@@ -671,7 +653,7 @@ export default function MachineForm({
                 })}
                 id="register-name"
                 type="text"
-                placeholder="Waipod Yeamkeaw"
+                placeholder="Name"
                 className="w-full"
               />
               {visitorErrors.name && (
@@ -694,7 +676,7 @@ export default function MachineForm({
                 })}
                 id="register-company"
                 type="text"
-                placeholder="เซ็มเม็กซ์"
+                placeholder="Company name"
                 className="w-full"
               />
               {visitorErrors.company && (
@@ -726,22 +708,22 @@ export default function MachineForm({
 
       {/* Safety Rule Acceptance Dialog */}
       <Dialog open={showSafetyDialog} onOpenChange={setShowSafetyDialog}>
-        <DialogContent>
+        <DialogContent className="max-h-[90vh] flex flex-col">
           <button
             onClick={() => setShowSafetyDialog(false)}
-            className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
+            className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground z-10"
           >
             <X className="h-4 w-4" />
             <span className="sr-only">Close</span>
           </button>
-          <DialogHeader>
+          <DialogHeader className="flex-shrink-0">
             <DialogTitle>Safety Rules & Regulations</DialogTitle>
             <DialogDescription>
               Please read and accept the safety rules before entering the plant.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4 py-4">
+          <div className="space-y-4 py-4 overflow-y-auto flex-1">
             <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
               <h3 className="font-semibold text-lg mb-3">
                 Plant Safety Rules:
@@ -774,7 +756,7 @@ export default function MachineForm({
             </div>
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="flex-shrink-0">
             <Button
               type="button"
               variant="outline"
@@ -795,7 +777,7 @@ export default function MachineForm({
 
       {/* QR Code Display Dialog */}
       <Dialog open={showQRCodeDialog} onOpenChange={setShowQRCodeDialog}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md max-h-[90vh] flex flex-col">
           <button
             onClick={async () => {
               setShowQRCodeDialog(false);
@@ -809,20 +791,20 @@ export default function MachineForm({
             <X className="h-4 w-4" />
             <span className="sr-only">Close</span>
           </button>
-          <DialogHeader>
+          <DialogHeader className="flex-shrink-0">
             <DialogTitle className="text-center">Your Visitor Pass</DialogTitle>
             <DialogDescription className="text-center">
               Your check-in is complete
             </DialogDescription>
           </DialogHeader>
 
-          <div className="flex flex-col items-center space-y-4 py-6">
+          <div className="flex flex-col items-center space-y-4 py-6 overflow-y-auto flex-1">
             {qrCodeDataUrl && (
               <div className="bg-white p-4 rounded-lg border-2 border-gray-300">
                 <img
                   src={qrCodeDataUrl}
                   alt="Visitor QR Code"
-                  className="w-80 h-80"
+                  className="w-64 h-64 sm:w-80 sm:h-80"
                 />
               </div>
             )}
@@ -869,7 +851,7 @@ export default function MachineForm({
             </div>
           </div>
 
-          <DialogFooter className="sm:justify-center">
+          <DialogFooter className="sm:justify-center flex-shrink-0">
             <Button
               type="button"
               onClick={async () => {

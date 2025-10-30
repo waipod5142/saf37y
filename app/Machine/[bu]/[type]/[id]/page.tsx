@@ -7,6 +7,7 @@ import MachineFormTalk from "@/components/machine-formTalk";
 import MachineFormStat from "@/components/machine-formStat";
 import MachineFormAccess from "@/components/machine-formAccess";
 import MachineOption from "@/components/machine-option";
+import MachineInduction from "@/components/machine-induction";
 import { normalizeBuCode } from "@/lib/utils";
 
 export default async function MachinePage({
@@ -38,6 +39,11 @@ export default async function MachinePage({
       />
       <MachineHeader
         bu={normalizedBu}
+        type={decodedType.toLowerCase()}
+        id={decodedId}
+      />
+      <MachineInduction
+        bu={decodedBu}
         type={decodedType.toLowerCase()}
         id={decodedId}
       />
