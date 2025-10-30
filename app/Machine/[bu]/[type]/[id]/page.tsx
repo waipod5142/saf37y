@@ -25,7 +25,7 @@ export default async function MachinePage({
   const normalizedBu = normalizeBuCode(decodedBu);
 
   return (
-    <div className="max-w-4xl mx-auto p-2">
+    <div className="max-w-4xl mx-auto p-2 pb-24">
       <MachineTitle
         bu={normalizedBu}
         type={decodedType.toLowerCase()}
@@ -41,14 +41,13 @@ export default async function MachinePage({
         type={decodedType.toLowerCase()}
         id={decodedId}
       />
-      {decodedType.toLowerCase() !== "plantaccess" &&
-        decodedType.toLowerCase() !== "plantstat" && (
-          <MachineDetail
-            bu={normalizedBu}
-            type={decodedType.toLowerCase()}
-            id={decodedId}
-          />
-        )}
+      {decodedType.toLowerCase() !== "plantaccess" && (
+        <MachineDetail
+          bu={normalizedBu}
+          type={decodedType.toLowerCase()}
+          id={decodedId}
+        />
+      )}
       {decodedType.toLowerCase() === "mixerphoto" ? (
         <MachineForm4photo
           bu={normalizedBu}

@@ -6,6 +6,7 @@ import { Button } from "./ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { RefreshCw, X } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -13,6 +14,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogClose,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { db } from "@/firebase/client";
@@ -93,6 +95,67 @@ export default function MachineForm({
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>("");
   const [currentTransactionData, setCurrentTransactionData] =
     useState<any>(null);
+  const [latestTransaction, setLatestTransaction] = useState<any>(null);
+  const [isLoadingTransaction, setIsLoadingTransaction] = useState(false);
+
+  // Fetch latest transaction for a visitor
+  const fetchLatestTransaction = async (tel: string) => {
+    try {
+      setIsLoadingTransaction(true);
+      const visitortrRef = collection(db, "visitortr");
+      const q = query(
+        visitortrRef,
+        where("tel", "==", tel),
+        where("id", "==", id),
+        orderBy("checkInTimestamp", "desc"),
+        limit(1)
+      );
+
+      const querySnapshot = await getDocs(q);
+      if (!querySnapshot.empty) {
+        const txData = querySnapshot.docs[0].data();
+        setLatestTransaction({
+          ...txData,
+          docId: querySnapshot.docs[0].id,
+        });
+      } else {
+        setLatestTransaction(null);
+      }
+    } catch (error) {
+      console.error("Error fetching latest transaction:", error);
+      // Try without orderBy if composite index is missing
+      try {
+        const visitortrRef = collection(db, "visitortr");
+        const q = query(
+          visitortrRef,
+          where("tel", "==", tel),
+          where("id", "==", id)
+        );
+        const querySnapshot = await getDocs(q);
+        if (!querySnapshot.empty) {
+          // Sort manually
+          const transactions = querySnapshot.docs
+            .map((doc) => ({
+              ...doc.data(),
+              docId: doc.id,
+            }))
+            .sort((a: any, b: any) => {
+              const aTime = a.checkInTimestamp?.toDate?.()?.getTime() || 0;
+              const bTime = b.checkInTimestamp?.toDate?.()?.getTime() || 0;
+              return bTime - aTime;
+            });
+          setLatestTransaction(transactions[0]);
+        } else {
+          setLatestTransaction(null);
+        }
+      } catch (fallbackError) {
+        console.error("Error in fallback query:", fallbackError);
+        setLatestTransaction(null);
+      }
+    } finally {
+      setIsLoadingTransaction(false);
+    }
+  };
 
   const checkVisitor = async (tel: string) => {
     try {
@@ -109,6 +172,8 @@ export default function MachineForm({
         // Save the telephone number for auto-fill on next visit
         localStorage.setItem(`lastVisitorTel_${bu}`, tel);
         toast.success(`Welcome back, ${data.name} from ${data.company}!`);
+        // Fetch latest transaction
+        await fetchLatestTransaction(tel);
         return true;
       } else {
         // Visitor not found, show registration dialog
@@ -354,6 +419,19 @@ export default function MachineForm({
     }
   };
 
+  // Load the last used telephone number from localStorage
+  const loadStoredTel = () => {
+    const storedTel = localStorage.getItem(`lastVisitorTel_${bu}`);
+    if (storedTel) {
+      setValue("tel", storedTel);
+      // Automatically check the visitor when tel is pre-filled
+      checkVisitor(storedTel);
+      toast.success("Telephone number loaded from storage");
+    } else {
+      toast.info("No saved telephone number found");
+    }
+  };
+
   // Load the last used telephone number from localStorage on mount
   useEffect(() => {
     const storedTel = localStorage.getItem(`lastVisitorTel_${bu}`);
@@ -375,14 +453,27 @@ export default function MachineForm({
         </CardHeader>
       </Card>
 
-      <form onSubmit={handleSubmit(onSubmitTel)} className="space-y-4">
+      <form onSubmit={handleSubmit(onSubmitTel)} className="space-y-4 mb-8">
         {/* Telephone Input */}
         <Card>
           <CardContent className="pt-6">
             <div className="space-y-2">
-              <Label htmlFor="tel" className="text-lg font-semibold">
-                Telephone Number
-              </Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="tel" className="text-lg font-semibold">
+                  Telephone Number
+                </Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={loadStoredTel}
+                  disabled={isCheckingVisitor}
+                  className="flex items-center gap-2"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  Load Saved
+                </Button>
+              </div>
               <Input
                 {...register("tel", {
                   required: "Telephone number is required",
@@ -427,6 +518,98 @@ export default function MachineForm({
                 </p>
               </div>
             )}
+
+            {/* Display latest transaction if found */}
+            {isLoadingTransaction && (
+              <div className="mt-4 p-4 bg-gray-50 rounded-md border border-gray-200">
+                <p className="text-sm text-gray-600">
+                  Loading visit history...
+                </p>
+              </div>
+            )}
+
+            {!isLoadingTransaction && latestTransaction && (
+              <div
+                className={`mt-4 p-4 rounded-md border ${
+                  latestTransaction.active
+                    ? "bg-blue-50 border-blue-200"
+                    : "bg-gray-50 border-gray-200"
+                }`}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="font-semibold text-sm">
+                    {latestTransaction.active
+                      ? "🔵 Current Visit (Not Checked Out)"
+                      : "📋 Last Visit"}
+                  </h4>
+                </div>
+                <div className="space-y-1 text-sm">
+                  <p>
+                    <strong>Check-in:</strong>{" "}
+                    {latestTransaction.checkInTimestamp?.toDate
+                      ? latestTransaction.checkInTimestamp
+                          .toDate()
+                          .toLocaleString("en-GB", { hour12: false })
+                      : "N/A"}
+                  </p>
+                  {latestTransaction.checkOutTimestamp && (
+                    <>
+                      <p>
+                        <strong>Check-out:</strong>{" "}
+                        {latestTransaction.checkOutTimestamp?.toDate
+                          ? latestTransaction.checkOutTimestamp
+                              .toDate()
+                              .toLocaleString("en-GB", { hour12: false })
+                          : "N/A"}
+                      </p>
+                      <p className="text-purple-600 font-medium">
+                        <strong>Duration:</strong>{" "}
+                        {(() => {
+                          const checkIn = latestTransaction.checkInTimestamp?.toDate();
+                          const checkOut = latestTransaction.checkOutTimestamp?.toDate();
+                          if (checkIn && checkOut) {
+                            const diffMs = checkOut.getTime() - checkIn.getTime();
+                            const diffMins = Math.floor(diffMs / (1000 * 60));
+                            const hours = Math.floor(diffMins / 60);
+                            const mins = diffMins % 60;
+                            if (hours > 0) {
+                              return `${hours} hour${hours > 1 ? 's' : ''} ${mins} minute${mins !== 1 ? 's' : ''}`;
+                            }
+                            return `${mins} minute${mins !== 1 ? 's' : ''}`;
+                          }
+                          return "N/A";
+                        })()}
+                      </p>
+                    </>
+                  )}
+                  {latestTransaction.active && (
+                    <>
+                      <p className="text-orange-600 font-medium">
+                        <strong>Time in plant:</strong>{" "}
+                        {(() => {
+                          const checkIn = latestTransaction.checkInTimestamp?.toDate();
+                          if (checkIn) {
+                            const now = new Date();
+                            const diffMs = now.getTime() - checkIn.getTime();
+                            const diffMins = Math.floor(diffMs / (1000 * 60));
+                            const hours = Math.floor(diffMins / 60);
+                            const mins = diffMins % 60;
+                            if (hours > 0) {
+                              return `${hours} hour${hours > 1 ? 's' : ''} ${mins} minute${mins !== 1 ? 's' : ''}`;
+                            }
+                            return `${mins} minute${mins !== 1 ? 's' : ''}`;
+                          }
+                          return "N/A";
+                        })()}
+                      </p>
+                      <p className="text-blue-600 font-medium mt-2">
+                        ℹ️ Submit again to check out
+                      </p>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -434,7 +617,7 @@ export default function MachineForm({
         <Button
           type="submit"
           disabled={isSubmitting || isCheckingVisitor}
-          className="w-full h-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-full shadow-lg"
+          className="w-full h-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-full shadow-lg mb-4"
         >
           {isCheckingVisitor ? "Checking..." : "Submit"}
         </Button>
@@ -446,6 +629,13 @@ export default function MachineForm({
         onOpenChange={setShowRegistrationDialog}
       >
         <DialogContent>
+          <button
+            onClick={() => setShowRegistrationDialog(false)}
+            className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
+          >
+            <X className="h-4 w-4" />
+            <span className="sr-only">Close</span>
+          </button>
           <DialogHeader>
             <DialogTitle>Visitor Registration</DialogTitle>
             <DialogDescription>
@@ -537,6 +727,13 @@ export default function MachineForm({
       {/* Safety Rule Acceptance Dialog */}
       <Dialog open={showSafetyDialog} onOpenChange={setShowSafetyDialog}>
         <DialogContent>
+          <button
+            onClick={() => setShowSafetyDialog(false)}
+            className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
+          >
+            <X className="h-4 w-4" />
+            <span className="sr-only">Close</span>
+          </button>
           <DialogHeader>
             <DialogTitle>Safety Rules & Regulations</DialogTitle>
             <DialogDescription>
@@ -599,6 +796,19 @@ export default function MachineForm({
       {/* QR Code Display Dialog */}
       <Dialog open={showQRCodeDialog} onOpenChange={setShowQRCodeDialog}>
         <DialogContent className="sm:max-w-md">
+          <button
+            onClick={async () => {
+              setShowQRCodeDialog(false);
+              // Refresh latest transaction
+              if (visitorData?.tel) {
+                await fetchLatestTransaction(visitorData.tel);
+              }
+            }}
+            className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground z-10"
+          >
+            <X className="h-4 w-4" />
+            <span className="sr-only">Close</span>
+          </button>
           <DialogHeader>
             <DialogTitle className="text-center">Your Visitor Pass</DialogTitle>
             <DialogDescription className="text-center">
@@ -662,13 +872,12 @@ export default function MachineForm({
           <DialogFooter className="sm:justify-center">
             <Button
               type="button"
-              onClick={() => {
+              onClick={async () => {
                 setShowQRCodeDialog(false);
-                // Clear form after closing QR dialog
-                setTimeout(() => {
-                  setValue("tel", "");
-                  setVisitorData(null);
-                }, 500);
+                // Refresh latest transaction
+                if (visitorData?.tel) {
+                  await fetchLatestTransaction(visitorData.tel);
+                }
               }}
               className="w-full bg-blue-600 hover:bg-blue-700 text-white"
             >
@@ -681,6 +890,19 @@ export default function MachineForm({
       {/* Goodbye Dialog */}
       <Dialog open={showGoodbyeDialog} onOpenChange={setShowGoodbyeDialog}>
         <DialogContent className="sm:max-w-md">
+          <button
+            onClick={async () => {
+              setShowGoodbyeDialog(false);
+              // Refresh latest transaction
+              if (visitorData?.tel) {
+                await fetchLatestTransaction(visitorData.tel);
+              }
+            }}
+            className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground z-10"
+          >
+            <X className="h-4 w-4" />
+            <span className="sr-only">Close</span>
+          </button>
           <DialogHeader>
             <DialogTitle className="text-center text-2xl">
               Thank You for Visiting!
@@ -712,11 +934,12 @@ export default function MachineForm({
           <DialogFooter className="sm:justify-center">
             <Button
               type="button"
-              onClick={() => {
+              onClick={async () => {
                 setShowGoodbyeDialog(false);
-                // Clear form after closing
-                setValue("tel", "");
-                setVisitorData(null);
+                // Refresh latest transaction
+                if (visitorData?.tel) {
+                  await fetchLatestTransaction(visitorData.tel);
+                }
               }}
               className="w-full bg-blue-600 hover:bg-blue-700 text-white"
             >
