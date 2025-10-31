@@ -6,7 +6,7 @@ import { Button } from "./ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { RefreshCw, X } from "lucide-react";
+import { RefreshCw, X, Languages } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -16,6 +16,18 @@ import {
   DialogTitle,
   DialogClose,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  type LanguageCode,
+  getTranslationsForBU,
+  getAvailableLanguages,
+} from "@/lib/translations/access-control";
 import { toast } from "sonner";
 import { db } from "@/firebase/client";
 import {
@@ -98,6 +110,22 @@ export default function MachineForm({
     useState<any>(null);
   const [latestTransaction, setLatestTransaction] = useState<any>(null);
   const [isLoadingTransaction, setIsLoadingTransaction] = useState(false);
+
+  // Language support - default to local language based on business unit
+  const getDefaultLanguage = (businessUnit: string): LanguageCode => {
+    const languageMap: Record<string, LanguageCode> = {
+      'th': 'th',
+      'vn': 'vn',
+      'kh': 'kh',
+      'lk': 'si',
+      'bd': 'bn',
+    };
+    return languageMap[businessUnit] || 'en';
+  };
+
+  const [language, setLanguage] = useState<LanguageCode>(getDefaultLanguage(bu));
+  const availableLanguages = getAvailableLanguages(bu);
+  const t = getTranslationsForBU(bu, language);
 
   // Fetch latest transaction for a visitor
   const fetchLatestTransaction = async (tel: string) => {
@@ -427,9 +455,27 @@ export default function MachineForm({
       <MachineReport bu={bu} id={id} />
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle className="text-center text-2xl font-bold">
-            Plant Access Control
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-center text-2xl font-bold flex-1">
+              {t.pageTitle}
+            </CardTitle>
+            {/* Language Selector */}
+            {availableLanguages.length > 1 && (
+              <Select value={language} onValueChange={(value) => setLanguage(value as LanguageCode)}>
+                <SelectTrigger className="w-[140px]">
+                  <Languages className="h-4 w-4 mr-2" />
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableLanguages.map((lang) => (
+                    <SelectItem key={lang.code} value={lang.code}>
+                      {lang.nativeName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          </div>
         </CardHeader>
       </Card>
 
@@ -440,7 +486,7 @@ export default function MachineForm({
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="tel" className="text-lg font-semibold">
-                  Telephone Number
+                  {t.telephoneLabel}
                 </Label>
                 <Button
                   type="button"
@@ -451,7 +497,7 @@ export default function MachineForm({
                   className="flex items-center gap-2"
                 >
                   <RefreshCw className="h-4 w-4" />
-                  Load Saved
+                  {t.loadSavedButton}
                 </Button>
               </div>
               <Input
@@ -464,7 +510,7 @@ export default function MachineForm({
                   },
                 })}
                 type="tel"
-                placeholder="0814998528"
+                placeholder={t.telephonePlaceholder}
                 className="w-full"
                 disabled={isCheckingVisitor}
                 onKeyDown={(e) => {
@@ -491,10 +537,10 @@ export default function MachineForm({
             {visitorData && (
               <div className="mt-4 p-4 bg-green-50 rounded-md border border-green-200">
                 <p className="text-sm">
-                  <strong>Name:</strong> {visitorData.name}
+                  <strong>{t.nameLabel}:</strong> {visitorData.name}
                 </p>
                 <p className="text-sm">
-                  <strong>Company:</strong> {visitorData.company}
+                  <strong>{t.companyLabel}:</strong> {visitorData.company}
                 </p>
               </div>
             )}
@@ -519,13 +565,13 @@ export default function MachineForm({
                 <div className="flex items-center justify-between mb-2">
                   <h4 className="font-semibold text-sm">
                     {latestTransaction.active
-                      ? "🔵 Current Visit (Not Checked Out)"
-                      : "📋 Last Visit"}
+                      ? t.currentVisit
+                      : t.lastVisit}
                   </h4>
                 </div>
                 <div className="space-y-1 text-sm">
                   <p>
-                    <strong>Check-in:</strong>{" "}
+                    <strong>{t.checkInLabel}:</strong>{" "}
                     {latestTransaction.checkInTimestamp?.toDate
                       ? latestTransaction.checkInTimestamp
                           .toDate()
@@ -535,7 +581,7 @@ export default function MachineForm({
                   {latestTransaction.checkOutTimestamp && (
                     <>
                       <p>
-                        <strong>Check-out:</strong>{" "}
+                        <strong>{t.checkOutLabel}:</strong>{" "}
                         {latestTransaction.checkOutTimestamp?.toDate
                           ? latestTransaction.checkOutTimestamp
                               .toDate()
@@ -543,7 +589,7 @@ export default function MachineForm({
                           : "N/A"}
                       </p>
                       <p className="text-purple-600 font-medium">
-                        <strong>Duration:</strong>{" "}
+                        <strong>{t.durationLabel}:</strong>{" "}
                         {(() => {
                           const checkIn =
                             latestTransaction.checkInTimestamp?.toDate();
@@ -568,7 +614,7 @@ export default function MachineForm({
                   {latestTransaction.active && (
                     <>
                       <p className="text-orange-600 font-medium">
-                        <strong>Time in plant:</strong>{" "}
+                        <strong>{t.timeInPlantLabel}:</strong>{" "}
                         {(() => {
                           const checkIn =
                             latestTransaction.checkInTimestamp?.toDate();
@@ -587,7 +633,7 @@ export default function MachineForm({
                         })()}
                       </p>
                       <p className="text-blue-600 font-medium mt-2">
-                        ℹ️ Submit again to check out
+                        {t.submitAgainToCheckout}
                       </p>
                     </>
                   )}
@@ -603,7 +649,7 @@ export default function MachineForm({
           disabled={isSubmitting || isCheckingVisitor}
           className="w-full h-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-full shadow-lg mb-4"
         >
-          {isCheckingVisitor ? "Checking..." : "Submit"}
+          {isCheckingVisitor ? "Checking..." : t.submitButton}
         </Button>
       </form>
 
@@ -621,10 +667,9 @@ export default function MachineForm({
             <span className="sr-only">Close</span>
           </button>
           <DialogHeader>
-            <DialogTitle>Visitor Registration</DialogTitle>
+            <DialogTitle>{t.registrationTitle}</DialogTitle>
             <DialogDescription>
-              We don't have your information on record. Please register to
-              continue.
+              {t.registrationDescription}
             </DialogDescription>
           </DialogHeader>
 
@@ -634,7 +679,7 @@ export default function MachineForm({
           >
             <div className="space-y-2">
               <Label htmlFor="register-tel" className="text-sm font-semibold">
-                Telephone Number
+                {t.telephoneLabel}
               </Label>
               <Input
                 id="register-tel"
@@ -647,7 +692,7 @@ export default function MachineForm({
 
             <div className="space-y-2">
               <Label htmlFor="register-name" className="text-sm font-semibold">
-                Name
+                {t.nameLabel}
               </Label>
               <Input
                 {...registerVisitor("name", {
@@ -655,7 +700,7 @@ export default function MachineForm({
                 })}
                 id="register-name"
                 type="text"
-                placeholder="Name"
+                placeholder={t.namePlaceholder}
                 className="w-full"
               />
               {visitorErrors.name && (
@@ -670,7 +715,7 @@ export default function MachineForm({
                 htmlFor="register-company"
                 className="text-sm font-semibold"
               >
-                Company
+                {t.companyLabel}
               </Label>
               <Input
                 {...registerVisitor("company", {
@@ -678,7 +723,7 @@ export default function MachineForm({
                 })}
                 id="register-company"
                 type="text"
-                placeholder="Company name"
+                placeholder={t.companyPlaceholder}
                 className="w-full"
               />
               {visitorErrors.company && (
@@ -694,14 +739,14 @@ export default function MachineForm({
                 variant="outline"
                 onClick={() => setShowRegistrationDialog(false)}
               >
-                Cancel
+                {t.cancelButton}
               </Button>
               <Button
                 type="submit"
                 disabled={isSubmittingVisitor}
                 className="bg-blue-600 hover:bg-blue-700 text-white"
               >
-                {isSubmittingVisitor ? "Registering..." : "Register"}
+                {isSubmittingVisitor ? t.registering : t.registerButton}
               </Button>
             </DialogFooter>
           </form>
@@ -719,41 +764,36 @@ export default function MachineForm({
             <span className="sr-only">Close</span>
           </button>
           <DialogHeader className="flex-shrink-0">
-            <DialogTitle>Safety Rules & Regulations</DialogTitle>
+            <DialogTitle>{t.safetyTitle}</DialogTitle>
             <DialogDescription>
-              Please read and accept the safety rules before entering the plant.
+              {t.safetyDescription}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4 overflow-y-auto flex-1">
             <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
               <h3 className="font-semibold text-lg mb-3">
-                Plant Safety Rules:
+                {t.safetyRulesHeader}
               </h3>
               <ul className="list-disc list-inside space-y-2 text-sm">
-                <li>
-                  All visitors must wear appropriate PPE (Personal Protective
-                  Equipment)
-                </li>
-                <li>Follow all safety signage and instructions</li>
-                <li>Stay within designated visitor areas</li>
-                <li>No unauthorized photography or video recording</li>
-                <li>
-                  Report any safety hazards immediately to plant personnel
-                </li>
-                <li>Follow emergency evacuation procedures if alarms sound</li>
-                <li>Do not operate any machinery without authorization</li>
+                <li>{t.safetyRule1}</li>
+                <li>{t.safetyRule2}</li>
+                <li>{t.safetyRule3}</li>
+                <li>{t.safetyRule4}</li>
+                <li>{t.safetyRule5}</li>
+                <li>{t.safetyRule6}</li>
+                <li>{t.safetyRule7}</li>
               </ul>
             </div>
 
             <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
               <p className="text-sm font-medium">
-                By clicking "I Accept", you confirm that you:
+                {t.safetyConfirmHeader}
               </p>
               <ul className="list-disc list-inside space-y-1 text-sm mt-2">
-                <li>Have read and understood the safety rules</li>
-                <li>Will comply with all safety regulations</li>
-                <li>Accept responsibility for following safety procedures</li>
+                <li>{t.safetyConfirm1}</li>
+                <li>{t.safetyConfirm2}</li>
+                <li>{t.safetyConfirm3}</li>
               </ul>
             </div>
           </div>
@@ -764,14 +804,14 @@ export default function MachineForm({
               variant="outline"
               onClick={() => setShowSafetyDialog(false)}
             >
-              Cancel
+              {t.cancelButton}
             </Button>
             <Button
               type="button"
               onClick={handleSafetyAcceptance}
               className="bg-green-600 hover:bg-green-700 text-white"
             >
-              I Accept
+              {t.acceptButton}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -794,9 +834,9 @@ export default function MachineForm({
             <span className="sr-only">Close</span>
           </button>
           <DialogHeader className="flex-shrink-0">
-            <DialogTitle className="text-center">Your Visitor Pass</DialogTitle>
+            <DialogTitle className="text-center">{t.visitorPassTitle}</DialogTitle>
             <DialogDescription className="text-center">
-              Your check-in is complete
+              {t.visitorPassDescription}
             </DialogDescription>
           </DialogHeader>
 
@@ -830,7 +870,7 @@ export default function MachineForm({
                     {currentTransactionData.safetyRuleAccepted ? "Yes" : "No"}
                   </p>
                   <p>
-                    Check-in:{" "}
+                    {t.checkInLabel}:{" "}
                     {currentTransactionData.checkInTimestamp instanceof Date
                       ? currentTransactionData.checkInTimestamp.toLocaleString(
                           "en-GB",
@@ -846,9 +886,7 @@ export default function MachineForm({
 
             <div className="bg-blue-50 border border-blue-200 rounded-md p-3 w-full">
               <p className="text-xs text-center text-gray-700">
-                <strong>Note:</strong> This QR code contains your visit
-                transaction data. To check out, simply scan the plant QR code
-                again with your phone number.
+                <strong>Note:</strong> {t.visitorPassNote}
               </p>
             </div>
           </div>
@@ -865,7 +903,7 @@ export default function MachineForm({
               }}
               className="w-full bg-blue-600 hover:bg-blue-700 text-white"
             >
-              Close
+              {t.closeButton}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -889,10 +927,10 @@ export default function MachineForm({
           </button>
           <DialogHeader>
             <DialogTitle className="text-center text-2xl">
-              Thank You for Visiting!
+              {t.goodbyeTitle}
             </DialogTitle>
             <DialogDescription className="text-center text-lg">
-              Have a safe trip back
+              {t.goodbyeDescription}
             </DialogDescription>
           </DialogHeader>
 
@@ -907,10 +945,8 @@ export default function MachineForm({
             )}
 
             <div className="bg-blue-50 border border-blue-200 rounded-md p-4 w-full">
-              <p className="text-center text-gray-700">
-                Your check-out has been recorded successfully.
-                <br />
-                We hope to see you again soon!
+              <p className="text-center text-gray-700" style={{ whiteSpace: 'pre-line' }}>
+                {t.goodbyeMessage}
               </p>
             </div>
           </div>
@@ -927,7 +963,7 @@ export default function MachineForm({
               }}
               className="w-full bg-blue-600 hover:bg-blue-700 text-white"
             >
-              Close
+              {t.closeButton}
             </Button>
           </DialogFooter>
         </DialogContent>

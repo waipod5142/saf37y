@@ -12,8 +12,9 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { X, BarChart3 } from "lucide-react";
 import { db } from "@/firebase/client";
-import { collection, query, where, getDocs } from "firebase/firestore";
+import { collection, query, where, getDocs, doc, deleteDoc } from "firebase/firestore";
 import { toast } from "sonner";
+import { Trash2 } from "lucide-react";
 
 interface MachineReportProps {
   bu: string;
@@ -35,6 +36,7 @@ interface VisitorStats {
   checkedOutToday: number;
   averageDuration: string;
   visitors: Array<{
+    docId: string;
     name: string;
     company: string;
     tel: string;
@@ -49,6 +51,7 @@ export default function MachineReport({ bu, id }: MachineReportProps) {
   const [showDialog, setShowDialog] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [stats, setStats] = useState<VisitorStats | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const fetchVisitorStats = async () => {
     try {
@@ -140,6 +143,7 @@ export default function MachineReport({ bu, id }: MachineReportProps) {
             : "checked-out";
 
         visitors.push({
+          docId: doc.id,
           name: data.name,
           company: data.company,
           tel: data.tel,
@@ -184,6 +188,28 @@ export default function MachineReport({ bu, id }: MachineReportProps) {
   const handleOpenDialog = async () => {
     setShowDialog(true);
     await fetchVisitorStats();
+  };
+
+  const handleDeleteRecord = async (docId: string, visitorName: string) => {
+    if (!confirm(`Are you sure you want to delete the record for ${visitorName}? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      setDeletingId(docId);
+      const docRef = doc(db, "visitortr", docId);
+      await deleteDoc(docRef);
+
+      toast.success(`Record for ${visitorName} has been deleted`);
+
+      // Refresh the data
+      await fetchVisitorStats();
+    } catch (error: any) {
+      console.error("Error deleting record:", error);
+      toast.error(`Failed to delete record: ${error.message || "Unknown error"}`);
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   return (
@@ -327,6 +353,17 @@ export default function MachineReport({ bu, id }: MachineReportProps) {
                                   Tel: {visitor.tel}
                                 </p>
                               </div>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDeleteRecord(visitor.docId, visitor.name)}
+                                disabled={deletingId === visitor.docId}
+                                className="ml-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                title="Delete this record"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
                             </div>
 
                             <div className="mt-3 grid grid-cols-2 md:grid-cols-3 gap-2 text-sm">
