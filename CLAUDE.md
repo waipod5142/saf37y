@@ -14,6 +14,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
    - Photo documentation with defect tracking
    - Pass/fail status determination
    - Defect response and resolution tracking
+   - **Plant access control** - Safety induction and site access management
+   - **Safety induction materials** - Document and video viewer for plant-specific safety training
 
 2. **Personnel Safety Activities** - Comprehensive safety program management including:
    - Safety Observation Tools (SOT)
@@ -186,10 +188,16 @@ This is a Next.js 15 safety management application with Firebase authentication 
 - `components/` - Application-specific components
   - **Machine Components:**
     - `components/machine-form.tsx` - Full machine inspection form with Firebase integration, geolocation, form submission, and image uploads
+    - `components/machine-form4photo.tsx` - Photo-only mixer inspection form
+    - `components/machine-formTalk.tsx` - Plant talk/safety communication form
+    - `components/machine-formStat.tsx` - Plant statistics form
+    - `components/machine-formAccess.tsx` - Plant access control form
+    - `components/machine-induction.tsx` - Safety induction materials viewer with PDF and video support (for Vietnam plantaccess)
     - `components/machine-title.tsx` - Simplified component displaying only machine title fetched from Firebase forms collection
     - `components/machine-detail.tsx` - Machine inspection records display
     - `components/machine-detail-client.tsx` - Client-side machine detail functionality with defect response system
     - `components/machine-header.tsx` - Machine information header with dynamic field display
+    - `components/machine-option.tsx` - Machine action options selector
   - **Personnel Safety Activity Components:**
     - `components/man-option.tsx` - Personnel activity option selector
     - `components/man-header.tsx` - Personnel information header
@@ -299,13 +307,25 @@ This is a Next.js 15 safety management application with Firebase authentication 
 
 **Machine Inspection Components:**
 
-- **Dual-component architecture** for machine inspection pages:
-  - `machine-form.tsx` - Full-featured inspection form with all functionality
+- **Multi-component architecture** for machine inspection pages with specialized forms:
+  - `machine-form.tsx` - Full-featured inspection form with all functionality (default)
+  - `machine-form4photo.tsx` - Photo-only inspection form for mixer documentation
+  - `machine-formTalk.tsx` - Plant talk/safety communication form
+  - `machine-formStat.tsx` - Plant statistics and reporting form
+  - `machine-formAccess.tsx` - Plant access control and visitor management form
   - `machine-title.tsx` - Lightweight title-only display component
 - **Title fetching pattern** - Both components use `getMachineQuestions()` from `@/lib/actions/forms` to fetch dynamic titles from Firebase forms collection
 - **Fallback title logic** - Components fall back to hardcoded titles from `machineTitles` when Firebase title is unavailable
 - **Loading states** - Proper loading indicators while fetching titles from Firebase
 - **Error handling** - Toast notifications for title fetching failures with graceful degradation
+- **Safety induction system** - Plant-specific safety training materials:
+  - Conditional rendering based on bu=vn and type=plantaccess
+  - Plant-specific materials for HONC, CATL, THIV, HO, and HIEP plants
+  - PDF documents in multiple languages (Vietnamese and English)
+  - Embedded video players with fallback to new tab viewing
+  - Collapsible sections for organized content presentation
+  - Firebase Storage integration for media hosting
+  - Important safety notices and reminders
 
 **Personnel Safety Activity System:**
 

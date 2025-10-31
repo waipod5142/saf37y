@@ -32,6 +32,7 @@ import {
   limit,
 } from "firebase/firestore";
 import QRCode from "qrcode";
+import MachineReport from "./machine-formAccessReport";
 
 interface MachineFormProps {
   bu: string;
@@ -422,7 +423,8 @@ export default function MachineForm({
   }, [bu]);
 
   return (
-    <div>
+    <div className="relative">
+      <MachineReport bu={bu} id={id} />
       <Card className="mb-6">
         <CardHeader>
           <CardTitle className="text-center text-2xl font-bold">
