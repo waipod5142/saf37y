@@ -10,7 +10,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { X, BarChart3 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { X, BarChart3, Calendar } from "lucide-react";
 import { db } from "@/firebase/client";
 import { collection, query, where, getDocs, doc, deleteDoc } from "firebase/firestore";
 import { toast } from "sonner";
@@ -52,18 +54,26 @@ export default function MachineReport({ bu, id }: MachineReportProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [stats, setStats] = useState<VisitorStats | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [selectedDate, setSelectedDate] = useState<string>(() => {
+    // Format today's date as YYYY-MM-DD for input[type="date"]
+    const today = new Date();
+    return today.toISOString().split('T')[0];
+  });
 
-  const fetchVisitorStats = async () => {
+  const fetchVisitorStats = async (date?: string) => {
     try {
       setIsLoading(true);
 
-      // Get today's start timestamp (00:00:00)
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
+      // Use provided date or selectedDate
+      const dateToUse = date || selectedDate;
 
-      // Get today's end timestamp (23:59:59)
-      const todayEnd = new Date();
-      todayEnd.setHours(23, 59, 59, 999);
+      // Parse the selected date and set to start of day (00:00:00)
+      const targetDate = new Date(dateToUse);
+      targetDate.setHours(0, 0, 0, 0);
+
+      // Set to end of day (23:59:59)
+      const targetDateEnd = new Date(dateToUse);
+      targetDateEnd.setHours(23, 59, 59, 999);
 
       // Query visitortr collection - simplified query to avoid index requirement
       const visitortrRef = collection(db, "visitortr");
@@ -102,9 +112,9 @@ export default function MachineReport({ bu, id }: MachineReportProps) {
         const checkIn = data.checkInTimestamp?.toDate();
         const checkOut = data.checkOutTimestamp?.toDate();
 
-        // Filter for today's check-ins only
-        if (!checkIn || checkIn < today || checkIn > todayEnd) {
-          return; // Skip records not from today
+        // Filter for selected date's check-ins only
+        if (!checkIn || checkIn < targetDate || checkIn > targetDateEnd) {
+          return; // Skip records not from selected date
         }
 
         totalVisitors++;
@@ -114,8 +124,8 @@ export default function MachineReport({ bu, id }: MachineReportProps) {
           currentlyInPlant++;
         }
 
-        // Check if visitor checked out today
-        if (checkOut && checkOut >= today && checkOut <= todayEnd) {
+        // Check if visitor checked out on selected date
+        if (checkOut && checkOut >= targetDate && checkOut <= targetDateEnd) {
           checkedOut++;
         }
 
@@ -190,6 +200,19 @@ export default function MachineReport({ bu, id }: MachineReportProps) {
     await fetchVisitorStats();
   };
 
+  const handleDateChange = async (newDate: string) => {
+    setSelectedDate(newDate);
+    await fetchVisitorStats(newDate);
+  };
+
+  const handleQuickDate = async (daysAgo: number) => {
+    const date = new Date();
+    date.setDate(date.getDate() - daysAgo);
+    const dateString = date.toISOString().split('T')[0];
+    setSelectedDate(dateString);
+    await fetchVisitorStats(dateString);
+  };
+
   const handleDeleteRecord = async (docId: string, visitorName: string) => {
     if (!confirm(`Are you sure you want to delete the record for ${visitorName}? This action cannot be undone.`)) {
       return;
@@ -242,9 +265,60 @@ export default function MachineReport({ bu, id }: MachineReportProps) {
               Visitor Analytics Report
             </DialogTitle>
             <DialogDescription>
-              Today's visitor statistics for {id.toUpperCase()}
+              Visitor statistics for {id.toUpperCase()}
             </DialogDescription>
           </DialogHeader>
+
+          {/* Date Selector */}
+          <div className="flex-shrink-0 space-y-3 pb-4 border-b">
+            <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-end">
+              <div className="flex-1 w-full sm:w-auto">
+                <Label htmlFor="report-date" className="text-sm font-medium mb-1 block">
+                  Select Date
+                </Label>
+                <Input
+                  id="report-date"
+                  type="date"
+                  value={selectedDate}
+                  onChange={(e) => handleDateChange(e.target.value)}
+                  className="w-full"
+                  max={new Date().toISOString().split('T')[0]}
+                />
+              </div>
+              <div className="flex gap-2 flex-wrap">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleQuickDate(0)}
+                  className="text-xs"
+                >
+                  Today
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleQuickDate(1)}
+                  className="text-xs"
+                >
+                  Yesterday
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleQuickDate(2)}
+                  className="text-xs"
+                >
+                  2 Days Ago
+                </Button>
+              </div>
+            </div>
+            <p className="text-xs text-gray-500">
+              Viewing data for: <strong>{new Date(selectedDate).toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</strong>
+            </p>
+          </div>
 
           <div className="overflow-y-auto flex-1 space-y-4 py-4">
             {isLoading ? (
@@ -258,7 +332,7 @@ export default function MachineReport({ bu, id }: MachineReportProps) {
                   <Card>
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm font-medium text-gray-600">
-                        Total Visitors Today
+                        Total Visitors
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -287,7 +361,7 @@ export default function MachineReport({ bu, id }: MachineReportProps) {
                   <Card>
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm font-medium text-gray-600">
-                        Checked Out Today
+                        Checked Out
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -431,7 +505,7 @@ export default function MachineReport({ bu, id }: MachineReportProps) {
                 ) : (
                   <Card>
                     <CardContent className="py-12 text-center text-gray-500">
-                      No visitor records found for today
+                      No visitor records found for {new Date(selectedDate).toLocaleDateString('en-GB', { year: 'numeric', month: 'long', day: 'numeric' })}
                     </CardContent>
                   </Card>
                 )}

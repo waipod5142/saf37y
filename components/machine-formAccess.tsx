@@ -647,9 +647,17 @@ export default function MachineForm({
         <Button
           type="submit"
           disabled={isSubmitting || isCheckingVisitor}
-          className="w-full h-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-full shadow-lg mb-4"
+          className={`w-full h-full text-white font-semibold py-3 px-6 rounded-full shadow-lg mb-4 ${
+            latestTransaction?.active
+              ? "bg-red-600 hover:bg-red-700"
+              : "bg-green-600 hover:bg-green-700"
+          }`}
         >
-          {isCheckingVisitor ? "Checking..." : t.submitButton}
+          {isCheckingVisitor
+            ? "Checking..."
+            : latestTransaction?.active
+            ? t.checkOutButton
+            : t.checkInButton}
         </Button>
       </form>
 

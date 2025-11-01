@@ -67,6 +67,14 @@ export default function RootLayout({
                   Alert
                 </Link>
               </li>
+              <li>
+                <Link
+                  href="/kpivisitor"
+                  className="uppercase tracking-widest hover:underline"
+                >
+                  Visitor
+                </Link>
+              </li>
               {/* <li>
                 <Link
                   href="/property-search"

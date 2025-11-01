@@ -9,6 +9,8 @@ export interface AccessControlTranslations {
   telephoneLabel: string;
   loadSavedButton: string;
   submitButton: string;
+  checkInButton: string;
+  checkOutButton: string;
 
   // Visitor info
   nameLabel: string;
@@ -71,6 +73,8 @@ export const translations: Record<LanguageCode, AccessControlTranslations> = {
     telephoneLabel: "Telephone Number",
     loadSavedButton: "Load Saved",
     submitButton: "Submit",
+    checkInButton: "Click to Check-In",
+    checkOutButton: "Click to Check-Out",
 
     nameLabel: "Name",
     companyLabel: "Company",
@@ -125,6 +129,8 @@ export const translations: Record<LanguageCode, AccessControlTranslations> = {
     telephoneLabel: "หมายเลขโทรศัพท์",
     loadSavedButton: "โหลดข้อมูลที่บันทึก",
     submitButton: "ยืนยัน",
+    checkInButton: "คลิกเพื่อเช็คอิน",
+    checkOutButton: "คลิกเพื่อเช็คเอาท์",
 
     nameLabel: "ชื่อ",
     companyLabel: "บริษัท",
@@ -179,6 +185,8 @@ export const translations: Record<LanguageCode, AccessControlTranslations> = {
     telephoneLabel: "Số Điện Thoại",
     loadSavedButton: "Tải Dữ Liệu Đã Lưu",
     submitButton: "Xác Nhận",
+    checkInButton: "Nhấp để Check-In",
+    checkOutButton: "Nhấp để Check-Out",
 
     nameLabel: "Tên",
     companyLabel: "Công Ty",
@@ -233,6 +241,8 @@ export const translations: Record<LanguageCode, AccessControlTranslations> = {
     telephoneLabel: "លេខទូរស័ព្ទ",
     loadSavedButton: "ផ្ទុកទិន្នន័យដែលបានរក្សាទុក",
     submitButton: "យល់ព្រម",
+    checkInButton: "ចុចដើម្បី Check-In",
+    checkOutButton: "ចុចដើម្បី Check-Out",
 
     nameLabel: "ឈ្មោះ",
     companyLabel: "ក្រុមហ៊ុន",
@@ -287,6 +297,8 @@ export const translations: Record<LanguageCode, AccessControlTranslations> = {
     telephoneLabel: "දුරකථන අංකය",
     loadSavedButton: "සුරකින ලද දත්ත පූරණය කරන්න",
     submitButton: "ඉදිරිපත් කරන්න",
+    checkInButton: "Check-In කිරීමට ක්ලික් කරන්න",
+    checkOutButton: "Check-Out කිරීමට ක්ලික් කරන්න",
 
     nameLabel: "නම",
     companyLabel: "සමාගම",
@@ -341,6 +353,8 @@ export const translations: Record<LanguageCode, AccessControlTranslations> = {
     telephoneLabel: "টেলিফোন নম্বর",
     loadSavedButton: "সংরক্ষিত ডেটা লোড করুন",
     submitButton: "জমা দিন",
+    checkInButton: "চেক-ইন করতে ক্লিক করুন",
+    checkOutButton: "চেক-আউট করতে ক্লিক করুন",
 
     nameLabel: "নাম",
     companyLabel: "কোম্পানি",
