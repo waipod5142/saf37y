@@ -41,6 +41,20 @@ export function MobileNav() {
           >
             Man
           </Link>
+          <Link
+            href="/kpialert"
+            className="text-lg uppercase tracking-widest hover:underline"
+            onClick={() => setOpen(false)}
+          >
+            Alert
+          </Link>
+          <Link
+            href="/kpivisitor"
+            className="text-lg uppercase tracking-widest hover:underline"
+            onClick={() => setOpen(false)}
+          >
+            Visitor
+          </Link>
           {/* <Link
             href="/transaction"
             className="text-lg uppercase tracking-widest hover:underline"

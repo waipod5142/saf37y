@@ -18,7 +18,8 @@ export default async function VisitorDashboardPage() {
             Plant Visitor Analytics Dashboard
           </h1>
           <p className="text-gray-600">
-            Select a country to view plant access control and visitor statistics.
+            Select a country to view visitor plant access control and visitor
+            statistics.
           </p>
         </div>
         <div className="flex-shrink-0">

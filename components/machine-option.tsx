@@ -142,7 +142,7 @@ export default function MachineOption({ bu, type, id }: MachineOptionProps) {
               value={`/Machine/${bu}/Plantaccess/${id}`}
               className="odd:bg-gray-100 even:bg-gray-200"
             >
-              Plant Access Control แบบบันทึกการเข้าออกหน่วยผลิต
+              Visitor Plant Access Control แบบบันทึกการเข้าออกหน่วยผลิต
             </option>
           </>
         )}

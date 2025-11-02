@@ -125,7 +125,7 @@ export const translations: Record<LanguageCode, AccessControlTranslations> = {
   },
 
   th: {
-    pageTitle: "ระบบควบคุมการเข้าออกโรงงาน",
+    pageTitle: "ระบบควบคุมการเข้าออกโรงงานสำหรับผู้เยี่ยมชม",
     telephoneLabel: "หมายเลขโทรศัพท์",
     loadSavedButton: "โหลดข้อมูลที่บันทึก",
     submitButton: "ยืนยัน",
@@ -181,7 +181,7 @@ export const translations: Record<LanguageCode, AccessControlTranslations> = {
   },
 
   vn: {
-    pageTitle: "Hệ Thống Kiểm Soát Ra Vào Nhà Máy",
+    pageTitle: "Hệ Thống Kiểm Soát Ra Vào Nhà Máy Cho Khách Thăm",
     telephoneLabel: "Số Điện Thoại",
     loadSavedButton: "Tải Dữ Liệu Đã Lưu",
     submitButton: "Xác Nhận",
@@ -237,7 +237,7 @@ export const translations: Record<LanguageCode, AccessControlTranslations> = {
   },
 
   kh: {
-    pageTitle: "ប្រព័ន្ធត្រួតពិនិត្យការចូលចេញរោងចក្រ",
+    pageTitle: "ប្រព័ន្ធត្រួតពិនិត្យការចូលចេញរោងចក្រសម្រាប់អ្នកទស្សនា",
     telephoneLabel: "លេខទូរស័ព្ទ",
     loadSavedButton: "ផ្ទុកទិន្នន័យដែលបានរក្សាទុក",
     submitButton: "យល់ព្រម",
@@ -293,7 +293,7 @@ export const translations: Record<LanguageCode, AccessControlTranslations> = {
   },
 
   si: {
-    pageTitle: "කම්හල් ප්‍රවේශ පාලන පද්ධතිය",
+    pageTitle: "අමුත්තන් සඳහා කම්හල් ප්‍රවේශ පාලන පද්ධතිය",
     telephoneLabel: "දුරකථන අංකය",
     loadSavedButton: "සුරකින ලද දත්ත පූරණය කරන්න",
     submitButton: "ඉදිරිපත් කරන්න",
@@ -349,7 +349,7 @@ export const translations: Record<LanguageCode, AccessControlTranslations> = {
   },
 
   bn: {
-    pageTitle: "প্ল্যান্ট প্রবেশ নিয়ন্ত্রণ ব্যবস্থা",
+    pageTitle: "দর্শনার্থীদের জন্য প্ল্যান্ট প্রবেশ নিয়ন্ত্রণ ব্যবস্থা",
     telephoneLabel: "টেলিফোন নম্বর",
     loadSavedButton: "সংরক্ষিত ডেটা লোড করুন",
     submitButton: "জমা দিন",
