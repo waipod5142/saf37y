@@ -144,6 +144,12 @@ export default function MachineOption({ bu, type, id }: MachineOptionProps) {
             >
               Visitor Plant Access Control แบบบันทึกการเข้าออกหน่วยผลิต
             </option>
+            <option
+              value={`/Machine/${bu}/Plantasset/${id}`}
+              className="odd:bg-gray-100 even:bg-gray-200"
+            >
+              Plant Asset ทรัพย์สินของ Plant นี้
+            </option>
           </>
         )}
       </select>
