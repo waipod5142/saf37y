@@ -138,6 +138,7 @@ export async function getAllVocabulariesAction(): Promise<{
       planttalk: "RMX Safety Talk",
       plantstat: "RMX Safety Statistics",
       plantaccess: "Visitor Plant Access Control",
+      plantasset: "List of Asset for annual count",
     };
 
     vocabularies.forEach((vocabulary) => {

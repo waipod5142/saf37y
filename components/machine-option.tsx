@@ -39,6 +39,7 @@ export default function MachineOption({ bu, type, id }: MachineOptionProps) {
     "planttalk",
     "plantstat",
     "plantaccess",
+    "plantasset",
   ].includes(type);
 
   // Only show dropdown for specific machine types and bu must be "th"
@@ -148,7 +149,7 @@ export default function MachineOption({ bu, type, id }: MachineOptionProps) {
               value={`/Machine/${bu}/Plantasset/${id}`}
               className="odd:bg-gray-100 even:bg-gray-200"
             >
-              Plant Asset ทรัพย์สินของ Plant นี้
+              Plant Asset ทรัพย์สินของ Plant ในการตรวจนับประจำปี
             </option>
           </>
         )}

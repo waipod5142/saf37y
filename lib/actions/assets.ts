@@ -2,6 +2,7 @@
 
 import { firestore } from "@/firebase/server";
 import { FieldValue } from "firebase-admin/firestore";
+import admin from "firebase-admin";
 
 // Asset type definition based on the collection structure
 export interface Asset {
@@ -42,15 +43,16 @@ export interface AssetTransaction {
   date: string;
   inspector: string;
   status: string;
-  qty: number | string;
+  qty: string;
   place: string;
-  url: string;
+  images: string[]; // Array of image URLs
   lat: number;
   lng: number;
   remark: string;
   qtyR?: string;
   transferTo?: string;
   uploadedAt?: string;
+  url?: string; // Legacy field - deprecated, use images array instead
 }
 
 // Utility function to convert Firebase Timestamp to ISO string
@@ -77,6 +79,31 @@ const convertTimestamp = (timestamp: any): string | undefined => {
 
   return undefined;
 };
+
+// Extract storage path from Firebase Storage URL
+function extractStoragePathFromUrl(url: string): string | null {
+  try {
+    // Handle full Firebase Storage URLs
+    if (url.includes("firebasestorage.googleapis.com")) {
+      // Extract path between '/o/' and '?alt=media' or '?alt=...'
+      const match = url.match(/\/o\/([^?]+)/);
+      if (match) {
+        // Decode the URL-encoded path
+        return decodeURIComponent(match[1]);
+      }
+    }
+
+    // Handle relative paths (already in storage path format)
+    if (!url.startsWith("http")) {
+      return url;
+    }
+
+    return null;
+  } catch (error) {
+    console.error(`Error extracting storage path from URL: ${url}`, error);
+    return null;
+  }
+}
 
 // Get asset by bu, type, site, asset number and sub number
 export async function getAssetByAssetSubAction(
@@ -244,10 +271,9 @@ export async function submitMachineForm(formData: any): Promise<{
       date: formattedDate,
       inspector: formData.inspector || "",
       status: formData.status || "",
-      qty: formData.qtyR || formData.qty || 1, // Use qtyR if provided, otherwise use qty
+      qty: formData.qtyR || formData.qty || 1, // Store as string
       place: formData.place || "",
-      url:
-        formData.images && formData.images.length > 0 ? formData.images[0] : "",
+      images: formData.images || [], // Store as array of URLs
       lat: formData.latitude || 0,
       lng: formData.longitude || 0,
       remark: formData.remark || "",
@@ -362,6 +388,192 @@ export async function getAssets(filters?: {
     return {
       success: false,
       error: error instanceof Error ? error.message : "Failed to fetch assets",
+    };
+  }
+}
+
+// Get assets by plant with latest transaction data
+export async function getAssetsByPlant(
+  bu: string,
+  type: string,
+  plant: string
+): Promise<{
+  success: boolean;
+  assets?: (Asset & { latestTransaction?: AssetTransaction })[];
+  error?: string;
+}> {
+  try {
+    console.log(
+      `Querying assets: bu=${bu}, type=${type.toLowerCase()}, plant=${plant}`
+    );
+
+    // Query assets by bu, type, and plant
+    const assetsQuery = firestore
+      .collection("asset")
+      .where("bu", "==", bu)
+      .where("type", "==", "tracking")
+      .where("plant", "==", plant);
+
+    const assetsSnapshot = await assetsQuery.get();
+
+    console.log(`Found ${assetsSnapshot.size} assets`);
+
+    if (assetsSnapshot.empty) {
+      return {
+        success: true,
+        assets: [],
+      };
+    }
+
+    // Fetch latest transaction for each asset
+    const assetsWithTransactions = await Promise.all(
+      assetsSnapshot.docs.map(async (doc) => {
+        const assetData = doc.data() as Asset;
+
+        try {
+          // Get all transactions for this asset (without orderBy to avoid index requirement)
+          const transactionsQuery = firestore
+            .collection("assettr")
+            .where("bu", "==", bu)
+            .where("type", "==", "tracking")
+            .where("asset", "==", assetData.asset)
+            .where("sub", "==", assetData.sub);
+
+          const transactionsSnapshot = await transactionsQuery.get();
+
+          let latestTransaction: AssetTransaction | undefined = undefined;
+          if (!transactionsSnapshot.empty) {
+            // Sort in memory to avoid needing a composite index
+            const transactions = transactionsSnapshot.docs
+              .map((txDoc) => {
+                const txData = txDoc.data();
+                return {
+                  ...txData,
+                  id: txDoc.id,
+                  uploadedAt: convertTimestamp(txData.uploadedAt),
+                  _timestamp: txData.uploadedAt,
+                } as AssetTransaction & { _timestamp: any };
+              })
+              .sort((a, b) => {
+                // Sort by timestamp descending
+                const aTime = a._timestamp?.toDate?.()?.getTime() || 0;
+                const bTime = b._timestamp?.toDate?.()?.getTime() || 0;
+                return bTime - aTime;
+              });
+
+            // Get the latest one
+            if (transactions.length > 0) {
+              const { _timestamp, ...txWithoutTimestamp } = transactions[0];
+              latestTransaction = txWithoutTimestamp as AssetTransaction;
+            }
+          }
+
+          return {
+            ...assetData,
+            uploadedAt: convertTimestamp(assetData.uploadedAt),
+            latestTransaction,
+          };
+        } catch (txError) {
+          console.error(
+            `Error fetching transactions for asset ${assetData.asset}-${assetData.sub}:`,
+            txError
+          );
+          // Return asset without transaction data if there's an error
+          return {
+            ...assetData,
+            uploadedAt: convertTimestamp(assetData.uploadedAt),
+            latestTransaction: undefined,
+          };
+        }
+      })
+    );
+
+    return {
+      success: true,
+      assets: assetsWithTransactions,
+    };
+  } catch (error) {
+    console.error("Error fetching assets by plant:", error);
+    return {
+      success: false,
+      error:
+        error instanceof Error
+          ? error.message
+          : "Failed to fetch assets by plant",
+    };
+  }
+}
+
+// Delete asset transaction record
+export async function deleteAssetTransaction(recordId: string): Promise<{
+  success: boolean;
+  error?: string;
+}> {
+  try {
+    // Get the record first
+    const docRef = firestore.collection("assettr").doc(recordId);
+    const doc = await docRef.get();
+
+    if (!doc.exists) {
+      return {
+        success: false,
+        error: "Record not found",
+      };
+    }
+
+    const data = doc.data();
+
+    // Delete all images from Firebase Storage
+    const images = data?.images || [];
+    if (images.length > 0) {
+      try {
+        const bucket = admin
+          .storage()
+          .bucket("sccc-inseesafety-prod.firebasestorage.app");
+
+        // Delete all images in parallel
+        const deletePromises = images.map(async (imageUrl: string) => {
+          try {
+            // Extract storage path from the URL
+            const storagePath = extractStoragePathFromUrl(imageUrl);
+            if (!storagePath) {
+              console.warn(
+                `Skipping deletion - could not extract storage path from: ${imageUrl}`
+              );
+              return;
+            }
+
+            const file = bucket.file(storagePath);
+            await file.delete();
+            console.log(`Successfully deleted image: ${storagePath}`);
+          } catch (imageError) {
+            console.error(`Failed to delete image ${imageUrl}:`, imageError);
+            // Don't throw here - we want to continue deleting other images
+          }
+        });
+
+        await Promise.allSettled(deletePromises);
+        console.log(`Attempted to delete ${images.length} images from Storage`);
+      } catch (storageError) {
+        console.error("Error during image deletion:", storageError);
+        // Continue with document deletion even if image deletion fails
+      }
+    }
+
+    // Delete the record from Firestore
+    await docRef.delete();
+
+    return {
+      success: true,
+    };
+  } catch (error) {
+    console.error("Error deleting asset transaction:", error);
+    return {
+      success: false,
+      error:
+        error instanceof Error
+          ? error.message
+          : "Failed to delete asset transaction",
     };
   }
 }

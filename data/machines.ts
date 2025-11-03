@@ -96,6 +96,7 @@ export const PLANT_TYPES = [
   "planttalk",
   "plantstat",
   "plantaccess",
+  "plantasset",
 ];
 
 // Utility function for Firebase timestamp conversion

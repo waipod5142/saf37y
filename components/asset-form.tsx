@@ -16,9 +16,9 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import MultiMediaUploader, {
-  MediaUpload,
-} from "@/components/multi-media-uploader";
+import MultiImageUploader, {
+  ImageUpload,
+} from "@/components/multi-image-uploader";
 import { auth, storage } from "@/firebase/client";
 import { signInAnonymously } from "firebase/auth";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
@@ -43,7 +43,7 @@ interface AssetFormProps {
 interface FormData extends FieldValues {
   inspector: string;
   status: string;
-  qty: string;
+  qty: number | string;
   qtyR?: string;
   place: string;
   transferTo?: string;
@@ -75,7 +75,7 @@ export default function AssetForm({
   const [selectedValues, setSelectedValues] = useState<{
     [key: string]: string | null;
   }>({});
-  const [images, setImages] = useState<MediaUpload[]>([]);
+  const [images, setImages] = useState<ImageUpload[]>([]);
   const [showTransfer, setShowTransfer] = useState(false);
   const [showQty, setShowQty] = useState(false);
 
@@ -251,9 +251,15 @@ export default function AssetForm({
           {/* Display asset information if available */}
           {assetData && (
             <div className="text-sm text-gray-600 text-center mt-2">
-              <p><strong>Asset:</strong> {assetData.asset}-{assetData.sub}</p>
-              <p><strong>Description:</strong> {assetData.description}</p>
-              <p><strong>Location:</strong> {assetData.plantLocation}</p>
+              <p>
+                <strong>Asset:</strong> {assetData.asset}-{assetData.sub}
+              </p>
+              <p>
+                <strong>Description:</strong> {assetData.description}
+              </p>
+              <p>
+                <strong>Location:</strong> {assetData.plantLocation}
+              </p>
             </div>
           )}
           {/* Location status alert */}
@@ -277,9 +283,7 @@ export default function AssetForm({
             {locationError && !locationLoading && (
               <div className="text-red-600 bg-red-50 px-3 py-2 rounded-md">
                 <div className="flex items-center justify-between">
-                  <div>
-                    ❌ Location sharing is required for asset tracking
-                  </div>
+                  <div>❌ Location sharing is required for asset tracking</div>
                   <Button
                     type="button"
                     variant="outline"
@@ -480,32 +484,26 @@ export default function AssetForm({
             </CardContent>
           </Card>
 
-          {/* Images Upload */}
+          {/* Image Upload */}
           <Card>
             <CardContent className="pt-6">
               <div className="space-y-4">
                 <Label className="text-lg font-semibold">
                   4. แนบรูปภาพ Attach Image
                 </Label>
-
-                <MultiMediaUploader
-                  media={images}
-                  onMediaChange={setImages}
-                  urlFormatter={(media) => {
-                    if (!media.file) {
+                <MultiImageUploader
+                  images={images}
+                  onImagesChange={setImages}
+                  urlFormatter={(image) => {
+                    if (!image.file) {
                       return `https://firebasestorage.googleapis.com/v0/b/sccc-inseesafety-prod.firebasestorage.app/o/${encodeURIComponent(
-                        media.url
+                        image.url
                       )}?alt=media`;
                     }
-                    return media.url;
+                    return image.url;
                   }}
                   compressionType="general"
                 />
-                {errors.file && (
-                  <p className="text-red-500 text-sm">
-                    กดปุ่มด้านบนเพื่อแนบรูป
-                  </p>
-                )}
               </div>
             </CardContent>
           </Card>
