@@ -46,8 +46,8 @@ export interface AssetTransaction {
   qty: string;
   place: string;
   images: string[]; // Array of image URLs
-  lat: number;
-  lng: number;
+  latitude: number;
+  longitude: number;
   remark: string;
   qtyR?: string;
   transferTo?: string;
@@ -274,8 +274,8 @@ export async function submitMachineForm(formData: any): Promise<{
       qty: formData.qtyR || formData.qty || 1, // Store as string
       place: formData.place || "",
       images: formData.images || [], // Store as array of URLs
-      lat: formData.latitude || 0,
-      lng: formData.longitude || 0,
+      latitude: formData.latitude || 0,
+      longitude: formData.longitude || 0,
       remark: formData.remark || "",
       qtyR: formData.qtyR || "",
       transferTo: formData.transferTo || "",

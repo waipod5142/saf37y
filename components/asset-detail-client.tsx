@@ -33,8 +33,8 @@ export default function AssetDetailClient({ records }: AssetDetailClientProps) {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<{
-    lat: number;
-    lng: number;
+    latitude: number;
+    longitude: number;
   } | null>(null);
   const [isMapModalOpen, setIsMapModalOpen] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(
@@ -42,12 +42,12 @@ export default function AssetDetailClient({ records }: AssetDetailClientProps) {
   );
   const [deletingRecordId, setDeletingRecordId] = useState<string | null>(null);
 
-  const formatCoordinates = (lat: number, lng: number) => {
-    return `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+  const formatCoordinates = (latitude: number, longitude: number) => {
+    return `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
   };
 
-  const handleMapClick = (lat: number, lng: number) => {
-    setSelectedLocation({ lat, lng });
+  const handleMapClick = (latitude: number, longitude: number) => {
+    setSelectedLocation({ latitude, longitude });
     setIsMapModalOpen(true);
   };
 
@@ -165,9 +165,11 @@ export default function AssetDetailClient({ records }: AssetDetailClientProps) {
               </div>
 
               {/* Location Information */}
-              {record.lat && record.lng && (
+              {record.latitude && record.longitude && (
                 <button
-                  onClick={() => handleMapClick(record.lat, record.lng)}
+                  onClick={() =>
+                    handleMapClick(record.latitude, record.longitude)
+                  }
                   className="mt-3 p-2 text-gray-800 hover:text-black hover:bg-gray-100 rounded-lg transition-colors"
                   title="View location on map"
                 >
@@ -401,15 +403,15 @@ export default function AssetDetailClient({ records }: AssetDetailClientProps) {
                   <div className="text-sm text-gray-600 mb-1">Coordinates:</div>
                   <div className="font-mono text-lg font-semibold">
                     {formatCoordinates(
-                      selectedLocation.lat,
-                      selectedLocation.lng
+                      selectedLocation.latitude,
+                      selectedLocation.longitude
                     )}
                   </div>
                 </div>
 
                 <div className="w-full h-96 border rounded-lg overflow-hidden">
                   <iframe
-                    src={`https://maps.google.com/maps?q=${selectedLocation.lat},${selectedLocation.lng}&z=18&output=embed`}
+                    src={`https://maps.google.com/maps?q=${selectedLocation.latitude},${selectedLocation.longitude}&z=18&output=embed`}
                     width="100%"
                     height="100%"
                     style={{ border: 0 }}
@@ -426,7 +428,7 @@ export default function AssetDetailClient({ records }: AssetDetailClientProps) {
                     size="sm"
                     onClick={() =>
                       window.open(
-                        `https://maps.google.com/maps?q=${selectedLocation.lat},${selectedLocation.lng}&z=18`,
+                        `https://maps.google.com/maps?q=${selectedLocation.latitude},${selectedLocation.longitude}&z=18`,
                         "_blank"
                       )
                     }
@@ -440,7 +442,7 @@ export default function AssetDetailClient({ records }: AssetDetailClientProps) {
                     size="sm"
                     onClick={() =>
                       navigator.clipboard.writeText(
-                        `${selectedLocation.lat},${selectedLocation.lng}`
+                        `${selectedLocation.latitude},${selectedLocation.longitude}`
                       )
                     }
                     className="flex items-center gap-2"
