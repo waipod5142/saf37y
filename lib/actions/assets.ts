@@ -407,12 +407,12 @@ export async function getAssetsByPlant(
       `Querying assets: bu=${bu}, type=${type.toLowerCase()}, plant=${plant}`
     );
 
-    // Query assets by bu, type, and plant
+    // Query assets by bu, type, and site (using site field instead of plant)
     const assetsQuery = firestore
       .collection("asset")
       .where("bu", "==", bu)
       .where("type", "==", "tracking")
-      .where("plant", "==", plant);
+      .where("site", "==", plant.toLowerCase());
 
     const assetsSnapshot = await assetsQuery.get();
 

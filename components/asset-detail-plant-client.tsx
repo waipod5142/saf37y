@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { Asset, AssetTransaction } from "@/lib/actions/assets";
 import {
   Table,
@@ -19,8 +19,15 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "./ui/button";
-import { ExternalLinkIcon, ZoomInIcon, ImageIcon } from "lucide-react";
+import { ExternalLinkIcon, ImageIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import { MapPinIcon } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface AssetDetailPlantClientProps {
   assets: (Asset & { latestTransaction?: AssetTransaction })[];
@@ -31,7 +38,6 @@ interface AssetDetailPlantClientProps {
 export default function AssetDetailPlantClient({
   assets,
   bu,
-  type,
 }: AssetDetailPlantClientProps) {
   const [selectedAsset, setSelectedAsset] = useState<
     (Asset & { latestTransaction?: AssetTransaction }) | null
@@ -44,6 +50,26 @@ export default function AssetDetailPlantClient({
   const [isMapModalOpen, setIsMapModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(50);
+
+  // Calculate pagination
+  const totalPages = Math.ceil(assets.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+
+  // Get paginated assets
+  const paginatedAssets = useMemo(() => {
+    return assets.slice(startIndex, endIndex);
+  }, [assets, startIndex, endIndex]);
+
+  // Reset to page 1 when items per page changes
+  const handleItemsPerPageChange = (value: string) => {
+    setItemsPerPage(Number(value));
+    setCurrentPage(1);
+  };
 
   const handleAssetClick = (
     asset: Asset & { latestTransaction?: AssetTransaction }
@@ -110,9 +136,37 @@ export default function AssetDetailPlantClient({
     <div className="p-4">
       <Card>
         <CardHeader>
-          <CardTitle className="text-xl">
-            Plant Assets ({assets.length})
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-xl">
+              Plant Assets ({assets.length})
+            </CardTitle>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-600">Show:</span>
+                <Select
+                  value={itemsPerPage.toString()}
+                  onValueChange={handleItemsPerPageChange}
+                >
+                  <SelectTrigger className="w-[100px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="25">25</SelectItem>
+                    <SelectItem value="50">50</SelectItem>
+                    <SelectItem value="100">100</SelectItem>
+                    <SelectItem value="250">250</SelectItem>
+                    <SelectItem value={assets.length.toString()}>
+                      All ({assets.length})
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="text-sm text-gray-600">
+                Showing {startIndex + 1}-{Math.min(endIndex, assets.length)} of{" "}
+                {assets.length}
+              </div>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="rounded-md border overflow-x-auto">
@@ -133,7 +187,7 @@ export default function AssetDetailPlantClient({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {assets.map((asset) => (
+                {paginatedAssets.map((asset) => (
                   <TableRow key={`${asset.asset}-${asset.sub}`}>
                     <TableCell>
                       <button
@@ -170,27 +224,14 @@ export default function AssetDetailPlantClient({
                       {asset.latestTransaction?.images &&
                       asset.latestTransaction.images.length > 0 ? (
                         <div className="flex gap-2">
-                          {asset.latestTransaction.images
-                            .slice(0, 3)
-                            .map((image, index) => (
-                              <div
-                                key={index}
-                                className="relative w-12 h-12 rounded border-2 border-gray-200 overflow-hidden hover:border-blue-400 cursor-pointer"
-                                onClick={() => handleImageClick(image)}
-                              >
-                                <img
-                                  src={formatImageUrl(image)}
-                                  alt={`Asset ${index + 1}`}
-                                  className="w-full h-full object-cover"
-                                  onError={handleImageError}
-                                />
-                              </div>
-                            ))}
-                          {asset.latestTransaction.images.length > 3 && (
-                            <div className="flex items-center justify-center w-12 h-12 rounded border-2 border-gray-200 bg-gray-100 text-xs font-semibold text-gray-600">
-                              +{asset.latestTransaction.images.length - 3}
-                            </div>
-                          )}
+                          <button
+                            onClick={() => handleAssetClick(asset)}
+                            className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded border border-blue-200 hover:border-blue-400 transition-colors"
+                            title="Click to view images"
+                          >
+                            <ImageIcon className="h-3 w-3" />
+                            {asset.latestTransaction.images.length}
+                          </button>
                         </div>
                       ) : (
                         <span className="text-gray-400 text-sm">-</span>
@@ -236,6 +277,77 @@ export default function AssetDetailPlantClient({
               </TableBody>
             </Table>
           </div>
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between mt-4">
+              <div className="text-sm text-gray-600">
+                Page {currentPage} of {totalPages}
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(1)}
+                  disabled={currentPage === 1}
+                >
+                  First
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <div className="flex items-center gap-1">
+                  {/* Show page numbers */}
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    let pageNum;
+                    if (totalPages <= 5) {
+                      pageNum = i + 1;
+                    } else if (currentPage <= 3) {
+                      pageNum = i + 1;
+                    } else if (currentPage >= totalPages - 2) {
+                      pageNum = totalPages - 4 + i;
+                    } else {
+                      pageNum = currentPage - 2 + i;
+                    }
+                    return (
+                      <Button
+                        key={pageNum}
+                        variant={currentPage === pageNum ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setCurrentPage(pageNum)}
+                        className="w-10"
+                      >
+                        {pageNum}
+                      </Button>
+                    );
+                  })}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+                  }
+                  disabled={currentPage === totalPages}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(totalPages)}
+                  disabled={currentPage === totalPages}
+                >
+                  Last
+                </Button>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -416,13 +528,15 @@ export default function AssetDetailPlantClient({
                               (image, index) => (
                                 <div
                                   key={index}
-                                  className="relative w-20 h-20 rounded border-2 border-gray-200 overflow-hidden hover:border-blue-400 cursor-pointer transition-all hover:scale-105"
+                                  className="relative w-20 h-20 rounded border-2 border-gray-200 overflow-hidden hover:border-blue-400 cursor-pointer transition-all hover:scale-105 bg-gray-100"
                                   onClick={() => handleImageClick(image)}
                                 >
                                   <img
                                     src={formatImageUrl(image)}
                                     alt={`Asset ${index + 1}`}
                                     className="w-full h-full object-cover"
+                                    loading="lazy"
+                                    decoding="async"
                                     onError={handleImageError}
                                   />
                                 </div>
