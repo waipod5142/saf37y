@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Breadcrumbs } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
-import { getAssetsByPlant } from "@/lib/actions/assets";
+import { getAssetsBySite } from "@/lib/actions/assets";
 import AssetDetailPlantClient from "@/components/asset-detail-plant-client";
 import { getCountries } from "@/lib/constants/countries";
 import QRCodeComponent from "@/components/qr-code";
@@ -20,8 +20,8 @@ export default async function BUSiteAssetPage({
 }: BUSiteAssetPageProps) {
   const { bu, site } = await params;
 
-  // Fetch assets by plant
-  const result = await getAssetsByPlant(bu, "tracking", site);
+  // Fetch assets by site
+  const result = await getAssetsBySite(bu, "tracking", site);
 
   // Get country information
   const countries = await getCountries();
@@ -82,7 +82,7 @@ export default async function BUSiteAssetPage({
         <Breadcrumbs
           items={[
             { label: "Asset KPI", href: "/kpiasset" },
-            { label: buName, href: `/kpiasset/${bu}` },
+            // { label: buName, href: `/kpiasset/${bu}` },
             { label: siteName },
           ]}
         />
@@ -131,7 +131,7 @@ export default async function BUSiteAssetPage({
       <Breadcrumbs
         items={[
           { label: "Asset KPI", href: "/kpiasset" },
-          { label: buName, href: `/kpiasset/${bu}` },
+          // { label: buName, href: `/kpiasset/${bu}` },
           { label: siteName },
         ]}
       />

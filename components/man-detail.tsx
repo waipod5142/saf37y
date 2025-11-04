@@ -54,12 +54,35 @@ const serializeRecord = (record: ManRecord): ManRecord => {
       }))
     : recordWithFiles.files;
 
-  return {
+  // Convert all timestamp fields in the record
+  const serialized: any = {
     ...record,
     timestamp: convertTimestamp(record.timestamp),
     createdAt: convertTimestamp(record.createdAt),
     ...(serializedFiles !== undefined && { files: serializedFiles }),
   };
+
+  // Handle training-specific timestamp fields
+  if (recordWithFiles.trainingDate) {
+    serialized.trainingDate = convertTimestamp(recordWithFiles.trainingDate);
+  }
+  if (recordWithFiles.expirationDate) {
+    serialized.expirationDate = convertTimestamp(recordWithFiles.expirationDate);
+  }
+  if (recordWithFiles.importedAt) {
+    serialized.importedAt = convertTimestamp(recordWithFiles.importedAt);
+  }
+  if (recordWithFiles.updatedAt) {
+    serialized.updatedAt = convertTimestamp(recordWithFiles.updatedAt);
+  }
+  if (recordWithFiles.expiryDate) {
+    serialized.expiryDate = convertTimestamp(recordWithFiles.expiryDate);
+  }
+  if (recordWithFiles.updateAt) {
+    serialized.updateAt = convertTimestamp(recordWithFiles.updateAt);
+  }
+
+  return serialized;
 };
 
 // Type guard functions

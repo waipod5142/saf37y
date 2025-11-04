@@ -427,17 +427,27 @@ export default function MachineReport({ bu, id }: MachineReportProps) {
                                   Tel: {visitor.tel}
                                 </p>
                               </div>
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleDeleteRecord(visitor.docId, visitor.name)}
-                                disabled={deletingId === visitor.docId}
-                                className="ml-2 text-red-600 hover:text-red-700 hover:bg-red-50"
-                                title="Delete this record"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
+                              {(() => {
+                                const today = new Date();
+                                today.setHours(0, 0, 0, 0);
+                                const checkInDate = new Date(visitor.checkIn);
+                                checkInDate.setHours(0, 0, 0, 0);
+                                const isToday = today.getTime() === checkInDate.getTime();
+
+                                return isToday ? (
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleDeleteRecord(visitor.docId, visitor.name)}
+                                    disabled={deletingId === visitor.docId}
+                                    className="ml-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                    title="Delete this record"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                ) : null;
+                              })()}
                             </div>
 
                             <div className="mt-3 grid grid-cols-2 md:grid-cols-3 gap-2 text-sm">

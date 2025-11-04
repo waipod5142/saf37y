@@ -273,6 +273,9 @@ export function MachineListModal({
                             {machine.description && (
                               <div>📝 Description: {machine.description}</div>
                             )}
+                            {machine.owner && (
+                              <div>📝 Owner: {machine.owner}</div>
+                            )}
                             {machine.location && (
                               <div>📍 Location: {machine.location}</div>
                             )}

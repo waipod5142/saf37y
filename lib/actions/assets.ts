@@ -392,6 +392,116 @@ export async function getAssets(filters?: {
   }
 }
 
+// Get assets by site with latest transaction data
+export async function getAssetsBySite(
+  bu: string,
+  type: string,
+  site: string
+): Promise<{
+  success: boolean;
+  assets?: (Asset & { latestTransaction?: AssetTransaction })[];
+  error?: string;
+}> {
+  try {
+    console.log(`Querying assets: bu=${bu}, type="tracking", site=${site}`);
+
+    // Query assets by bu, type, and site
+    const assetsQuery = firestore
+      .collection("asset")
+      .where("bu", "==", bu)
+      .where("type", "==", "tracking")
+      .where("site", "==", site);
+
+    const assetsSnapshot = await assetsQuery.get();
+
+    console.log(`Found ${assetsSnapshot.size} assets`);
+
+    if (assetsSnapshot.empty) {
+      return {
+        success: true,
+        assets: [],
+      };
+    }
+
+    // Fetch latest transaction for each asset
+    const assetsWithTransactions = await Promise.all(
+      assetsSnapshot.docs.map(async (doc) => {
+        const assetData = doc.data() as Asset;
+
+        try {
+          // Get all transactions for this asset (without orderBy to avoid index requirement)
+          const transactionsQuery = firestore
+            .collection("assettr")
+            .where("bu", "==", bu)
+            .where("type", "==", "tracking")
+            .where("asset", "==", assetData.asset)
+            .where("sub", "==", assetData.sub);
+
+          const transactionsSnapshot = await transactionsQuery.get();
+
+          let latestTransaction: AssetTransaction | undefined = undefined;
+          if (!transactionsSnapshot.empty) {
+            // Sort in memory to avoid needing a composite index
+            const transactions = transactionsSnapshot.docs
+              .map((txDoc) => {
+                const txData = txDoc.data();
+                return {
+                  ...txData,
+                  id: txDoc.id,
+                  uploadedAt: convertTimestamp(txData.uploadedAt),
+                  _timestamp: txData.uploadedAt,
+                } as AssetTransaction & { _timestamp: any };
+              })
+              .sort((a, b) => {
+                // Sort by timestamp descending
+                const aTime = a._timestamp?.toDate?.()?.getTime() || 0;
+                const bTime = b._timestamp?.toDate?.()?.getTime() || 0;
+                return bTime - aTime;
+              });
+
+            // Get the latest one
+            if (transactions.length > 0) {
+              const { _timestamp, ...txWithoutTimestamp } = transactions[0];
+              latestTransaction = txWithoutTimestamp as AssetTransaction;
+            }
+          }
+
+          return {
+            ...assetData,
+            uploadedAt: convertTimestamp(assetData.uploadedAt),
+            latestTransaction,
+          };
+        } catch (txError) {
+          console.error(
+            `Error fetching transactions for asset ${assetData.asset}-${assetData.sub}:`,
+            txError
+          );
+          // Return asset without transaction data if there's an error
+          return {
+            ...assetData,
+            uploadedAt: convertTimestamp(assetData.uploadedAt),
+            latestTransaction: undefined,
+          };
+        }
+      })
+    );
+
+    return {
+      success: true,
+      assets: assetsWithTransactions,
+    };
+  } catch (error) {
+    console.error("Error fetching assets by site:", error);
+    return {
+      success: false,
+      error:
+        error instanceof Error
+          ? error.message
+          : "Failed to fetch assets by site",
+    };
+  }
+}
+
 // Get assets by plant with latest transaction data
 export async function getAssetsByPlant(
   bu: string,
@@ -405,7 +515,7 @@ export async function getAssetsByPlant(
   try {
     console.log(`Querying assets: bu=${bu}, type="tracking", plant=${plant}`);
 
-    // Query assets by bu, type, and site (using site field instead of plant)
+    // Query assets by bu, type, and plant
     const assetsQuery = firestore
       .collection("asset")
       .where("bu", "==", bu)
