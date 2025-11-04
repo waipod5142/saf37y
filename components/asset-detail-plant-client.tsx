@@ -19,7 +19,12 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "./ui/button";
-import { ExternalLinkIcon, ImageIcon, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  ExternalLinkIcon,
+  ImageIcon,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { MapPinIcon } from "lucide-react";
 import {
   Select,
@@ -53,7 +58,7 @@ export default function AssetDetailPlantClient({
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(50);
+  const [itemsPerPage, setItemsPerPage] = useState(25);
 
   // Calculate pagination
   const totalPages = Math.ceil(assets.length / itemsPerPage);
@@ -296,7 +301,9 @@ export default function AssetDetailPlantClient({
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.max(1, prev - 1))
+                  }
                   disabled={currentPage === 1}
                 >
                   <ChevronLeft className="h-4 w-4" />
@@ -317,7 +324,9 @@ export default function AssetDetailPlantClient({
                     return (
                       <Button
                         key={pageNum}
-                        variant={currentPage === pageNum ? "default" : "outline"}
+                        variant={
+                          currentPage === pageNum ? "default" : "outline"
+                        }
                         size="sm"
                         onClick={() => setCurrentPage(pageNum)}
                         className="w-10"
