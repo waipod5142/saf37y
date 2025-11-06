@@ -3,7 +3,7 @@
 
 export type LanguageCode = "en" | "th" | "vn" | "kh" | "si" | "bn";
 
-export interface AccessControlTranslations {
+export type AccessControlTranslations = {
   // Header
   pageTitle: string;
   telephoneLabel: string;
@@ -65,13 +65,10 @@ export interface AccessControlTranslations {
   telephonePlaceholder: string;
   namePlaceholder: string;
   companyPlaceholder: string;
-<<<<<<< HEAD
 
   // Error messages
   checkoutTooFastError: (seconds: number) => string;
-=======
->>>>>>> 0fdf05875ee35c81f8a4dc299dee6af0903f6f08
-}
+};
 
 export const translations: Record<LanguageCode, AccessControlTranslations> = {
   en: {
@@ -133,12 +130,9 @@ export const translations: Record<LanguageCode, AccessControlTranslations> = {
     telephonePlaceholder: "0814998528",
     namePlaceholder: "Name",
     companyPlaceholder: "Company name",
-<<<<<<< HEAD
 
     checkoutTooFastError: (seconds: number) =>
       `Check-out too fast! Please wait another ${seconds} second${seconds > 1 ? 's' : ''} before checking out.`,
-=======
->>>>>>> 0fdf05875ee35c81f8a4dc299dee6af0903f6f08
   },
 
   th: {
@@ -199,12 +193,9 @@ export const translations: Record<LanguageCode, AccessControlTranslations> = {
     telephonePlaceholder: "0814998528",
     namePlaceholder: "ชื่อ",
     companyPlaceholder: "ชื่อบริษัท",
-<<<<<<< HEAD
 
     checkoutTooFastError: (seconds: number) =>
       `เช็คเอาท์เร็วเกินไป! กรุณารออีก ${seconds} วินาที ก่อนเช็คเอาท์`,
-=======
->>>>>>> 0fdf05875ee35c81f8a4dc299dee6af0903f6f08
   },
 
   vn: {
@@ -268,12 +259,9 @@ export const translations: Record<LanguageCode, AccessControlTranslations> = {
     telephonePlaceholder: "0814998528",
     namePlaceholder: "Tên",
     companyPlaceholder: "Tên công ty",
-<<<<<<< HEAD
 
     checkoutTooFastError: (seconds: number) =>
       `Check-out quá nhanh! Vui lòng đợi thêm ${seconds} giây nữa trước khi check-out.`,
-=======
->>>>>>> 0fdf05875ee35c81f8a4dc299dee6af0903f6f08
   },
 
   kh: {
@@ -336,12 +324,9 @@ export const translations: Record<LanguageCode, AccessControlTranslations> = {
     telephonePlaceholder: "0814998528",
     namePlaceholder: "ឈ្មោះ",
     companyPlaceholder: "ឈ្មោះក្រុមហ៊ុន",
-<<<<<<< HEAD
 
     checkoutTooFastError: (seconds: number) =>
       `Check-out លឿនពេក! សូមរង់ចាំបន្ថែមទៀត ${seconds} វិនាទី មុនពេល check-out។`,
-=======
->>>>>>> 0fdf05875ee35c81f8a4dc299dee6af0903f6f08
   },
 
   si: {
@@ -404,12 +389,9 @@ export const translations: Record<LanguageCode, AccessControlTranslations> = {
     telephonePlaceholder: "0814998528",
     namePlaceholder: "නම",
     companyPlaceholder: "සමාගම් නාමය",
-<<<<<<< HEAD
 
     checkoutTooFastError: (seconds: number) =>
       `Check-out ඉතා වේගයෙන්! කරුණාකර තවත් තත්පර ${seconds} ක් රැඳී සිටින්න.`,
-=======
->>>>>>> 0fdf05875ee35c81f8a4dc299dee6af0903f6f08
   },
 
   bn: {
@@ -473,12 +455,9 @@ export const translations: Record<LanguageCode, AccessControlTranslations> = {
     telephonePlaceholder: "০৮১৪৯৯৮৫২৮",
     namePlaceholder: "নাম",
     companyPlaceholder: "কোম্পানির নাম",
-<<<<<<< HEAD
 
     checkoutTooFastError: (seconds: number) =>
       `চেক-আউট খুব দ্রুত! অনুগ্রহ করে আরও ${seconds} সেকেন্ড অপেক্ষা করুন চেক-আউট করার আগে।`,
-=======
->>>>>>> 0fdf05875ee35c81f8a4dc299dee6af0903f6f08
   },
 };
 
