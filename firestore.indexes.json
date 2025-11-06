@@ -1,0 +1,32 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "machinetr",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "bu",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "timestamp",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "machinetr",
+      "queryScope": "COLLECTION", 
+      "fields": [
+        {
+          "fieldPath": "bu",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "timestamp",
+          "order": "DESCENDING"
+        }
+      ]
+    }
+  ]
+}
