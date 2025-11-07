@@ -132,7 +132,7 @@ export const translations: Record<LanguageCode, AccessControlTranslations> = {
     companyPlaceholder: "Company name",
 
     checkoutTooFastError: (seconds: number) =>
-      `Check-out too fast! Please wait another ${seconds} second${seconds > 1 ? 's' : ''} before checking out.`,
+      `Please check out only when leaving the plant. To leave now, please wait ${seconds} second${seconds > 1 ? "s" : ""}.`,
   },
 
   th: {
@@ -195,7 +195,7 @@ export const translations: Record<LanguageCode, AccessControlTranslations> = {
     companyPlaceholder: "ชื่อบริษัท",
 
     checkoutTooFastError: (seconds: number) =>
-      `เช็คเอาท์เร็วเกินไป! กรุณารออีก ${seconds} วินาที ก่อนเช็คเอาท์`,
+      `กรุณาเช็คเอาท์เมื่อออกจากโรงงานเท่านั้น หากต้องการออกตอนนี้ กรุณารอ ${seconds} วินาที`,
   },
 
   vn: {
@@ -261,7 +261,7 @@ export const translations: Record<LanguageCode, AccessControlTranslations> = {
     companyPlaceholder: "Tên công ty",
 
     checkoutTooFastError: (seconds: number) =>
-      `Check-out quá nhanh! Vui lòng đợi thêm ${seconds} giây nữa trước khi check-out.`,
+      `Vui lòng chỉ check-out khi rời khỏi nhà máy. Để ra bây giờ, vui lòng đợi ${seconds} giây.`,
   },
 
   kh: {
@@ -326,7 +326,7 @@ export const translations: Record<LanguageCode, AccessControlTranslations> = {
     companyPlaceholder: "ឈ្មោះក្រុមហ៊ុន",
 
     checkoutTooFastError: (seconds: number) =>
-      `Check-out លឿនពេក! សូមរង់ចាំបន្ថែមទៀត ${seconds} វិនាទី មុនពេល check-out។`,
+      `សូម check-out នៅពេលចេញពីរោងចក្រប៉ុណ្ណោះ។ ប្រសិនបើចង់ចេញឥឡូវ សូមរង់ចាំ ${seconds} វិនាទី។`,
   },
 
   si: {
@@ -391,7 +391,7 @@ export const translations: Record<LanguageCode, AccessControlTranslations> = {
     companyPlaceholder: "සමාගම් නාමය",
 
     checkoutTooFastError: (seconds: number) =>
-      `Check-out ඉතා වේගයෙන්! කරුණාකර තවත් තත්පර ${seconds} ක් රැඳී සිටින්න.`,
+      `කරුණාකර කම්හලෙන් පිටවන විට පමණක් check-out කරන්න. දැන් පිටවීමට නම්, කරුණාකර තත්පර ${seconds} ක් රැඳී සිටින්න.`,
   },
 
   bn: {
@@ -457,7 +457,7 @@ export const translations: Record<LanguageCode, AccessControlTranslations> = {
     companyPlaceholder: "কোম্পানির নাম",
 
     checkoutTooFastError: (seconds: number) =>
-      `চেক-আউট খুব দ্রুত! অনুগ্রহ করে আরও ${seconds} সেকেন্ড অপেক্ষা করুন চেক-আউট করার আগে।`,
+      `অনুগ্রহ করে শুধুমাত্র প্ল্যান্ট ছাড়ার সময় চেক-আউট করুন। এখন ছাড়তে হলে, অনুগ্রহ করে ${seconds} সেকেন্ড অপেক্ষা করুন।`,
   },
 };
 
