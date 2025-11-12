@@ -12,6 +12,7 @@ export default async function MyFavourites({
   const searchParamsValues = await searchParams;
   const page = searchParamsValues?.page ? parseInt(searchParamsValues.page) : 1;
   const filterType = searchParamsValues?.type || null;
+  const filterId = searchParamsValues?.id || null;
 
   // Get machine favourites
   const machineFavourites = await getUserMachineFavourites();
@@ -90,10 +91,18 @@ export default async function MyFavourites({
     countByType[type] = (countByType[type] || 0) + 1;
   });
 
-  // Filter by type if specified
-  const filteredMachines = filterType
-    ? allMachines.filter((m) => m.type === filterType)
-    : allMachines;
+  // Filter by type and ID if specified
+  let filteredMachines = allMachines;
+
+  if (filterType) {
+    filteredMachines = filteredMachines.filter((m) => m.type === filterType);
+  }
+
+  if (filterId) {
+    filteredMachines = filteredMachines.filter((m) =>
+      m.id?.toLowerCase().includes(filterId.toLowerCase())
+    );
+  }
 
   // Paginate filtered results
   const pageSize = 20;
@@ -104,7 +113,11 @@ export default async function MyFavourites({
   );
 
   if (!paginatedMachines.length && page > 1) {
-    redirect(`/account/my-favourites?page=${totalPages}${filterType ? `&type=${filterType}` : ""}`);
+    const params = new URLSearchParams();
+    params.set("page", totalPages.toString());
+    if (filterType) params.set("type", filterType);
+    if (filterId) params.set("id", filterId);
+    redirect(`/account/my-favourites?${params.toString()}`);
   }
 
   return (
@@ -115,6 +128,7 @@ export default async function MyFavourites({
       currentPage={page}
       totalPages={totalPages}
       filterType={filterType}
+      filterId={filterId}
       filteredCount={filteredMachines.length}
       startIndex={(page - 1) * pageSize}
     />

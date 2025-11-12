@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -11,8 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { EditIcon, PlusIcon, Trash2Icon, QrCode } from "lucide-react";
-import Image from "next/image";
+import { EditIcon, Trash2Icon, QrCode } from "lucide-react";
 import Link from "next/link";
 import { Machine } from "@/types/machine";
 import { useRouter } from "next/navigation";
@@ -38,6 +38,7 @@ interface MyFavouritesClientProps {
   currentPage: number;
   totalPages: number;
   filterType: string | null;
+  filterId: string | null;
   filteredCount: number;
   startIndex: number;
 }
@@ -49,6 +50,7 @@ export default function MyFavouritesClient({
   currentPage,
   totalPages,
   filterType,
+  filterId,
   filteredCount,
   startIndex,
 }: MyFavouritesClientProps) {
@@ -76,6 +78,9 @@ export default function MyFavouritesClient({
   );
   const [isQRDialogOpen, setIsQRDialogOpen] = useState(false);
 
+  // For ID search debounce
+  const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
+
   const handleEditMachine = (machine: Machine & { machineKey: string }) => {
     setSelectedMachine(machine);
     setIsEditModalOpen(true);
@@ -96,13 +101,46 @@ export default function MyFavouritesClient({
   };
 
   const handleTypeClick = (type: string) => {
+    const params = new URLSearchParams();
     if (filterType === type) {
-      // Remove filter
-      router.push("/account/my-favourites");
+      // Remove type filter
+      if (filterId) params.set("id", filterId);
     } else {
-      // Apply filter
-      router.push(`/account/my-favourites?type=${type}`);
+      // Apply type filter
+      params.set("type", type);
+      if (filterId) params.set("id", filterId);
     }
+    const queryString = params.toString();
+    router.push(queryString ? `/account/my-favourites?${queryString}` : "/account/my-favourites");
+  };
+
+  const handleIdSearchDebounced = (value: string) => {
+    if (searchTimeout) {
+      clearTimeout(searchTimeout);
+    }
+
+    const timeout = setTimeout(() => {
+      const params = new URLSearchParams();
+      if (value.trim()) {
+        params.set("id", value.trim());
+      }
+      if (filterType) {
+        params.set("type", filterType);
+      }
+      const queryString = params.toString();
+      router.push(queryString ? `/account/my-favourites?${queryString}` : "/account/my-favourites");
+    }, 500);
+
+    setSearchTimeout(timeout);
+  };
+
+  const handleIdSearchClear = () => {
+    const params = new URLSearchParams();
+    if (filterType) {
+      params.set("type", filterType);
+    }
+    const queryString = params.toString();
+    router.push(queryString ? `/account/my-favourites?${queryString}` : "/account/my-favourites");
   };
 
   const sortedTypes = Object.entries(countByType).sort((a, b) => b[1] - a[1]);
@@ -137,7 +175,6 @@ export default function MyFavouritesClient({
   );
   const allSelected =
     machines.length > 0 && selectedMachineKeys.size === machines.length;
-  const someSelected = selectedMachineKeys.size > 0 && !allSelected;
 
   return (
     <div className="max-w-screen-2xl mx-auto p-5">
@@ -157,6 +194,36 @@ export default function MyFavouritesClient({
         </div>
       </div>
 
+      {/* Search and Filter Section */}
+      <div className="mb-5">
+        <Card>
+          <CardHeader>
+            <CardTitle>Search by ID</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex gap-2">
+              <Input
+                type="text"
+                placeholder="Enter machine ID..."
+                defaultValue={filterId || ""}
+                onChange={(e) => {
+                  handleIdSearchDebounced(e.target.value);
+                }}
+                className="max-w-md"
+              />
+              {filterId && (
+                <Button
+                  variant="outline"
+                  onClick={handleIdSearchClear}
+                >
+                  Clear
+                </Button>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
         <Card>
@@ -165,7 +232,7 @@ export default function MyFavouritesClient({
           </CardHeader>
           <CardContent>
             <p className="text-4xl font-bold">{totalCount}</p>
-            {filterType && (
+            {(filterType || filterId) && (
               <p className="text-sm text-gray-600 mt-2">
                 Showing {filteredCount} filtered results
               </p>
@@ -190,14 +257,14 @@ export default function MyFavouritesClient({
                 </Badge>
               ))}
             </div>
-            {filterType && (
+            {(filterType || filterId) && (
               <Button
                 variant="link"
                 size="sm"
                 onClick={() => router.push("/account/my-favourites")}
                 className="mt-2 p-0"
               >
-                Clear filter
+                Clear all filters
               </Button>
             )}
           </CardContent>
@@ -206,8 +273,8 @@ export default function MyFavouritesClient({
 
       {!machines.length && (
         <h2 className="text-center text-zinc-400 text-3xl font-bold py-10">
-          {filterType
-            ? `No machines of type "${filterType}" found.`
+          {filterType || filterId
+            ? `No machines found matching the current filters.`
             : "You have no favourited machines."}
         </h2>
       )}
@@ -336,6 +403,9 @@ export default function MyFavouritesClient({
                   params.set("page", pageNum.toString());
                   if (filterType) {
                     params.set("type", filterType);
+                  }
+                  if (filterId) {
+                    params.set("id", filterId);
                   }
 
                   return (

@@ -28,7 +28,6 @@ export function MachineEditModal({
   machine,
   onUpdate,
 }: MachineEditModalProps) {
-  const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     bu: machine.bu || "",
@@ -36,11 +35,22 @@ export function MachineEditModal({
     type: machine.type || "",
     id: machine.id || "",
     kind: machine.kind || "",
+    name: machine.name || "",
+    description: machine.description || "",
+    area: machine.area || "",
+    department: machine.department || "",
+    owner: machine.owner || "",
     location: machine.location || "",
     plantId: machine.plantId || "",
     email: machine.email || "",
     supemail: machine.supemail || "",
+    registerDate: machine.registerDate || "",
+    certifiedDate: machine.certifiedDate || "",
+    remark: machine.remark || "",
     status: machine.status || "active",
+    ownerId: machine.ownerId || "",
+    interval: machine.interval || "",
+    quantity: machine.quantity || "",
   });
 
   useEffect(() => {
@@ -51,13 +61,23 @@ export function MachineEditModal({
       type: machine.type || "",
       id: machine.id || "",
       kind: machine.kind || "",
+      name: machine.name || "",
+      description: machine.description || "",
+      area: machine.area || "",
+      department: machine.department || "",
+      owner: machine.owner || "",
       location: machine.location || "",
       plantId: machine.plantId || "",
       email: machine.email || "",
       supemail: machine.supemail || "",
+      registerDate: machine.registerDate || "",
+      certifiedDate: machine.certifiedDate || "",
+      remark: machine.remark || "",
       status: machine.status || "active",
+      ownerId: machine.ownerId || "",
+      interval: machine.interval || "",
+      quantity: machine.quantity || "",
     });
-    setIsEditing(false);
   }, [machine]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -86,8 +106,8 @@ export function MachineEditModal({
 
       if (data.success) {
         toast.success("Machine updated successfully!");
-        setIsEditing(false);
         onUpdate();
+        onClose();
       } else {
         toast.error(data.error || "Failed to update machine");
       }
@@ -102,9 +122,7 @@ export function MachineEditModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>
-            {isEditing ? "Edit Machine" : "Machine Details"}
-          </DialogTitle>
+          <DialogTitle>Edit Machine</DialogTitle>
         </DialogHeader>
         <div>
           <Label>Document ID</Label>
@@ -143,8 +161,7 @@ export function MachineEditModal({
                 name="bu"
                 value={formData.bu}
                 onChange={handleChange}
-                disabled={true}
-                readOnly={!isEditing}
+                disabled
               />
             </div>
 
@@ -155,8 +172,7 @@ export function MachineEditModal({
                 name="site"
                 value={formData.site}
                 onChange={handleChange}
-                disabled={true}
-                readOnly={!isEditing}
+                disabled
               />
             </div>
 
@@ -167,8 +183,7 @@ export function MachineEditModal({
                 name="type"
                 value={formData.type}
                 onChange={handleChange}
-                disabled={true}
-                readOnly={!isEditing}
+                disabled
               />
             </div>
 
@@ -179,8 +194,7 @@ export function MachineEditModal({
                 name="id"
                 value={formData.id}
                 onChange={handleChange}
-                disabled={true}
-                readOnly={!isEditing}
+                disabled
               />
             </div>
 
@@ -191,7 +205,6 @@ export function MachineEditModal({
                 name="kind"
                 value={formData.kind}
                 onChange={handleChange}
-                disabled={!isEditing}
               />
             </div>
 
@@ -202,7 +215,6 @@ export function MachineEditModal({
                 name="location"
                 value={formData.location}
                 onChange={handleChange}
-                disabled={!isEditing}
               />
             </div>
 
@@ -213,7 +225,6 @@ export function MachineEditModal({
                 name="plantId"
                 value={formData.plantId}
                 onChange={handleChange}
-                disabled={!isEditing}
               />
             </div>
 
@@ -224,7 +235,6 @@ export function MachineEditModal({
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                disabled={!isEditing}
                 className="min-h-[60px] resize-y"
               />
             </div>
@@ -236,7 +246,6 @@ export function MachineEditModal({
                 name="supemail"
                 value={formData.supemail}
                 onChange={handleChange}
-                disabled={!isEditing}
                 className="min-h-[60px] resize-y"
               />
             </div>
@@ -248,48 +257,239 @@ export function MachineEditModal({
                 name="status"
                 value={formData.status}
                 onChange={handleChange}
-                disabled={!isEditing}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="name">Name</Label>
+              <Input
+                id="name"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div className="col-span-2">
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
+                className="min-h-[60px] resize-y"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="area">Area</Label>
+              <Input
+                id="area"
+                name="area"
+                value={formData.area}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="department">Department</Label>
+              <Input
+                id="department"
+                name="department"
+                value={formData.department}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="owner">Owner</Label>
+              <Input
+                id="owner"
+                name="owner"
+                value={formData.owner}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="ownerId">Owner ID</Label>
+              <Input
+                id="ownerId"
+                name="ownerId"
+                value={formData.ownerId}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="registerDate">Register Date</Label>
+              <Input
+                id="registerDate"
+                name="registerDate"
+                type="date"
+                value={formData.registerDate}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="certifiedDate">Certified Date</Label>
+              <Input
+                id="certifiedDate"
+                name="certifiedDate"
+                type="date"
+                value={formData.certifiedDate}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="interval">Interval</Label>
+              <Input
+                id="interval"
+                name="interval"
+                value={formData.interval}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="quantity">Quantity</Label>
+              <Input
+                id="quantity"
+                name="quantity"
+                type="number"
+                value={formData.quantity}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div className="col-span-2">
+              <Label htmlFor="remark">Remark</Label>
+              <Textarea
+                id="remark"
+                name="remark"
+                value={formData.remark}
+                onChange={handleChange}
+                className="min-h-[60px] resize-y"
+              />
+            </div>
+          </div>
+
+          {/* Read-only timestamp fields */}
+          <div className="grid grid-cols-2 gap-4 pt-4 border-t">
+            <div>
+              <Label>Created At</Label>
+              <Input
+                value={
+                  machine.createdAt
+                    ? new Date(
+                        machine.createdAt.seconds
+                          ? machine.createdAt.seconds * 1000
+                          : machine.createdAt
+                      ).toLocaleString()
+                    : "N/A"
+                }
+                disabled
+                className="font-light"
+              />
+            </div>
+
+            <div>
+              <Label>Created By</Label>
+              <Input
+                value={machine.createdBy || "N/A"}
+                disabled
+                className="font-light"
+              />
+            </div>
+
+            <div>
+              <Label>Updated At</Label>
+              <Input
+                value={
+                  machine.updatedAt
+                    ? new Date(
+                        machine.updatedAt.seconds
+                          ? machine.updatedAt.seconds * 1000
+                          : machine.updatedAt
+                      ).toLocaleString()
+                    : "N/A"
+                }
+                disabled
+                className="font-light"
+              />
+            </div>
+
+            <div>
+              <Label>Updated By</Label>
+              <Input
+                value={machine.updatedBy || "N/A"}
+                disabled
+                className="font-light"
+              />
+            </div>
+
+            <div>
+              <Label>Imported At</Label>
+              <Input
+                value={
+                  machine.importedAt
+                    ? new Date(
+                        machine.importedAt.seconds
+                          ? machine.importedAt.seconds * 1000
+                          : machine.importedAt
+                      ).toLocaleString()
+                    : "N/A"
+                }
+                disabled
+                className="font-light"
+              />
+            </div>
+
+            <div>
+              <Label>Last Imported At</Label>
+              <Input
+                value={
+                  machine.lastImportedAt
+                    ? new Date(
+                        machine.lastImportedAt.seconds
+                          ? machine.lastImportedAt.seconds * 1000
+                          : machine.lastImportedAt
+                      ).toLocaleString()
+                    : "N/A"
+                }
+                disabled
+                className="font-light"
+              />
+            </div>
+
+            <div>
+              <Label>Uploaded At</Label>
+              <Input
+                value={
+                  machine.uploadedAt
+                    ? new Date(
+                        machine.uploadedAt.seconds
+                          ? machine.uploadedAt.seconds * 1000
+                          : machine.uploadedAt
+                      ).toLocaleString()
+                    : "N/A"
+                }
+                disabled
+                className="font-light"
               />
             </div>
           </div>
 
           {/* Action Buttons */}
           <div className="flex justify-end gap-2 pt-4">
-            {!isEditing ? (
-              <>
-                <Button variant="outline" onClick={onClose}>
-                  Close
-                </Button>
-                <Button onClick={() => setIsEditing(true)}>Edit</Button>
-              </>
-            ) : (
-              <>
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setIsEditing(false);
-                    // Reset form
-                    setFormData({
-                      bu: machine.bu || "",
-                      site: machine.site || "",
-                      type: machine.type || "",
-                      id: machine.id || "",
-                      kind: machine.kind || "",
-                      location: machine.location || "",
-                      plantId: machine.plantId || "",
-                      email: machine.email || "",
-                      supemail: machine.supemail || "",
-                      status: machine.status || "active",
-                    });
-                  }}
-                >
-                  Cancel
-                </Button>
-                <Button onClick={handleSave} disabled={loading}>
-                  {loading ? "Saving..." : "Save Changes"}
-                </Button>
-              </>
-            )}
+            <Button variant="outline" onClick={onClose}>
+              Close
+            </Button>
+            <Button onClick={handleSave} disabled={loading}>
+              {loading ? "Saving..." : "Save Changes"}
+            </Button>
           </div>
         </div>
       </DialogContent>

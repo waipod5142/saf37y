@@ -7,6 +7,7 @@ import { Machine } from "@/types/machine";
 import { AlertTriangleIcon } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import QRCodeComponent from "./qr-code";
+import { formatRelativeDateTime } from "@/components/ui/date-utils";
 
 interface MachineHeaderClientProps {
   bu: string;
@@ -224,6 +225,36 @@ export default function MachineHeaderClient({
                     {typeof machine.registerDate === "string"
                       ? machine.registerDate
                       : new Date(machine.registerDate).toLocaleDateString()}
+                  </span>
+                </div>
+              )}
+
+              {machine.certifiedDate && (
+                <div className="flex flex-col">
+                  <span className="text-gray-500 font-medium">
+                    Certified Date
+                  </span>
+                  <span
+                    className={
+                      (() => {
+                        const certDate = typeof machine.certifiedDate === "string"
+                          ? new Date(machine.certifiedDate)
+                          : new Date(machine.certifiedDate);
+                        const daysSinceCertified = Math.floor(
+                          (Date.now() - certDate.getTime()) / (1000 * 60 * 60 * 24)
+                        );
+
+                        if (daysSinceCertified >= 365) {
+                          return "text-red-600 font-semibold"; // Over 1 year - red
+                        } else if (daysSinceCertified >= 335) {
+                          return "text-yellow-600 font-semibold"; // Near 1 year (30 days before) - yellow
+                        } else {
+                          return "text-gray-900"; // Within valid period - normal
+                        }
+                      })()
+                    }
+                  >
+                    {formatRelativeDateTime(machine.certifiedDate)}
                   </span>
                 </div>
               )}
