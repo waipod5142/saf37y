@@ -46,59 +46,37 @@ export async function GET(request: NextRequest) {
     console.log("Query executed, docs found:", snapshot.docs.length);
 
     // Convert all records and handle both Timestamp and string dates
-    const allRecords = await Promise.all(
-      snapshot.docs.map(async (doc) => {
-        const data = doc.data();
+    const allRecords = snapshot.docs.map((doc) => {
+      const data = doc.data();
 
-        // Handle timestamp - could be Firestore Timestamp, Date, or string
-        let timestampISO: any = data.timestamp;
-        if (data.timestamp?.toDate) {
-          // Firestore Timestamp
-          timestampISO = data.timestamp.toDate().toISOString();
-        } else if (data.timestamp instanceof Date) {
-          // Date object
-          timestampISO = data.timestamp.toISOString();
-        } else if (typeof data.timestamp === 'string') {
-          // Already a string
-          timestampISO = data.timestamp;
-        }
+      // Handle timestamp - could be Firestore Timestamp, Date, or string
+      let timestampISO: any = data.timestamp;
+      if (data.timestamp?.toDate) {
+        // Firestore Timestamp
+        timestampISO = data.timestamp.toDate().toISOString();
+      } else if (data.timestamp instanceof Date) {
+        // Date object
+        timestampISO = data.timestamp.toISOString();
+      } else if (typeof data.timestamp === 'string') {
+        // Already a string
+        timestampISO = data.timestamp;
+      }
 
-        // Handle createdAt similarly
-        let createdAtISO: any = data.createdAt;
-        if (data.createdAt?.toDate) {
-          createdAtISO = data.createdAt.toDate().toISOString();
-        } else if (data.createdAt instanceof Date) {
-          createdAtISO = data.createdAt.toISOString();
-        }
+      // Handle createdAt similarly
+      let createdAtISO: any = data.createdAt;
+      if (data.createdAt?.toDate) {
+        createdAtISO = data.createdAt.toDate().toISOString();
+      } else if (data.createdAt instanceof Date) {
+        createdAtISO = data.createdAt.toISOString();
+      }
 
-        // Fetch employee name from employees collection
-        let employeeName: string | undefined = undefined;
-        if (data.id) {
-          try {
-            const employeeSnapshot = await firestore
-              .collection("employees")
-              .where("empId", "==", data.id)
-              .limit(1)
-              .get();
-
-            if (!employeeSnapshot.empty) {
-              const employeeData = employeeSnapshot.docs[0].data();
-              employeeName = employeeData.fullName;
-            }
-          } catch (error) {
-            console.error(`Error fetching employee name for ${data.id}:`, error);
-          }
-        }
-
-        return {
-          ...data,
-          docId: doc.id,
-          timestamp: timestampISO,
-          createdAt: createdAtISO,
-          employeeName,
-        } as any;
-      })
-    );
+      return {
+        ...data,
+        docId: doc.id,
+        timestamp: timestampISO,
+        createdAt: createdAtISO,
+      } as any;
+    });
 
     console.log("All records before filtering:", allRecords.length);
 
@@ -135,6 +113,46 @@ export async function GET(request: NextRequest) {
       const dateB = new Date(b.timestamp || b.createdAt);
       return dateB.getTime() - dateA.getTime();
     });
+
+    // Batch fetch employee names for filtered records only
+    const uniqueEmployeeIds = [...new Set(records.map(r => r.id).filter(Boolean))];
+    console.log("Fetching employee names for", uniqueEmployeeIds.length, "unique IDs");
+
+    const employeeMap = new Map<string, string>();
+    if (uniqueEmployeeIds.length > 0) {
+      try {
+        // Firestore 'in' queries support max 10 items, so batch them
+        const batchSize = 10;
+        const batches = [];
+        for (let i = 0; i < uniqueEmployeeIds.length; i += batchSize) {
+          batches.push(uniqueEmployeeIds.slice(i, i + batchSize));
+        }
+
+        await Promise.all(
+          batches.map(async (batch) => {
+            const employeeSnapshot = await firestore
+              .collection("employees")
+              .where("empId", "in", batch)
+              .get();
+
+            employeeSnapshot.docs.forEach((doc) => {
+              const data = doc.data();
+              if (data.empId && data.fullName) {
+                employeeMap.set(data.empId, data.fullName);
+              }
+            });
+          })
+        );
+      } catch (error) {
+        console.error("Error batch fetching employee names:", error);
+      }
+    }
+
+    // Add employee names to records
+    records = records.map(record => ({
+      ...record,
+      employeeName: record.id ? employeeMap.get(record.id) : undefined
+    }));
 
     console.log("Returning records:", records.length);
 

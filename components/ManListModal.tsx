@@ -157,15 +157,31 @@ export function ManListModal({
       }
       console.log("Fetching from:", apiUrl);
 
-      const response = await fetch(apiUrl);
+      // Add timeout to prevent hanging
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
 
-      if (response.ok) {
-        const data = await response.json();
-        console.log("API Response:", data);
-        setRecords(data.records || []);
-      } else {
-        console.error("Failed to fetch records:", response.status);
-        setRecords([]);
+      try {
+        const response = await fetch(apiUrl, {
+          signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log("API Response:", data);
+          setRecords(data.records || []);
+        } else {
+          console.error("Failed to fetch records:", response.status);
+          setRecords([]);
+        }
+      } catch (fetchError) {
+        clearTimeout(timeoutId);
+        if (fetchError instanceof Error && fetchError.name === 'AbortError') {
+          console.error("Request timed out after 30 seconds");
+          alert("Request timed out. Please try a smaller date range or specific site.");
+        }
+        throw fetchError;
       }
     } catch (error) {
       console.error("Error in fetchRecords:", error);

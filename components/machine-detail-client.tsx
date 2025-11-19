@@ -452,11 +452,11 @@ export default function MachineDetailClient({
           <div className="flex justify-between items-start">
             <div>
               <CardTitle className="text-lg">
-                {isLatest && (
+                {/* {isLatest && (
                   <Badge variant="default" className="mr-2 mb-2">
                     Latest
                   </Badge>
-                )}
+                )} */}
                 {record.type && (
                   <Badge variant="outline" className="mr-2 mb-2 capitalize">
                     {record.type}
