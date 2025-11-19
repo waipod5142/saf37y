@@ -43,7 +43,7 @@ export default function MachineOption({ bu, type, id }: MachineOptionProps) {
   ].includes(type);
 
   // Only show dropdown for specific machine types and bu must be "th"
-  if (bu !== "th" || (!isMixerType && !isPlantType)) {
+  if (bu !== "th" || (!isMixerType && !isPlantType) || !id.startsWith("C")) {
     return null;
   }
 

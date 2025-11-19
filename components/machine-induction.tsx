@@ -30,8 +30,11 @@ export default function MachineInduction({
     video: true,
   });
 
-  // Only show for bu=vn and type=plantaccess
-  if (bu !== "vn" || type.toLowerCase() !== "plantaccess") {
+  // Only show for bu=vn and type=plantaccess, or bu=lk and id=rmx
+  const showForVietnam = bu === "vn" && type.toLowerCase() === "plantaccess";
+  const showForSriLanka = bu === "lk" && id.toLowerCase() === "rmx";
+
+  if (!showForVietnam && !showForSriLanka) {
     return null;
   }
 
@@ -48,6 +51,27 @@ export default function MachineInduction({
     videos: InductionMaterial[];
   } => {
     const plantId = id.toLowerCase();
+
+    // Sri Lanka RMX induction materials
+    if (bu === "lk" && plantId === "rmx") {
+      return {
+        pdfs: [
+          {
+            title: "RMX Safety Induction (English)",
+            url: "https://firebasestorage.googleapis.com/v0/b/sccc-inseesafety-prod.firebasestorage.app/o/Video%2FInduction%20PPT%20RMX%20English.pdf?alt=media&token=6fb2df3e-1a97-4a73-a11e-bae6a4b71d04",
+            type: "pdf",
+            language: "English",
+          },
+          {
+            title: "RMX Safety Induction (Sinhala)",
+            url: "https://firebasestorage.googleapis.com/v0/b/sccc-inseesafety-prod.firebasestorage.app/o/Video%2FInduction%20PPT%20RMX%20Sinhala.pdf?alt=media&token=5cabaf0c-d50a-4c4e-997b-a1cef7a80d58",
+            type: "pdf",
+            language: "Sinhala",
+          },
+        ],
+        videos: [],
+      };
+    }
 
     if (plantId === "honc") {
       return {
