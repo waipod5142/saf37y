@@ -10,10 +10,11 @@ export async function GET(request: Request) {
 
     // If bu parameter is provided, use the filtered function
     if (bu) {
-      const { stats, allRecords } = await getDashboardMachineStatsByBU(period || undefined, bu, site || undefined);
+      const { stats, allRecords, departmentStats } = await getDashboardMachineStatsByBU(period || undefined, bu, site || undefined);
       return NextResponse.json({
         stats,
-        records: allRecords
+        records: allRecords,
+        departmentStats
       });
     } else {
       // Use the original function for overall dashboard

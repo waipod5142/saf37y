@@ -10,6 +10,13 @@ import { useParams } from "next/navigation";
 import { MachineListModal } from "@/components/MachineListModal";
 import { getMachineEmoji } from "@/lib/machine-types";
 import { getAllVocabulariesAction } from "@/lib/actions/vocabulary";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 function getCompletionColor(percentage: number): string {
   if (percentage === 0) return "bg-gray-200 text-gray-600";
@@ -19,8 +26,9 @@ function getCompletionColor(percentage: number): string {
   return "bg-green-200 text-green-800";
 }
 
-function DashboardTable({ stats, title, showDefects, sites, bu, machineTypeMapping }: { stats: DashboardMachineStatsByBU; title: string; showDefects: boolean; sites: string[]; bu: string; machineTypeMapping: Record<string, string> }) {
-  const machineTypes = Object.keys(stats);
+function DashboardTable({ stats, title, showDefects, sites, bu, machineTypeMapping, selectedType, expandedType, setExpandedType, departmentStats }: { stats: DashboardMachineStatsByBU; title: string; showDefects: boolean; sites: string[]; bu: string; machineTypeMapping: Record<string, string>; selectedType: string; expandedType: string | null; setExpandedType: (type: string | null) => void; departmentStats: Record<string, Record<string, any>> }) {
+  const allMachineTypes = Object.keys(stats);
+  const machineTypes = selectedType === "all" ? allMachineTypes : allMachineTypes.filter(type => type === selectedType);
   const [modalState, setModalState] = useState<{
     isOpen: boolean;
     bu: string;
@@ -101,30 +109,74 @@ function DashboardTable({ stats, title, showDefects, sites, bu, machineTypeMappi
                   getCompletionColor(displayPercentage);
 
                 const hasData = displayTotal > 0;
+                const isExpanded = expandedType === type;
+                const departments = departmentStats[type] || {};
+                const hasDepartments = Object.keys(departments).length > 0;
 
                 return (
-                  <tr key={type} className="hover:bg-gray-50 transition-colors">
-                    <td className="border border-gray-300 p-3">
-                      <div className="flex items-center gap-3">
-                        <span className="text-xl">{icon}</span>
-                        <span className="font-medium text-gray-800">{displayName}</span>
-                      </div>
-                    </td>
-                    <td className="border border-gray-300 p-3 text-center">
-                      {displayValue === 0 && displayTotal === 0 ? (
-                        <span className="text-gray-400 font-medium">No data</span>
-                      ) : (
-                        <div
-                          className={`px-4 py-2 rounded-md text-sm font-semibold ${colorClass} inline-block ${
-                            hasData ? 'cursor-pointer hover:opacity-80 hover:scale-105 transition-all duration-200' : ''
-                          }`}
-                          onClick={hasData ? () => handleCellClick(bu, sites[0], type, hasData) : undefined}
-                        >
-                          {displayValue} / {displayTotal} ({displayPercentage}%)
+                  <>
+                    <tr key={type} className="hover:bg-gray-50 transition-colors">
+                      <td className="border border-gray-300 p-3">
+                        <div className="flex items-center gap-3">
+                          {hasDepartments && (
+                            <button
+                              onClick={() => setExpandedType(isExpanded ? null : type)}
+                              className="text-gray-600 hover:text-gray-800 transition-colors"
+                            >
+                              {isExpanded ? "▼" : "▶"}
+                            </button>
+                          )}
+                          <span className="text-xl">{icon}</span>
+                          <span className="font-medium text-gray-800">{displayName}</span>
                         </div>
-                      )}
-                    </td>
-                  </tr>
+                      </td>
+                      <td className="border border-gray-300 p-3 text-center">
+                        {displayValue === 0 && displayTotal === 0 ? (
+                          <span className="text-gray-400 font-medium">No data</span>
+                        ) : (
+                          <div
+                            className={`px-4 py-2 rounded-md text-sm font-semibold ${colorClass} inline-block ${
+                              hasData ? 'cursor-pointer hover:opacity-80 hover:scale-105 transition-all duration-200' : ''
+                            }`}
+                            onClick={hasData ? () => handleCellClick(bu, sites[0], type, hasData) : undefined}
+                          >
+                            {displayValue} / {displayTotal} ({displayPercentage}%)
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                    {isExpanded && hasDepartments && Object.entries(departments).map(([dept, deptData]: [string, any]) => {
+                      const deptDisplayValue = showDefects ? deptData.defects : deptData.inspected;
+                      const deptDisplayTotal = showDefects ? deptData.inspected : deptData.total;
+                      const deptDisplayPercentage = showDefects ?
+                        (deptData.inspected > 0 ? Math.round((deptData.defects / deptData.inspected) * 100) : 0) :
+                        deptData.percentage;
+
+                      const deptColorClass = showDefects ?
+                        (deptDisplayValue > 0 ? "bg-red-400 text-white shadow-sm" : "bg-green-100 text-green-700") :
+                        getCompletionColor(deptDisplayPercentage);
+
+                      return (
+                        <tr key={`${type}-${dept}`} className="bg-blue-50 hover:bg-blue-100 transition-colors">
+                          <td className="border border-gray-300 p-3 pl-16">
+                            <div className="flex items-center gap-3">
+                              <span className="text-sm text-gray-600">📁</span>
+                              <span className="font-medium text-gray-700">{dept || "No Department"}</span>
+                            </div>
+                          </td>
+                          <td className="border border-gray-300 p-3 text-center">
+                            {deptDisplayValue === 0 && deptDisplayTotal === 0 ? (
+                              <span className="text-gray-400 font-medium text-sm">No data</span>
+                            ) : (
+                              <div className={`px-3 py-1 rounded-md text-sm font-semibold ${deptColorClass} inline-block`}>
+                                {deptDisplayValue} / {deptDisplayTotal} ({deptDisplayPercentage}%)
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </>
                 );
               })}
               <tr className="bg-gradient-to-r from-gray-100 to-gray-50 font-bold border-t-2 border-gray-400">
@@ -182,6 +234,11 @@ function DashboardTable({ stats, title, showDefects, sites, bu, machineTypeMappi
   );
 }
 
+type BuDisplayInfo = {
+  name: string | null;
+  flag: string | null;
+};
+
 export default function DashboardPage() {
   const params = useParams();
   const site = params.site as string;
@@ -204,9 +261,22 @@ export default function DashboardPage() {
   const [showDefects, setShowDefects] = useState(false);
   const [vocabularyLoading, setVocabularyLoading] = useState(true);
   const [siteMapping, setSiteMapping] = useState<Record<string, string[]>>({});
-  const [buDisplay, setBuDisplay] = useState<Record<string, { name: string | null; flag: string | null }>>({});
+  const [buDisplay, setBuDisplay] = useState<Record<string, BuDisplayInfo>>({});
   const [machineTypeMapping, setMachineTypeMapping] = useState<Record<string, string>>({});
-  
+  const [selectedType, setSelectedType] = useState<string>("all");
+  const [expandedType, setExpandedType] = useState<string | null>(null);
+  const [departmentStats, setDepartmentStats] = useState<{
+    daily: Record<string, Record<string, any>>;
+    monthly: Record<string, Record<string, any>>;
+    quarterly: Record<string, Record<string, any>>;
+    annual: Record<string, Record<string, any>>;
+  }>({
+    daily: {},
+    monthly: {},
+    quarterly: {},
+    annual: {}
+  });
+
   // For single site view, we only need the current site
   const sites = [site];
   const buInfo = buDisplay[bu] || { name: null, flag: null };
@@ -254,23 +324,32 @@ export default function DashboardPage() {
         const statsPromises = periods.map(async (period) => {
           const response = await fetch(`/api/dashboard-data?period=${period}&bu=${bu}&site=${site}`);
           const data = await response.json();
-          return { period, stats: data.stats, records: data.records };
+          return { period, stats: data.stats, records: data.records, departmentStats: data.departmentStats };
         });
-        
+
         const results = await Promise.all(statsPromises);
-        
+
         const newStats = {
           daily: {},
           monthly: {},
           quarterly: {},
           annual: {}
         };
-        
-        results.forEach(({ period, stats }) => {
+
+        const newDepartmentStats = {
+          daily: {},
+          monthly: {},
+          quarterly: {},
+          annual: {}
+        };
+
+        results.forEach(({ period, stats, departmentStats }) => {
           newStats[period as keyof typeof newStats] = stats || {};
+          newDepartmentStats[period as keyof typeof newDepartmentStats] = departmentStats || {};
         });
-        
+
         setDashboardStats(newStats);
+        setDepartmentStats(newDepartmentStats);
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
       } finally {
@@ -312,11 +391,11 @@ export default function DashboardPage() {
           </h1>
         </div>
         
-        <div className="flex items-center gap-6 mb-4">
+        <div className="flex flex-wrap items-center gap-6 mb-4">
           <span className="text-sm text-gray-600">
             {showDefects ? "Defects / Total Inspected ( % )" : "Inspected / Total Machines ( % )"}
           </span>
-          <Button 
+          <Button
             variant={showDefects ? "destructive" : "outline"}
             size="sm"
             onClick={() => setShowDefects(!showDefects)}
@@ -324,6 +403,27 @@ export default function DashboardPage() {
           >
             {showDefects ? "Showing Defects" : "Show Defects"}
           </Button>
+
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-gray-700">Filter by Type:</span>
+            <Select value={selectedType} onValueChange={setSelectedType}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="All Types" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Types</SelectItem>
+                {Object.keys(dashboardStats.annual).sort().map((type) => {
+                  const displayName = machineTypeMapping[type] || type;
+                  const icon = getMachineEmoji(type) || "🔧";
+                  return (
+                    <SelectItem key={type} value={type}>
+                      {icon} {displayName}
+                    </SelectItem>
+                  );
+                })}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
         
         <div className="flex items-center gap-4 text-sm">
@@ -377,46 +477,62 @@ export default function DashboardPage() {
           </TabsList>
           
           <TabsContent value="daily">
-            <DashboardTable 
-              stats={dashboardStats.daily} 
+            <DashboardTable
+              stats={dashboardStats.daily}
               title="Daily Inspection Report"
               showDefects={showDefects}
               sites={sites}
               bu={bu}
               machineTypeMapping={machineTypeMapping}
+              selectedType={selectedType}
+              expandedType={expandedType}
+              setExpandedType={setExpandedType}
+              departmentStats={departmentStats.daily}
             />
           </TabsContent>
 
           <TabsContent value="monthly">
-            <DashboardTable 
-              stats={dashboardStats.monthly} 
+            <DashboardTable
+              stats={dashboardStats.monthly}
               title="Monthly Inspection Report"
               showDefects={showDefects}
               sites={sites}
               bu={bu}
               machineTypeMapping={machineTypeMapping}
+              selectedType={selectedType}
+              expandedType={expandedType}
+              setExpandedType={setExpandedType}
+              departmentStats={departmentStats.monthly}
             />
           </TabsContent>
-          
+
           <TabsContent value="quarterly">
-            <DashboardTable 
-              stats={dashboardStats.quarterly} 
+            <DashboardTable
+              stats={dashboardStats.quarterly}
               title="Quarterly Inspection Report"
               showDefects={showDefects}
               sites={sites}
               bu={bu}
               machineTypeMapping={machineTypeMapping}
+              selectedType={selectedType}
+              expandedType={expandedType}
+              setExpandedType={setExpandedType}
+              departmentStats={departmentStats.quarterly}
             />
           </TabsContent>
-          
+
           <TabsContent value="annual">
-            <DashboardTable 
-              stats={dashboardStats.annual} 
+            <DashboardTable
+              stats={dashboardStats.annual}
               title="Annual Inspection Report"
               showDefects={showDefects}
               sites={sites}
               bu={bu}
               machineTypeMapping={machineTypeMapping}
+              selectedType={selectedType}
+              expandedType={expandedType}
+              setExpandedType={setExpandedType}
+              departmentStats={departmentStats.annual}
             />
           </TabsContent>
         </Tabs>

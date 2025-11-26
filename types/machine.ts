@@ -5,6 +5,7 @@ export interface Machine {
   description?: string;
   site?: string;
   country?: string;
+  department?: string;
 
   // Schema fields from Firebase
   createdAt?: any;

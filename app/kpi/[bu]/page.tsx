@@ -422,7 +422,6 @@ export default function BUKPIPage() {
   );
   const [annualData, setAnnualData] = useState<KPIInspectionData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [backgroundLoading, setBackgroundLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [activeTab, setActiveTab] = useState("daily");
@@ -458,27 +457,19 @@ export default function BUKPIPage() {
       setLastUpdated(new Date());
       setLoading(false);
 
-      // Fetch other frequencies in the background
-      setBackgroundLoading(true);
-      Promise.all([
-        fetchData("monthly"),
-        fetchData("quarterly"),
-        fetchData("annual"),
-      ])
-        .then(([monthly, quarterly, annual]) => {
-          setMonthlyData(monthly);
-          setQuarterlyData(quarterly);
-          setAnnualData(annual);
-          setLastUpdated(new Date());
-          setBackgroundLoading(false);
-        })
-        .catch((err) => {
-          console.error("Error fetching background KPI data:", err);
-          setBackgroundLoading(false);
-          // Don't set error state here as daily data is already loaded
-        });
+      // Fetch other frequencies sequentially after daily data is shown
+      const monthly = await fetchData("monthly");
+      setMonthlyData(monthly);
+
+      const quarterly = await fetchData("quarterly");
+      setQuarterlyData(quarterly);
+
+      const annual = await fetchData("annual");
+      setAnnualData(annual);
+
+      setLastUpdated(new Date());
     } catch (err) {
-      console.error("Error fetching daily KPI data:", err);
+      console.error("Error fetching KPI data:", err);
       setError(err instanceof Error ? err.message : "Failed to load data");
       setLoading(false);
     }

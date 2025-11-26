@@ -722,6 +722,7 @@ export const getDashboardMachineStatsByBU = async (
 ): Promise<{
   stats: DashboardMachineStatsByBU;
   allRecords: MachineInspectionRecord[];
+  departmentStats: Record<string, Record<string, any>>;
 }> => {
   try {
     console.log(
@@ -993,6 +994,80 @@ export const getDashboardMachineStatsByBU = async (
       });
     });
 
+    // Calculate department stats
+    const departmentStats: Record<string, Record<string, any>> = {};
+
+    // Group machines by type and department
+    Object.keys(machinesBySiteType).forEach((siteKey) => {
+      Object.keys(machinesBySiteType[siteKey]).forEach((type) => {
+        if (!departmentStats[type]) {
+          departmentStats[type] = {};
+        }
+
+        machinesBySiteType[siteKey][type].forEach((machine) => {
+          const dept = machine.department || "No Department";
+
+          if (!departmentStats[type][dept]) {
+            departmentStats[type][dept] = {
+              inspected: 0,
+              total: 0,
+              percentage: 0,
+              defects: 0,
+              inspectionRecords: []
+            };
+          }
+
+          departmentStats[type][dept].total++;
+        });
+      });
+    });
+
+    // Add inspection data to department stats
+    Object.values(latestInspectionsByMachine).forEach((record) => {
+      const type = record.type;
+      const recordSite = record.site || "unknown";
+
+      // Find the corresponding machine to get department
+      const machineExists = machinesBySiteType[recordSite]?.[type]?.find(
+        (m) => m.id === record.id
+      );
+
+      if (machineExists) {
+        const dept = machineExists.department || "No Department";
+
+        if (departmentStats[type] && departmentStats[type][dept]) {
+          departmentStats[type][dept].inspected++;
+          departmentStats[type][dept].inspectionRecords.push(record);
+
+          // Count defects
+          const hasDefects = Object.keys(record).some((key) => {
+            const value = record[key];
+            return (
+              typeof value === "string" &&
+              (value.toLowerCase() === "fail" ||
+                value.toLowerCase() === "failed" ||
+                value.toLowerCase() === "ng" ||
+                value.toLowerCase() === "no")
+            );
+          });
+
+          if (hasDefects) {
+            departmentStats[type][dept].defects++;
+          }
+        }
+      }
+    });
+
+    // Calculate department percentages
+    Object.keys(departmentStats).forEach((type) => {
+      Object.keys(departmentStats[type]).forEach((dept) => {
+        const data = departmentStats[type][dept];
+        if (data.total > 0) {
+          data.percentage = Math.round((data.inspected / data.total) * 100);
+        }
+      });
+    });
+
     // Final debug logging
     if (bu === "lk") {
       console.log("=== Final Sri Lanka Stats ===");
@@ -1001,9 +1076,9 @@ export const getDashboardMachineStatsByBU = async (
       console.log("Total records found:", allRecords.length);
     }
 
-    return { stats, allRecords };
+    return { stats, allRecords, departmentStats };
   } catch (error) {
     console.error("Error fetching dashboard machine stats by BU:", error);
-    return { stats: {}, allRecords: [] };
+    return { stats: {}, allRecords: [], departmentStats: {} };
   }
 };

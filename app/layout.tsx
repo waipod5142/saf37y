@@ -53,6 +53,14 @@ export default function RootLayout({
               </li>
               <li>
                 <Link
+                  href="/dashboardbysite"
+                  className="uppercase tracking-widest hover:underline"
+                >
+                  By_Department
+                </Link>
+              </li>
+              <li>
+                <Link
                   href="/kpiman"
                   className="uppercase tracking-widest hover:underline"
                 >
