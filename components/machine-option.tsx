@@ -23,7 +23,7 @@ export default function MachineOption({ bu, type, id }: MachineOptionProps) {
     }
   };
 
-  // Check if it's a Mixer or Plant type
+  // Check if it's a Mixer or Plant type or Car type
   const isMixerType = [
     "mixer",
     "mixerweek",
@@ -41,9 +41,14 @@ export default function MachineOption({ bu, type, id }: MachineOptionProps) {
     "plantaccess",
     "plantasset",
   ].includes(type);
+  const isCarType = ["car", "driving"].includes(type);
 
   // Only show dropdown for specific machine types and bu must be "th"
-  if (bu !== "th" || (!isMixerType && !isPlantType) || (!id.startsWith("C") && !id.startsWith("LOG"))) {
+  if (
+    bu !== "th" ||
+    (!isMixerType && !isPlantType && !isCarType) ||
+    (!id.startsWith("C") && !id.startsWith("LOG") && !isCarType)
+  ) {
     return null;
   }
 
@@ -150,6 +155,23 @@ export default function MachineOption({ bu, type, id }: MachineOptionProps) {
               className="odd:bg-gray-100 even:bg-gray-200"
             >
               Plant Asset ทรัพย์สินของ Plant ในการตรวจนับประจำปี
+            </option>
+          </>
+        )}
+
+        {isCarType && (
+          <>
+            <option
+              value={`/Machine/${bu}/Car/${id}`}
+              className="odd:bg-gray-100 even:bg-gray-200"
+            >
+              แบบตรวจเช็ครถเล็กก่อนใช้งานประจำวัน
+            </option>
+            <option
+              value={`/Machine/${bu}/Driving/${id}`}
+              className="odd:bg-gray-100 even:bg-gray-200"
+            >
+              แบบประเมินความพร้อมและทักษะในการขับขี่อย่างปลอดภัย
             </option>
           </>
         )}

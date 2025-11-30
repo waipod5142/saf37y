@@ -243,6 +243,9 @@ export const normalizeTypeForDisplay = (type: string): string => {
   ) {
     return "plant";
   }
+  if (["car", "driving"].includes(lowerType)) {
+    return "car";
+  }
   return type;
 };
 

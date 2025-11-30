@@ -4,6 +4,7 @@ import MachineDetail from "@/components/machine-detail";
 import MachineForm from "@/components/machine-form";
 import MachineForm4photo from "@/components/machine-form4photo";
 import MachineFormTalk from "@/components/machine-formTalk";
+import MachineFormDriving from "@/components/machine-formDriving";
 import MachineFormStat from "@/components/machine-formStat";
 import MachineFormAccess from "@/components/machine-formAccess";
 import AssetDetailPlant from "@/components/asset-detail-plant";
@@ -82,6 +83,12 @@ export default async function MachinePage({
         />
       ) : decodedType.toLowerCase() === "plantasset" ? (
         <AssetDetailPlant
+          bu={normalizedBu}
+          type={decodedType.toLowerCase()}
+          id={decodedId}
+        />
+      ) : decodedType.toLowerCase() === "driving" ? (
+        <MachineFormDriving
           bu={normalizedBu}
           type={decodedType.toLowerCase()}
           id={decodedId}
