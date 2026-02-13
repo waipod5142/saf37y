@@ -1,16 +1,18 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, use } from "react";
 
 export default function ManPage({
   params,
 }: {
-  params: { bu: string; type: string; id: string };
+  params: Promise<{ bu: string; type: string; id: string }>;
 }) {
+  const { type, id } = use(params);
+
   useEffect(() => {
     // Decode URL parameters to handle special characters (including Thai characters)
-    const decodedType = decodeURIComponent(params.type).toLowerCase();
-    const decodedId = decodeURIComponent(params.id);
+    const decodedType = decodeURIComponent(type).toLowerCase();
+    const decodedId = decodeURIComponent(id);
 
     // Determine redirect URL based on type
     let redirectUrl: string;
@@ -25,7 +27,7 @@ export default function ManPage({
 
     // Redirect to the legacy system
     window.location.href = redirectUrl;
-  }, [params.type, params.id]);
+  }, [type, id]);
 
   return (
     <div className="max-w-4xl mx-auto p-8 text-center">
