@@ -8,10 +8,43 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  const { pathname } = request.nextUrl;
+
+  // Redirect Machine pages to legacy system
+  if (pathname.startsWith("/Machine/")) {
+    const segments = pathname.split("/");
+    const id = segments[segments.length - 1];
+    const decodedId = decodeURIComponent(id);
+    return NextResponse.redirect(
+      `https://sccc-inseesafety-prod.web.app/Machine/${decodedId}`
+    );
+  }
+
+  // Redirect Man pages to legacy system
+  if (pathname.startsWith("/Man/")) {
+    const segments = pathname.split("/");
+    const type = segments[3]; // /Man/{bu}/{type}/{id}
+    const id = segments[segments.length - 1];
+    const decodedType = decodeURIComponent(type).toLowerCase();
+    const decodedId = decodeURIComponent(id);
+
+    if (decodedType === "toolbox") {
+      return NextResponse.redirect(
+        `https://sccc-inseesafety-prod.web.app/Man/toolbox/${decodedId}`
+      );
+    } else if (decodedType === "boot") {
+      return NextResponse.redirect(
+        `https://sccc-inseesafety-prod.web.app/Man/bootform/${decodedId}`
+      );
+    } else {
+      return NextResponse.redirect(
+        `https://sccc-inseesafety-prod.web.app/Man/${decodedType}/${decodedId}`
+      );
+    }
+  }
+
   const cookieStore = await cookies();
   const token = cookieStore.get("firebaseAuthToken")?.value;
-
-  const { pathname } = request.nextUrl;
 
   if (
     !token &&
@@ -68,5 +101,7 @@ export const config = {
     "/account",
     "/account/:path*",
     "/property-search",
+    "/Machine/:path*",
+    "/Man/:path*",
   ],
 };

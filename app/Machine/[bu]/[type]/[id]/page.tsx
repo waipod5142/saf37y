@@ -1,15 +1,10 @@
-import { redirect } from "next/navigation";
+// This page is redirected by middleware to the legacy system
+// Users will never see this component
 
-export default async function MachinePage({
-  params,
-}: {
-  params: Promise<{ bu: string; type: string; id: string }>;
-}) {
-  const { id } = await params;
-
-  // Decode the ID to handle special characters (including Thai characters)
-  const decodedId = decodeURIComponent(id);
-
-  // Redirect to the old system automatically
-  redirect(`https://sccc-inseesafety-prod.web.app/Machine/${decodedId}`);
+export default async function MachinePage() {
+  return (
+    <div className="max-w-4xl mx-auto p-8 text-center">
+      <p>Redirecting to legacy system...</p>
+    </div>
+  );
 }
