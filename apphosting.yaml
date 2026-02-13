@@ -1,0 +1,67 @@
+# apphosting.yaml
+runConfig:
+  runtime: nodejs18
+  cpu: 2
+  memory: 2GB
+  minInstances: 0
+  maxInstances: 10
+
+env:
+  - variable: NODE_ENV
+    value: production
+  - variable: NEXT_TELEMETRY_DISABLED
+    value: "1"
+  - variable: FIREBASE_PRIVATE_KEY_ID
+    value: "d92f44127936eb43aac8190f70e9ae23be4d4b18"
+  - variable: FIREBASE_PRIVATE_KEY
+    value: |
+      -----BEGIN PRIVATE KEY-----
+      MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDlAFz21+RfSYff
+      Sow+s1s+P9uyh4WUyyaEJVA2vpa5jUvRE9/6rteOuDATWkFpbnGxEhaslcL0NXtz
+      oIn4J6++aK+9b0/iDsn1Pyo1IOdSgHR5pHRMMp+/19wuS3vB0DdXxBh8MxJyaiCY
+      Lau6w+PfXCDumn2fcb99YnpAmAKXdJlwFU8Q1d3M4Psk3GKtYqAAq1jhlca9HoMh
+      FiekIPmmXVMUzEq8guSOB1hkNFNYFV/Aw37sHz4pLRWPjx2YtaxOQ6iLO7X03HoR
+      W2Zno3e/d5aI9RUEA/JU9MB8aEpzzQahff1ZwoRh7UR8FxpfOfTVIp+YaUq7jOdb
+      X0qRbSZLAgMBAAECggEAA5YGUwVsGaO2f/t3JMJltpEzbriK7uCP5EyXd5y5WA8O
+      eJxU+XuHQYZArhzm5GrE+epsghxF5tGlxEFQU2zFIMPs6PVURy9S1E0nMQ0/rEac
+      rztUIuT3r/5jdDLdIeZL0Es2Gjgpbm0Pkibbe36Zn4yeDk/uS35xggiwelB4h7yb
+      SUcnktrcQwADjAehTa/DSHijnyQ7I7BFXurgXZ8D5GjM+ipEy+QhhpP5Dazwf8pj
+      UZu9YkNFAGAq7R9Av1QQoGGUTFwXNYrqyY8A4BXbwO4mFKk+EwmVeumIq80FpjFd
+      drnUXrULx7bT+CgM+qDX8udzGVpMEFv6U0ro5B5A+QKBgQD9sQmarf2RO0seqLE5
+      jJJi8/wAx7CWLc8S8qCx9kMwcPdwdzeGIRJKZG0ypO63emY57thQJTr/lwB6pZdi
+      u6kBSPF3NLrpxqkXNsrdFs41sfRR44rwRaGduVqbsIstXLxUtCRhAEn/JOcYTJHH
+      r2VPpXpCv08mT5FUWCCEAyNZJwKBgQDnFc+l0zypK7hI0xcqy5mA/9LmrjGhsUTJ
+      tVj/XOH3boHRRrZigyAnYFshJAb/5KyUpKQR3PmEe1d63f6znt7q0CkLxwUQ+6rs
+      uWrxcuRmqSVzbkY+b1OqXJRUOJXi8CuyvlXpxU8sFkyHArqUfBStUnVFUDdKpm73
+      FirL9/jYPQKBgQCRlE5WnRGtjcEFzvgkdi5q6mfqaq1DAPabgPAGL7NO0QStXTxX
+      lBLS7d5b+ZmjYHHZPN6U30iD8zsrJmtBFT9epWUrau73yDCwSZkQVk3vMjdp5pGM
+      X+jmgb8lKKI1XcoVMWrO30OXTq3um8HsPRJ+Kg+GzhG1gmN7azb9im92cQKBgQDl
+      1HaSabZSVs5Rd8j54kdI2qdKkQOB2oocx4W9bQa9DaaFmvu4nMu0/guEuY1QooHW
+      0Kzxq0JrNjU6WWKCCUeSaPf547YxPuyvxnYLsAZj6GT8Gjg4zoZ60NshrKm+bLo5
+      az6NY5Urtv3j5Z3mIkZ6X6GND4v+beu9ScnE1VskzQKBgDzef5TtBeP6h5DO5jnI
+      ukNDgbi4ihyr8ePvo3MqFxu3roJwqQuHXehZhtw7iQVi9ASdoYr84FiG00A55eLP
+      016jIg2GvP3cg04SfT8jxmUl2adWr7ODr5XhHQ9uAa/2dpz8NXHMe2r4C7i2cuU0
+      EBTp+vUps5jlB9FPloHffNa1
+      -----END PRIVATE KEY-----
+  - variable: FIREBASE_CLIENT_EMAIL
+    value: "firebase-adminsdk-fbsvc@sccc-inseesafety-prod.iam.gserviceaccount.com"
+  - variable: FIREBASE_CLIENT_ID
+    value: "108425329831291274767"
+  - variable: ADMIN_EMAIL
+    value: "waipod@hotmail.com"
+  - variable: FIREBASE_API_KEY
+    value: "AIzaSyDOi9vLxu7CeOtoT1Q-Z5Hq3m4ajmfXYL0"
+  - variable: NEXT_PUBLIC_FIREBASE_API_KEY
+    value: "AIzaSyDOi9vLxu7CeOtoT1Q-Z5Hq3m4ajmfXYL0"
+  - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+    value: "sccc-inseesafety-prod.firebaseapp.com"
+  - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+    value: "sccc-inseesafety-prod"
+  - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+    value: "sccc-inseesafety-prod.firebasestorage.app"
+  - variable: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+    value: "874085997493"
+  - variable: NEXT_PUBLIC_FIREBASE_APP_ID
+    value: "1:874085997493:web:280caa4e438035005097fc"
+  - variable: NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
+    value: "G-52XL7ZNC27"
