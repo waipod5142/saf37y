@@ -16,7 +16,8 @@ export async function middleware(request: NextRequest) {
     const id = segments[segments.length - 1];
     const decodedId = decodeURIComponent(id);
     return NextResponse.redirect(
-      `https://sccc-inseesafety-prod.web.app/Machine/${decodedId}`
+      new URL(`https://sccc-inseesafety-prod.web.app/Machine/${decodedId}`),
+      { status: 307 }
     );
   }
 
@@ -30,15 +31,18 @@ export async function middleware(request: NextRequest) {
 
     if (decodedType === "toolbox") {
       return NextResponse.redirect(
-        `https://sccc-inseesafety-prod.web.app/Man/toolbox/${decodedId}`
+        new URL(`https://sccc-inseesafety-prod.web.app/Man/toolbox/${decodedId}`),
+        { status: 307 }
       );
     } else if (decodedType === "boot") {
       return NextResponse.redirect(
-        `https://sccc-inseesafety-prod.web.app/Man/bootform/${decodedId}`
+        new URL(`https://sccc-inseesafety-prod.web.app/Man/bootform/${decodedId}`),
+        { status: 307 }
       );
     } else {
       return NextResponse.redirect(
-        `https://sccc-inseesafety-prod.web.app/Man/${decodedType}/${decodedId}`
+        new URL(`https://sccc-inseesafety-prod.web.app/Man/${decodedType}/${decodedId}`),
+        { status: 307 }
       );
     }
   }
