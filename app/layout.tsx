@@ -28,7 +28,7 @@ export default function RootLayout({
       <body className={`${poppins.className} antialiased`}>
         <AuthProvider>
           <nav className="bg-red-600 text-white p-5 h-14 flex items-center justify-between z-10 relative">
-            <Link href="https://sccc-inseesafety-prod.web.app/" className="flex gap-3 items-center">
+            <Link href="/" className="flex gap-3 items-center">
               <Image
                 src="/SCCC.BK.svg"
                 alt="INSEE Logo"
