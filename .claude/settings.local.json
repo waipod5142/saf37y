@@ -7,7 +7,16 @@
       "Bash(git fetch:*)",
       "Bash(where npm:*)",
       "Bash(git commit -m \"$\\(cat <<''EOF''\nFix build error: Move redirects to middleware\n\n- Move redirect logic from page components to middleware\n- Add /Machine/:path* and /Man/:path* to middleware matcher\n- Simplify page components to prevent build-time redirect errors\n- This fixes the Firebase build error\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
-      "Bash(git commit -m \"$\\(cat <<''EOF''\nFix external redirects: Use URL objects with status 307\n\n- Use new URL\\(\\) for external redirects to legacy system\n- Add explicit status: 307 \\(Temporary Redirect\\)\n- This ensures proper handling of external redirects in middleware\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nFix external redirects: Use URL objects with status 307\n\n- Use new URL\\(\\) for external redirects to legacy system\n- Add explicit status: 307 \\(Temporary Redirect\\)\n- This ensures proper handling of external redirects in middleware\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nRemove hosting config - use App Hosting only\n\n- Remove hosting configuration from firebase.json\n- Firebase App Hosting uses apphosting.yaml instead\n- This prevents conflicts between hosting and App Hosting deployments\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(npm install:*)",
+      "Bash(npm run build:*)",
+      "Bash(where node npm npx)",
+      "Bash(echo:*)",
+      "Bash(grep:*)",
+      "Bash(ls:*)",
+      "Bash(where:*)",
+      "Bash(/c/Program Files/nodejs/npm.cmd run build)"
     ]
   }
 }

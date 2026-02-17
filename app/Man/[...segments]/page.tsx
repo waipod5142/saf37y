@@ -2,20 +2,19 @@
 
 import { useEffect, use } from "react";
 
-export default function ManShortPage({
+export default function ManCatchAllPage({
   params,
 }: {
-  params: Promise<{ type: string; id: string }>;
+  params: Promise<{ segments: string[] }>;
 }) {
-  const { id } = use(params);
+  const { segments } = use(params);
 
   useEffect(() => {
-    // Decode the ID to handle special characters (including Thai characters)
+    // The last segment is the employee ID
+    const id = segments[segments.length - 1];
     const decodedId = decodeURIComponent(id);
-
-    // Redirect all /Man/{type}/{id} pages to profile in the legacy system
     window.location.href = `https://sccc-inseesafety-prod.web.app/profile/${decodedId}`;
-  }, [id]);
+  }, [segments]);
 
   return (
     <div className="max-w-4xl mx-auto p-8 text-center">
