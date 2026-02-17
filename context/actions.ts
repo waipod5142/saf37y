@@ -27,7 +27,7 @@ export const setToken = async ({
       process.env.ADMIN_EMAIL === userRecord.email &&
       !userRecord.customClaims?.admin
     ) {
-      auth.setCustomUserClaims(verifiedToken.uid, {
+      await auth.setCustomUserClaims(verifiedToken.uid, {
         admin: true,
       });
     }
