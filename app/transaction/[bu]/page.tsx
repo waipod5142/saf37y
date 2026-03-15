@@ -1,33 +1,18 @@
 "use client";
 
-import { Breadcrumbs } from "@/components/ui/breadcrumb";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
-import { getMachineEmoji } from "@/lib/machine-types";
-import { getAllVocabulariesAction } from "@/lib/actions/vocabulary";
-import { MachineInspectionRecord } from "@/types/machineInspectionRecord";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar, MapPin, User, Clock, CheckCircle, XCircle, Filter, Download, Search, Loader2 } from "lucide-react";
-import { MachineDetailDialog } from "@/components/MachineDetailDialog";
-import { convertFirebaseTimestamp, formatDateTime, formatRelativeDateTime } from "@/components/ui/date-utils";
-import { Skeleton } from "@/components/ui/skeleton";
+import { useEffect } from "react";
 
-function getInspectionStatus(record: MachineInspectionRecord): { status: 'pass' | 'fail' | 'na'; failedItems: string[] } {
-  const failedItems: string[] = [];
-  let passCount = 0;
-  let totalItems = 0;
+export default function TransactionBuRedirect() {
+  useEffect(() => {
+    window.location.href = "https://report-safetypassport.web.app/";
+  }, []);
 
-  // Check all inspection fields for pass/fail status
-  Object.entries(record).forEach(([key, value]) => {
-    if (typeof value === 'string' && !['id', 'bu', 'type', 'site', 'inspector', 'remark', 'docId'].includes(key)) {
-      totalItems++;
-      const normalizedValue = value.toLowerCase();
-      if (normalizedValue === 'fail' || normalizedValue === 'failed' || normalizedValue === 'ng' || normalizedValue === 'no') {
-        failedItems.push(key);
+  return (
+    <div className="max-w-4xl mx-auto p-8 text-center">
+      <p>Redirecting to reports system...</p>
+    </div>
+  );
+}
       } else if (normalizedValue === 'pass' || normalizedValue === 'passed' || normalizedValue === 'ok' || normalizedValue === 'yes') {
         passCount++;
       }
