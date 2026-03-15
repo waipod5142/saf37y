@@ -16,7 +16,8 @@
       "Bash(grep:*)",
       "Bash(ls:*)",
       "Bash(where:*)",
-      "Bash(/c/Program Files/nodejs/npm.cmd run build)"
+      "Bash(/c/Program Files/nodejs/npm.cmd run build)",
+      "Bash(git commit:*)"
     ]
   }
 }
