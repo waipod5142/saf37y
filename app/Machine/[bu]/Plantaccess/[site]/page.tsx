@@ -4,7 +4,7 @@ import { firestore } from "@/firebase/server";
 export default async function PlantAccessRedirect({
   params,
 }: {
-  params: Promise<{ site: string }>;
+  params: Promise<{ bu: string; site: string }>;
 }) {
   const { site } = await params;
 

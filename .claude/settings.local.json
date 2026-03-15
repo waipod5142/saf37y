@@ -17,7 +17,9 @@
       "Bash(ls:*)",
       "Bash(where:*)",
       "Bash(/c/Program Files/nodejs/npm.cmd run build)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(mkdir -p \"/d/bebiAPP/saf37y-main/app/Machine/[bu]/Plantaccess\")",
+      "Bash(mv \"/d/bebiAPP/saf37y-main/app/Machine/Plantaccess.tmp/[site]\" \"/d/bebiAPP/saf37y-main/app/Machine/[bu]/Plantaccess/\")"
     ]
   }
 }
