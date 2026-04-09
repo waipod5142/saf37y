@@ -1,10 +1,10 @@
 # apphosting.yaml
 runConfig:
   runtime: nodejs18
-  cpu: 2
-  memory: 2GB
+  cpu: 1
+  memory: 1GB
   minInstances: 0
-  maxInstances: 10
+  maxInstances: 2
 
 env:
   - variable: NODE_ENV
